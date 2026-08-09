@@ -1,1 +1,137 @@
 @import 'tailwindcss';
+
+/* ──────────────────────────────────────────────────────────────
+   Design tokens — Tailwind v4 khai báo theme bằng CSS, không có
+   tailwind.config.js. Mỗi biến sinh ra utility tương ứng
+   (--color-gold → bg-gold / text-gold / border-gold).
+   Đổi bảng màu thương hiệu: sửa DUY NHẤT tại đây.
+────────────────────────────────────────────────────────────── */
+@theme {
+  --color-navy: #071d36;
+  --color-navy-2: #102b4d;
+  --color-navy-3: #183c66;
+
+  --color-gold: #c9922e;
+  --color-gold-soft: #e0b75f;
+
+  --color-ivory: #f7f2e7;
+  --color-sand: #e8dcc5;
+  --color-paper: #fffdf8;
+  --color-white: #ffffff;
+
+  --color-ink: #0b1727;
+  --color-muted: #657182;
+  --color-line: rgb(7 29 54 / 0.13);
+  --color-line-light: rgb(255 255 255 / 0.15);
+
+  --shadow-lift: 0 22px 70px rgb(7 29 54 / 0.12);
+  --shadow-header: 0 10px 40px rgb(7 29 54 / 0.08);
+}
+
+/* `inline` để utility trỏ thẳng vào biến của next/font thay vì inline
+   giá trị lúc build (font nạp runtime qua layout.tsx). */
+@theme inline {
+  --font-display: var(--font-instrument);
+  --font-sans: var(--font-dm-sans);
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    /* Header dính 2 hàng (~68px + ~46px): chừa chỗ để anchor không bị che. */
+    scroll-padding-top: 132px;
+
+    /* Luôn chừa sẵn rãnh scrollbar. Modal và menu mobile khoá cuộn bằng
+       `overflow: hidden` — không có dòng này thì scrollbar biến mất và cả
+       trang giật ngang ~10px mỗi lần mở/đóng. */
+    scrollbar-gutter: stable;
+  }
+
+  body {
+    font-size: 14px;
+    line-height: 1.65;
+  }
+
+  ::selection {
+    background: var(--color-gold);
+    color: var(--color-navy);
+  }
+
+  /* ── Scrollbar ───────────────────────────────────────────────
+     Hai nhánh loại trừ nhau, KHÔNG khai chung được: Chrome bỏ qua toàn
+     bộ ::-webkit-scrollbar nếu phần tử đó có `scrollbar-width` hoặc
+     `scrollbar-color`. Nên thuộc tính chuẩn chỉ dành cho trình duyệt
+     không có pseudo-element webkit (Firefox), còn Chromium/WebKit dùng
+     pseudo-element để có bo tròn + trạng thái hover/active.
+
+     Áp cho cả trang lẫn vùng cuộn trong modal và panel menu. */
+
+  ::-webkit-scrollbar {
+    width: 11px;
+    height: 11px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--color-ivory);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: var(--color-navy-3);
+    border: 3px solid var(--color-ivory);
+    border-radius: 999px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: var(--color-navy);
+  }
+
+  ::-webkit-scrollbar-thumb:active {
+    background-color: var(--color-gold);
+  }
+
+  ::-webkit-scrollbar-corner {
+    background: var(--color-ivory);
+  }
+
+  /* Firefox: không có ::-webkit-scrollbar nên `selector()` trả false ở đây,
+     và trả true trên Chromium/WebKit — đúng cái ta cần để tách nhánh. */
+  @supports not selector(::-webkit-scrollbar) {
+    html {
+      scrollbar-width: thin;
+      scrollbar-color: var(--color-navy-3) var(--color-ivory);
+    }
+  }
+}
+
+/* Bề ngang chuẩn của mọi section. Gom vào một class để không lặp
+   chuỗi `w-[min(1240px,calc(100%-48px))]` ở mười mấy chỗ. */
+.container-page {
+  width: min(1240px, calc(100% - 48px));
+  margin-inline: auto;
+}
+
+@media (max-width: 820px) {
+  .container-page {
+    width: min(1240px, calc(100% - 30px));
+  }
+}
+
+@media (max-width: 540px) {
+  .container-page {
+    width: calc(100% - 24px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

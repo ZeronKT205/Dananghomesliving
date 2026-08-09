@@ -1,7 +1,8 @@
 {
-  "name": "duotech-nextjs-app",
+  "name": "real-estate-fe",
   "version": "0.1.0",
   "private": true,
+  "description": "DanangHomesLiving — frontend đăng tin bất động sản Đà Nẵng",
   "type": "module",
   "scripts": {
     "dev": "next dev",

@@ -18,7 +18,17 @@ const compat = new FlatCompat({ baseDirectory: __dirname });
 
 export default [
   {
-    ignores: ['.next/**', 'out/**', 'dist/**', 'build/**', 'coverage/**', 'node_modules/**'],
+    // next-env.d.ts do Next tự sinh lại mỗi lần build — sửa tay sẽ bị ghi đè,
+    // và nó dùng triple-slash reference nên luôn vi phạm rule. Bỏ qua.
+    ignores: [
+      '.next/**',
+      'out/**',
+      'dist/**',
+      'build/**',
+      'coverage/**',
+      'node_modules/**',
+      'next-env.d.ts',
+    ],
   },
 
   ...compat.extends('next/core-web-vitals', 'next/typescript'),

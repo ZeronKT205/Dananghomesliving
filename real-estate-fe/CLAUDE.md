@@ -1,13 +1,7 @@
-<!-- ──────────────────────────────────────────────────────────────
-  Duotech — Template CLAUDE.md cho project Next.js mới
-  Copy vào ROOT của project. Claude Code / Cursor / AI agents đọc file
-  này tự động để tuân theo kiến trúc & convention khi sinh code.
-  Thay <PLACEHOLDER> và xoá phần không dùng.
-─────────────────────────────────────────────────────────────── -->
+# DanangHomesLiving — `real-estate-fe`
 
-# real-estate-fe
-
-> Next.js (App Router) + TypeScript. Tuân theo Duotech Engineering Conventions.
+> Frontend web đăng tin bất động sản Đà Nẵng (mua bán / cho thuê nhà đất, căn hộ).
+> Next.js 15 (App Router) + React 19 + TypeScript. Tuân theo Duotech Engineering Conventions.
 
 ## ⚡ Quy tắc tối quan trọng (đọc trước khi sinh bất kỳ code nào)
 
@@ -41,17 +35,17 @@ src/
 
 **Bảng quyết định nhanh:**
 
-| Tạo gì | Đặt vào |
-|:-------|:--------|
-| Trang mới (URL) | `app/<route>/page.tsx` |
+| Tạo gì                   | Đặt vào                                               |
+| :----------------------- | :---------------------------------------------------- |
+| Trang mới (URL)          | `app/<route>/page.tsx`                                |
 | Component dùng nhiều nơi | `components/ui/` hoặc `components/features/<domain>/` |
-| Component dùng 1 route | `app/<route>/_components/` |
-| Mutation (tạo/sửa/xoá) | `server/actions/` |
-| Business logic | `server/services/` |
-| Endpoint HTTP | `app/api/<name>/route.ts` |
-| Truy vấn DB | `lib/db/` |
-| Zod schema | `lib/validations/` |
-| Hook tái sử dụng | `hooks/use-*.ts` |
+| Component dùng 1 route   | `app/<route>/_components/`                            |
+| Mutation (tạo/sửa/xoá)   | `server/actions/`                                     |
+| Business logic           | `server/services/`                                    |
+| Endpoint HTTP            | `app/api/<name>/route.ts`                             |
+| Truy vấn DB              | `lib/db/`                                             |
+| Zod schema               | `lib/validations/`                                    |
+| Hook tái sử dụng         | `hooks/use-*.ts`                                      |
 
 ## 📝 Naming & Style
 
@@ -64,20 +58,20 @@ src/
 
 ```tsx
 // Server Component fetch thẳng — không useEffect, không client waterfall
-export default async function ProductPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
-  const product = await getProduct(id);
-  return <ProductView product={product} />;
+export default async function ListingPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const listing = await getListingBySlug(slug);
+  return <ListingDetail listing={listing} />;
 }
 ```
 
 ```ts
 // Server Action — validate input + check auth NGAY đầu hàm
 'use server';
-export async function createOrder(input: unknown) {
-  const data = CreateOrderSchema.parse(input); // Zod, không tin client
+export async function createListing(input: unknown) {
+  const data = CreateListingSchema.parse(input); // Zod, không tin client
   const session = await requireSession();
-  return orderService.create(data, session.userId);
+  return listingService.create(data, session.userId);
 }
 ```
 
@@ -100,5 +94,25 @@ npm test             # vitest
 ## 📚 Tài liệu đầy đủ
 
 Convention chi tiết: repo `duotech-workflows/conventions/` — `nextjs.md` (kiến trúc + RSC + testing), `nodejs.md`, `deployment.md`. Naming + git workflow nằm trong `conventions/README.md`.
+
+## 🏠 Từ vựng nghiệp vụ (dùng thống nhất trong code)
+
+Tiếng Anh trong code, tiếng Việt trong UI. Không trộn lẫn, không viết tắt tự chế.
+
+| Nghiệp vụ                 | Tên trong code       | Ghi chú                                   |
+| :------------------------ | :------------------- | :---------------------------------------- |
+| Tin đăng                  | `listing`            | KHÔNG dùng `post`, `product`, `item`      |
+| Bất động sản (tài sản)    | `property`           | Nhà/đất/căn hộ cụ thể                     |
+| Loại hình BĐS             | `propertyType`       | `apartment` / `house` / `land` / `office` |
+| Hình thức                 | `listingType`        | `sale` (bán) / `rent` (cho thuê)          |
+| Chủ tin / môi giới        | `agent`              | Người đăng tin                            |
+| Người dùng cuối           | `user`               |                                           |
+| Khu vực (quận/phường)     | `district` / `ward`  |                                           |
+| Tìm kiếm + bộ lọc         | `search` / `filters` |                                           |
+| Tin đã lưu                | `savedListing`       | KHÔNG dùng `favorite`, `wishlist`         |
+| Liên hệ / yêu cầu xem nhà | `inquiry`            |                                           |
+
+Áp dụng nhất quán cho: `components/features/<domain>/`, `server/services/<domain>-service.ts`,
+`lib/validations/<domain>.ts`, `lib/db/<domain>.ts`, route `app/<domain>/`.
 
 <!-- Project-specific notes: thêm bên dưới (schema DB, service ngoài, quirk riêng...) -->

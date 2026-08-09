@@ -1,22 +1,82 @@
+import Link from 'next/link';
+
 import { cn } from '@/lib/utils';
 
-import type { ButtonHTMLAttributes } from 'react';
+import type { AnchorHTMLAttributes, ButtonHTMLAttributes, ReactNode } from 'react';
 
-type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
-  variant?: 'primary' | 'secondary';
+type Variant = 'navy' | 'gold' | 'outline';
+
+const BASE =
+  'group inline-flex min-h-[46px] items-center justify-center gap-3 border px-5 text-[11px] font-bold tracking-[0.11em] uppercase transition-all duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold';
+
+const VARIANTS: Record<Variant, string> = {
+  navy: 'border-transparent bg-navy text-white hover:-translate-y-0.5 hover:bg-navy-2',
+  gold: 'border-transparent bg-gold text-navy hover:-translate-y-0.5 hover:bg-gold-soft',
+  outline: 'border-current bg-transparent hover:border-navy hover:bg-navy hover:text-white',
 };
 
-// Primitive "dumb": chỉ nhận props, không fetch data, không chứa business logic.
-export function Button({ className, variant = 'primary', ...props }: ButtonProps) {
+/** Mũi tên trượt nhẹ khi hover. Đặt trong phần tử có class `group`. */
+export function Arrow() {
   return (
-    <button
+    <span
+      aria-hidden
+      className="text-base leading-none transition-transform duration-200 group-hover:translate-x-1"
+    >
+      →
+    </span>
+  );
+}
+
+type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
+  variant?: Variant;
+  children: ReactNode;
+};
+
+export function Button({ variant = 'navy', className, children, ...props }: ButtonProps) {
+  return (
+    <button className={cn(BASE, VARIANTS[variant], 'cursor-pointer', className)} {...props}>
+      {children}
+    </button>
+  );
+}
+
+type ButtonLinkProps = AnchorHTMLAttributes<HTMLAnchorElement> & {
+  href: string;
+  variant?: Variant;
+  children: ReactNode;
+};
+
+export function ButtonLink({
+  href,
+  variant = 'navy',
+  className,
+  children,
+  ...props
+}: ButtonLinkProps) {
+  return (
+    <Link href={href} className={cn(BASE, VARIANTS[variant], className)} {...props}>
+      {children}
+    </Link>
+  );
+}
+
+type TextLinkProps = {
+  href: string;
+  children: ReactNode;
+  className?: string;
+};
+
+export function TextLink({ href, children, className }: TextLinkProps) {
+  return (
+    <Link
+      href={href}
       className={cn(
-        'inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors disabled:pointer-events-none disabled:opacity-50',
-        variant === 'primary' && 'bg-gray-900 text-white hover:bg-gray-700',
-        variant === 'secondary' && 'border border-gray-300 text-gray-900 hover:bg-gray-100',
+        'group focus-visible:outline-gold inline-flex items-center gap-2.5 text-[11px] font-bold tracking-[0.11em] uppercase transition-colors focus-visible:outline-2 focus-visible:outline-offset-2',
         className,
       )}
-      {...props}
-    />
+    >
+      {children}
+      <Arrow />
+    </Link>
   );
 }

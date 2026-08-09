@@ -1,5 +1,3 @@
-<!-- Đặt file này tại: .github/PULL_REQUEST_TEMPLATE.md trong repo project -->
-
 ## 🎯 Mục đích
 
 <!-- PR này làm gì? Link tới issue/ticket nếu có. Closes #123 -->

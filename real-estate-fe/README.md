@@ -1,6 +1,9 @@
-# Next.js app — Duotech architecture
+# DanangHomesLiving — Frontend (`real-estate-fe`)
 
-Scaffold bằng `npx duotech nextjs`. Kiến trúc & convention chuẩn Duotech (xem `CLAUDE.md`).
+Web đăng tin bất động sản Đà Nẵng: mua bán / cho thuê nhà đất, căn hộ.
+
+Next.js 15 (App Router) + React 19 + TypeScript + Tailwind v4 + Zod.
+Scaffold bằng `npx duotech nextjs` — kiến trúc & convention chuẩn Duotech (xem `CLAUDE.md`).
 
 ## Bắt đầu
 

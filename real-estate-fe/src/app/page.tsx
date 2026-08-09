@@ -1,14 +1,59 @@
-import { Button } from '@/components/ui/button';
+import { getArticles } from '@/lib/db/articles';
+import { getListingsByType } from '@/lib/db/listings';
 
-export default function HomePage() {
+import { ContactCta } from './_components/contact-cta';
+import { HeroSection } from './_components/hero-section';
+import { JournalSection } from './_components/journal-section';
+import { ListingsSection } from './_components/listings-section';
+import { PropertySearch } from './_components/property-search';
+import { SiteFooter } from './_components/site-footer';
+import { SiteHeader } from './_components/site-header';
+import { StorySection } from './_components/story-section';
+
+export default async function HomePage() {
+  // Server Component fetch thẳng, song song — không useEffect, không client waterfall.
+  const [saleListings, rentListings, articles] = await Promise.all([
+    getListingsByType('sale'),
+    getListingsByType('rent'),
+    getArticles(),
+  ]);
+
   return (
-    <main className="mx-auto flex min-h-screen max-w-2xl flex-col items-center justify-center gap-6 p-8 text-center">
-      <h1 className="text-4xl font-bold tracking-tight">Duotech Next.js</h1>
-      <p className="text-gray-600">
-        Kiến trúc chuẩn đã sẵn sàng. Bắt đầu bằng cách sửa{' '}
-        <code className="rounded bg-gray-100 px-1.5 py-0.5 text-sm">src/app/page.tsx</code>.
-      </p>
-      <Button>Bắt đầu code</Button>
-    </main>
+    <>
+      <SiteHeader />
+
+      <main>
+        <HeroSection />
+        <PropertySearch />
+        <StorySection />
+
+        <ListingsSection
+          id="buy"
+          kicker="Homes to buy"
+          title="Own a distinctive address in Da Nang."
+          lead="Five selected residences across the city’s most desirable coastal and urban neighbourhoods."
+          listings={saleListings}
+          ctaLabel="Request the full buyer collection"
+          layout="featured"
+          className="bg-paper"
+        />
+
+        <ListingsSection
+          id="rent"
+          kicker="Homes to rent"
+          title="Arrive, settle in and feel at home."
+          lead="Six fully furnished residences selected for comfort, location and dependable long-term living."
+          listings={rentListings}
+          ctaLabel="Tell us your rental brief"
+          layout="standard"
+          className="bg-ivory"
+        />
+
+        <JournalSection articles={articles} />
+        <ContactCta />
+      </main>
+
+      <SiteFooter />
+    </>
   );
 }
