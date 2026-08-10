@@ -98,3 +98,21 @@ export const SEARCH_BUDGETS = [
   '$250k–$500k',
   '$500k+',
 ] as const;
+
+/** ⚠️ Toạ độ placeholder — trung tâm Đà Nẵng. Thay bằng vị trí văn phòng thật. */
+export const OFFICE_COORDS = { lat: 16.0544, lng: 108.2022 } as const;
+
+/** ⚠️ Địa chỉ placeholder — thay bằng địa chỉ thật trước khi lên production. */
+export const OFFICE_ADDRESS = '36 Bạch Đằng, Hải Châu, Đà Nẵng, Việt Nam';
+
+export const GOOGLE_MAPS_EMBED_URL = `https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3834.1!2d${OFFICE_COORDS.lng}!3d${OFFICE_COORDS.lat}!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMTbCsDAzJzE1LjgiTiAxMDjCsDEyJzA3LjkiRQ!5e0!3m2!1svi!2s!4v1` as const;
+
+export const GOOGLE_MAPS_LINK = `https://www.google.com/maps?q=${OFFICE_COORDS.lat},${OFFICE_COORDS.lng}` as const;
+
+export const QUOTE_SERVICE_OPTIONS = [
+  { value: 'buy', label: 'Buy a property' },
+  { value: 'rent', label: 'Long-term rental' },
+  { value: 'invest', label: 'Investment advisory' },
+  { value: 'valuation', label: 'Property valuation' },
+  { value: 'other', label: 'Other enquiry' },
+] as const;
