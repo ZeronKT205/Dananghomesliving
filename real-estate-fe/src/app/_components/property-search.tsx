@@ -1,37 +1,41 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 import { SEARCH_AREAS, SEARCH_BUDGETS, SEARCH_PROPERTY_TYPES } from '@/config/constants';
 import { cn } from '@/lib/utils';
 import type { ListingType } from '@/types';
 
-const TABS: { value: ListingType; label: string; target: string }[] = [
-  { value: 'sale', label: 'Buy', target: 'buy' },
-  { value: 'rent', label: 'Rent', target: 'rent' },
+const TABS: { value: ListingType; label: string }[] = [
+  { value: 'sale', label: 'Buy' },
+  { value: 'rent', label: 'Rent' },
 ];
 
-const FIELDS = [
-  { id: 'area', label: 'Area', options: SEARCH_AREAS },
-  { id: 'property-type', label: 'Property type', options: SEARCH_PROPERTY_TYPES },
-  { id: 'budget', label: 'Budget', options: SEARCH_BUDGETS },
-] as const;
-
-/** Hộp tìm kiếm đè lên mép dưới hero.
- *  ⚠️ Chưa lọc thật — mới chỉ cuộn tới section tương ứng. Khi có API, chuyển
- *  các lựa chọn thành query param và validate bằng Zod ở phía server. */
 export function PropertySearch() {
+  const router = useRouter();
   const [tab, setTab] = useState<ListingType>('sale');
+  const [selectedArea, setSelectedArea] = useState<string>(SEARCH_AREAS[0]);
+  const [selectedType, setSelectedType] = useState<string>(SEARCH_PROPERTY_TYPES[0]);
+
+  const handleSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
+    const params = new URLSearchParams();
+    params.set('type', tab);
+    if (selectedArea && selectedArea !== 'All Da Nang') {
+      params.set('area', selectedArea);
+    }
+    if (selectedType && selectedType !== 'Any property') {
+      params.set('propertyType', selectedType);
+    }
+    router.push(`/properties?${params.toString()}`);
+  };
 
   return (
     <div className="relative z-8 -mt-9">
       <div className="container-page">
         <form
-          onSubmit={(event) => {
-            event.preventDefault();
-            const target = TABS.find((item) => item.value === tab)?.target;
-            if (target) document.getElementById(target)?.scrollIntoView({ behavior: 'smooth' });
-          }}
+          onSubmit={handleSubmit}
           className="border-t-gold shadow-lift grid grid-cols-1 border-t-[3px] bg-white md:grid-cols-[auto_1fr]"
         >
           <div
@@ -60,28 +64,64 @@ export function PropertySearch() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1.1fr_1fr_1fr_auto]">
-            {FIELDS.map((field) => (
-              <div
-                key={field.id}
-                className="border-line grid content-center gap-0.5 border-b px-5 py-3.5 last:border-b-0 sm:border-b-0 lg:border-r lg:border-b-0"
+            {/* Area */}
+            <div className="border-line grid content-center gap-0.5 border-b px-5 py-3.5 sm:border-b-0 lg:border-r">
+              <label
+                htmlFor="area"
+                className="text-[8.5px] font-bold tracking-[0.14em] text-[#8992a0] uppercase"
               >
-                <label
-                  htmlFor={field.id}
-                  className="text-[8.5px] font-bold tracking-[0.14em] text-[#8992a0] uppercase"
-                >
-                  {field.label}
-                </label>
-                <select
-                  id={field.id}
-                  defaultValue={field.options[0]}
-                  className="text-navy focus-visible:outline-gold w-full cursor-pointer bg-transparent py-0.5 text-[13px] font-semibold focus-visible:outline-2"
-                >
-                  {field.options.map((option) => (
-                    <option key={option}>{option}</option>
-                  ))}
-                </select>
-              </div>
-            ))}
+                Area
+              </label>
+              <select
+                id="area"
+                value={selectedArea}
+                onChange={(e) => setSelectedArea(e.target.value)}
+                className="text-navy focus-visible:outline-gold w-full cursor-pointer bg-transparent py-0.5 text-[13px] font-semibold focus-visible:outline-2"
+              >
+                {SEARCH_AREAS.map((option) => (
+                  <option key={option} value={option}>{option}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Property Type */}
+            <div className="border-line grid content-center gap-0.5 border-b px-5 py-3.5 sm:border-b-0 lg:border-r">
+              <label
+                htmlFor="property-type"
+                className="text-[8.5px] font-bold tracking-[0.14em] text-[#8992a0] uppercase"
+              >
+                Property type
+              </label>
+              <select
+                id="property-type"
+                value={selectedType}
+                onChange={(e) => setSelectedType(e.target.value)}
+                className="text-navy focus-visible:outline-gold w-full cursor-pointer bg-transparent py-0.5 text-[13px] font-semibold focus-visible:outline-2"
+              >
+                {SEARCH_PROPERTY_TYPES.map((option) => (
+                  <option key={option} value={option}>{option}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Budget */}
+            <div className="border-line grid content-center gap-0.5 border-b px-5 py-3.5 sm:border-b-0 lg:border-r">
+              <label
+                htmlFor="budget"
+                className="text-[8.5px] font-bold tracking-[0.14em] text-[#8992a0] uppercase"
+              >
+                Budget
+              </label>
+              <select
+                id="budget"
+                defaultValue={SEARCH_BUDGETS[0]}
+                className="text-navy focus-visible:outline-gold w-full cursor-pointer bg-transparent py-0.5 text-[13px] font-semibold focus-visible:outline-2"
+              >
+                {SEARCH_BUDGETS.map((option) => (
+                  <option key={option} value={option}>{option}</option>
+                ))}
+              </select>
+            </div>
 
             <button
               type="submit"

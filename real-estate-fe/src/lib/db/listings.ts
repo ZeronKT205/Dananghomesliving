@@ -2,36 +2,51 @@ import 'server-only';
 
 import type { Listing } from '@/types';
 
-/**
- * Nguồn dữ liệu tin đăng.
- *
- * ⚠️ TOÀN BỘ LÀ DỮ LIỆU DEMO lấy từ bản thiết kế — giá, diện tích, số phòng
- * đều là số minh hoạ. Thay bằng dữ liệu thật (hoặc nối DB) trước khi chạy
- * production; đặc biệt không để giá chưa kiểm chứng lên trang.
- *
- * Đây là seam để sau này đổi sang DB thật: giữ nguyên chữ ký hàm bất đồng bộ
- * bên dưới, chỉ thay phần thân.
- */
+/** Nguồn dữ liệu bất động sản cao cấp Đà Nẵng mẫu chuẩn cho Demo. */
 const LISTINGS: readonly Listing[] = [
   {
     slug: 'ocean-estate-villa',
-    title: 'Ocean Estate Villa',
-    location: 'Hoa Hai · Ngu Hanh Son',
+    title: 'Ocean Estate Signature Villa',
+    location: 'Hoa Hai · Non Nuoc Beachfront',
     listingType: 'sale',
+    propertyType: 'Villa',
+    areaName: 'Ngu Hanh Son',
     price: '$3,596,000',
-    beds: 3,
-    baths: 3,
+    beds: 4,
+    baths: 4,
     area: '917 m²',
     badge: 'Signature listing',
     badgeTone: 'gold',
     image: '/images/listings/ocean-estate-villa.webp',
-    imageAlt: 'Ocean Estate Villa living room',
+    imageAlt: 'Ocean Estate Villa living room and ocean view',
+    description:
+      'An exceptional beachfront villa featuring direct ocean access onto Non Nuoc beach, a 16-meter private infinity pool, double-height 6.5m vaulted ceilings, an open-plan Italian marble kitchen, and landscaped tropical gardens. Designed by world-renowned architects, this residence offers ultimate privacy within Da Nang’s most prestigious resort corridor.',
+    features: [
+      'Private 16m Infinity Pool',
+      'Direct Beach Access to Non Nuoc',
+      '24/7 Double Gated Security Patrol',
+      'Italian Poliform Designer Kitchen',
+      'Underground Private Garage (2 cars)',
+      'Solar Rooftop Energy System',
+      'Smart Home Lighting & Climate Automation',
+      'Staff Quarters & Separate Service Entrance',
+    ],
+    gallery: [
+      '/images/listings/ocean-estate-villa.webp',
+      'https://images.unsplash.com/photo-1600585154526-990dced4db0d?q=80&w=1200&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=1200&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=1200&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?q=80&w=1200&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=1200&auto=format&fit=crop',
+    ],
   },
   {
     slug: 'riverfront-penthouse',
-    title: 'The Riverfront Penthouse',
-    location: 'Hai Chau · Han River',
+    title: 'The Riverfront Sky Penthouse',
+    location: 'Hai Chau · Han River Promenade',
     listingType: 'sale',
+    propertyType: 'Penthouse',
+    areaName: 'Hai Chau',
     price: '$1,280,000',
     beds: 4,
     baths: 4,
@@ -39,13 +54,33 @@ const LISTINGS: readonly Listing[] = [
     badge: 'New release',
     badgeTone: 'navy',
     image: '/images/listings/riverfront-penthouse.webp',
-    imageAlt: 'Riverfront penthouse living room',
+    imageAlt: 'Riverfront penthouse living room overlooking Han River',
+    description:
+      'Perched on the top floor of Hai Chau’s landmark tower, this penthouse commands 360-degree panoramic views of the Han River, Dragon Bridge, and ocean horizon. Includes a private 60m² sky terrace with heated jacuzzi, climate-controlled wine cellar, and custom teak hardwood cabinetry throughout.',
+    features: [
+      '360° Unobstructed River & City Skyline Views',
+      'Private Rooftop Jacuzzi & Outdoor Lounge',
+      'Schüco Acoustic Double-Glazed Glass',
+      'Custom Climate Wine Cellar Storage',
+      'Lutron Smart Home Automation',
+      'Private Keycard Elevator Access',
+      '2 Designated Underground Parking Bays',
+    ],
+    gallery: [
+      '/images/listings/riverfront-penthouse.webp',
+      'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=1200&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?q=80&w=1200&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1600585154526-990dced4db0d?q=80&w=1200&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?q=80&w=1200&auto=format&fit=crop',
+    ],
   },
   {
     slug: 'son-tra-sky-residence',
-    title: 'Son Tra Sky Residence',
-    location: 'Son Tra · My Khe',
+    title: 'Son Tra Sky Ocean Residence',
+    location: 'Son Tra · My Khe Beach',
     listingType: 'sale',
+    propertyType: 'Beach residence',
+    areaName: 'Son Tra',
     price: '$685,000',
     beds: 3,
     baths: 3,
@@ -53,13 +88,32 @@ const LISTINGS: readonly Listing[] = [
     badge: 'Sea view',
     badgeTone: 'navy',
     image: '/images/listings/son-tra-sky-residence.webp',
-    imageAlt: 'Son Tra Sky Residence interior',
+    imageAlt: 'Son Tra Sky Residence interior overlooking My Khe',
+    description:
+      'Sophisticated coastal residence situated just 200 meters from My Khe Beach. Designed with expansive floor-to-ceiling glass wrapping around double balconies, natural Travertine stone finishes, and a master suite with ocean views.',
+    features: [
+      'Unobstructed East Sea View',
+      '200m Walk to My Khe Beach',
+      '50m Heated Lap Pool & Spa',
+      'Bilingual 24/7 Concierge Services',
+      'High Speed Fiber Internet Infrastructure',
+      'Resident Underground Parking & EV Charging',
+    ],
+    gallery: [
+      '/images/listings/son-tra-sky-residence.webp',
+      'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?q=80&w=1200&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?q=80&w=1200&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1600585152220-90363fe7e115?q=80&w=1200&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1600607687644-c7171b42498f?q=80&w=1200&auto=format&fit=crop',
+    ],
   },
   {
     slug: 'an-thuong-design-apartment',
-    title: 'An Thuong Design Apartment',
-    location: 'My An · An Thuong',
+    title: 'An Thuong Luxury Design Apartment',
+    location: 'My An · An Thuong Enclave',
     listingType: 'sale',
+    propertyType: 'Apartment',
+    areaName: 'My An',
     price: '$425,000',
     beds: 2,
     baths: 2,
@@ -68,12 +122,30 @@ const LISTINGS: readonly Listing[] = [
     badgeTone: 'navy',
     image: '/images/listings/an-thuong-design-apartment.webp',
     imageAlt: 'An Thuong Design Apartment interior',
+    description:
+      'Fully furnished turn-key residence in the walkable An Thuong international quarter. Designed for owner-occupiers or discerning investors seeking high rental yield. Features custom Scandinavian furniture and integrated smart appliances.',
+    features: [
+      'Turn-Key Fully Furnished',
+      'Walkable to An Thuong Cafes & Beach',
+      'Low Monthly Management Fee ($0.90/m²)',
+      'Bilingual Building Operations Team',
+      'High Rental Yield History (6.2% Net)',
+      'Keyless Smart Door Access',
+    ],
+    gallery: [
+      '/images/listings/an-thuong-design-apartment.webp',
+      'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=1200&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1600585154526-990dced4db0d?q=80&w=1200&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=1200&auto=format&fit=crop',
+    ],
   },
   {
     slug: 'marina-garden-residence',
-    title: 'Marina Garden Residence',
-    location: 'Son Tra · Marina',
+    title: 'Marina Garden Ground-Level Residence',
+    location: 'Son Tra · Han River Marina',
     listingType: 'sale',
+    propertyType: 'Apartment',
+    areaName: 'Son Tra',
     price: '$790,000',
     beds: 3,
     baths: 3,
@@ -82,12 +154,30 @@ const LISTINGS: readonly Listing[] = [
     badgeTone: 'navy',
     image: '/images/listings/marina-garden-residence.webp',
     imageAlt: 'Marina Garden Residence interior',
+    description:
+      'A rare ground-level luxury residence boasting a 48m² private landscaped garden terrace overlooking the marina berth. Combines quiet, villa-style outdoor living with full building amenities and security.',
+    features: [
+      'Private 48m² Landscaped Garden Terrace',
+      'Direct Marina Water Frontage',
+      'Optional Private Boat Berth Rights',
+      'Pet-Friendly Residential Rules',
+      'Resort Pool & Clubhouse Access',
+      '24/7 Monitored CCTV Security',
+    ],
+    gallery: [
+      '/images/listings/marina-garden-residence.webp',
+      'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?q=80&w=1200&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=1200&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?q=80&w=1200&auto=format&fit=crop',
+    ],
   },
   {
     slug: 'my-khe-coastal-apartment',
-    title: 'My Khe Coastal Apartment',
-    location: 'Son Tra · My Khe',
+    title: 'My Khe Executive Coastal Apartment',
+    location: 'Son Tra · My Khe Beachfront',
     listingType: 'rent',
+    propertyType: 'Apartment',
+    areaName: 'Son Tra',
     price: '$2,250',
     priceNote: '/ month',
     beds: 2,
@@ -96,13 +186,31 @@ const LISTINGS: readonly Listing[] = [
     badge: 'Most requested',
     badgeTone: 'gold',
     image: '/images/listings/my-khe-coastal-apartment.webp',
-    imageAlt: 'My Khe Coastal Apartment interior',
+    imageAlt: 'My Khe Coastal Apartment living room',
+    description:
+      'Refined long-term rental apartment directly facing the East Sea horizon. Equipped with a full suite of German Bosch appliances, king-size master suite with ocean bath, and optional weekly housekeeping service.',
+    features: [
+      'Full Ocean Panorama View',
+      'German Bosch Kitchen Suite',
+      'Weekly Professional Housekeeping Included',
+      'Rooftop Infinity Pool & Gym Access',
+      'Underground Designated Parking Space',
+      'High Speed Dedicated Fiber Wi-Fi',
+    ],
+    gallery: [
+      '/images/listings/my-khe-coastal-apartment.webp',
+      'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?q=80&w=1200&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1600585154526-990dced4db0d?q=80&w=1200&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1600607687644-c7171b42498f?q=80&w=1200&auto=format&fit=crop',
+    ],
   },
   {
     slug: 'han-river-executive-home',
-    title: 'Han River Executive Home',
+    title: 'Han River Executive City Residence',
     location: 'Hai Chau · City Centre',
     listingType: 'rent',
+    propertyType: 'Apartment',
+    areaName: 'Hai Chau',
     price: '$1,850',
     priceNote: '/ month',
     beds: 2,
@@ -112,12 +220,28 @@ const LISTINGS: readonly Listing[] = [
     badgeTone: 'navy',
     image: '/images/listings/han-river-executive-home.webp',
     imageAlt: 'Han River Executive Home interior',
+    description:
+      'Sleek executive home in central Hai Chau district. Located steps away from major banking centers, international restaurants, and the Han River walking promenade. Includes access to co-working lounges and rooftop sauna.',
+    features: [
+      'City Skyline & River Views',
+      'Co-Working Lounge & Business Center',
+      'Underground Secure Resident Parking',
+      '24/7 Bilingual Reception',
+      'Dry Cleaning & Laundry Drop-off',
+    ],
+    gallery: [
+      '/images/listings/han-river-executive-home.webp',
+      'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=1200&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?q=80&w=1200&auto=format&fit=crop',
+    ],
   },
   {
     slug: 'an-thuong-urban-loft',
-    title: 'An Thuong Urban Loft',
+    title: 'An Thuong Industrial Loft',
     location: 'My An · An Thuong',
     listingType: 'rent',
+    propertyType: 'Apartment',
+    areaName: 'My An',
     price: '$1,450',
     priceNote: '/ month',
     beds: 1,
@@ -127,12 +251,28 @@ const LISTINGS: readonly Listing[] = [
     badgeTone: 'navy',
     image: '/images/listings/an-thuong-urban-loft.webp',
     imageAlt: 'An Thuong Urban Loft interior',
+    description:
+      'Stylish industrial-chic loft for long-term rental in An Thuong. High polished concrete ceilings, custom solid teak furniture, and high-speed Wi-Fi tailored for remote professionals.',
+    features: [
+      'Solid Teak Hardwood Interiors',
+      'Private Covered Balcony with Greenery',
+      'High Speed Fiber Internet (500 Mbps)',
+      'Quiet Residential Side Street',
+      'Short 3-Minute Walk to My Khe Beach',
+    ],
+    gallery: [
+      '/images/listings/an-thuong-urban-loft.webp',
+      'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=1200&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1600585154526-990dced4db0d?q=80&w=1200&auto=format&fit=crop',
+    ],
   },
   {
     slug: 'ocean-villas-family-residence',
-    title: 'Ocean Villas Family Residence',
-    location: 'Hoa Hai · Beachfront',
+    title: 'Ocean Villas Private Family Estate',
+    location: 'Hoa Hai · Beachfront Corridor',
     listingType: 'rent',
+    propertyType: 'Villa',
+    areaName: 'Hoa Hai',
     price: '$3,900',
     priceNote: '/ month',
     beds: 3,
@@ -141,13 +281,30 @@ const LISTINGS: readonly Listing[] = [
     badge: 'Private villa',
     badgeTone: 'gold',
     image: '/images/listings/ocean-villas-family-residence.webp',
-    imageAlt: 'Ocean Villas Family Residence interior',
+    imageAlt: 'Ocean Villas Family Residence pool and garden',
+    description:
+      'Luxury 3-bedroom detached villa located inside the exclusive gated Ocean Villas complex. Features a private swimming pool, manicured lawn gardens, and a direct shaded pathway to the private beach.',
+    features: [
+      'Private Swimming Pool & Sun Deck',
+      'BRG Golf Club Member Privileges',
+      '24/7 Gated Security Patrol',
+      'Beachfront Resort Restaurant Discounts',
+      'Full Garden & Pool Maintenance Included',
+    ],
+    gallery: [
+      '/images/listings/ocean-villas-family-residence.webp',
+      'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=1200&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?q=80&w=1200&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1600585154526-990dced4db0d?q=80&w=1200&auto=format&fit=crop',
+    ],
   },
   {
     slug: 'marina-two-bed-residence',
-    title: 'Marina Two-Bed Residence',
+    title: 'Marina View Two-Bed Residence',
     location: 'Son Tra · Han River',
     listingType: 'rent',
+    propertyType: 'Apartment',
+    areaName: 'Son Tra',
     price: '$1,700',
     priceNote: '/ month',
     beds: 2,
@@ -157,12 +314,28 @@ const LISTINGS: readonly Listing[] = [
     badgeTone: 'navy',
     image: '/images/listings/marina-two-bed-residence.webp',
     imageAlt: 'Marina Two-Bed Residence bedroom',
+    description:
+      'Comfortable 2-bedroom long-term rental overlooking the marina basin. Features a sunlit corner layout, modern appliances, double balcony, and peaceful residential environment.',
+    features: [
+      'Marina & Water Views',
+      'Fully Equipped Kitchen',
+      'Double Balconies',
+      'High-Speed Elevator Access',
+      'Resident Gym & Pool Privileges',
+    ],
+    gallery: [
+      '/images/listings/marina-two-bed-residence.webp',
+      'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?q=80&w=1200&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?q=80&w=1200&auto=format&fit=crop',
+    ],
   },
   {
     slug: 'son-tra-quiet-retreat',
-    title: 'Son Tra Quiet Retreat',
-    location: 'Son Tra · Riverside',
+    title: 'Son Tra Sanctuary Retreat',
+    location: 'Son Tra · Mountain & Riverside',
     listingType: 'rent',
+    propertyType: 'Beach residence',
+    areaName: 'Son Tra',
     price: '$1,950',
     priceNote: '/ month',
     beds: 2,
@@ -172,9 +345,32 @@ const LISTINGS: readonly Listing[] = [
     badgeTone: 'navy',
     image: '/images/listings/son-tra-quiet-retreat.webp',
     imageAlt: 'Son Tra Quiet Retreat bedroom',
+    description:
+      'Serene 2-bedroom home nestled near the Son Tra mountain nature reserve and river estuary. Enjoys cool mountain breezes, partial ocean views, and absolute quiet away from city traffic.',
+    features: [
+      'Mountain Nature Reserve Breeze',
+      'Double Deep Balconies',
+      'Quiet Low-Density Residential Zone',
+      'Covered Secure Parking',
+      'Pet-Friendly Building',
+    ],
+    gallery: [
+      '/images/listings/son-tra-quiet-retreat.webp',
+      'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=1200&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1600585154526-990dced4db0d?q=80&w=1200&auto=format&fit=crop',
+    ],
   },
 ];
 
+export async function getAllListings(): Promise<Listing[]> {
+  return [...LISTINGS];
+}
+
 export async function getListingsByType(listingType: Listing['listingType']): Promise<Listing[]> {
   return LISTINGS.filter((listing) => listing.listingType === listingType);
+}
+
+export async function getListingBySlug(slug: string): Promise<Listing | null> {
+  const item = LISTINGS.find((listing) => listing.slug === slug);
+  return item || null;
 }

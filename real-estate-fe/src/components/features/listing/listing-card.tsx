@@ -1,9 +1,9 @@
 import Image from 'next/image';
+import Link from 'next/link';
 
 import { cn } from '@/lib/utils';
 import type { Listing } from '@/types';
 
-import { FavoriteButton } from './favorite-button';
 import { ListingQuickView } from './listing-quick-view';
 
 type ListingCardProps = {
@@ -23,7 +23,13 @@ export function ListingCard({
   priority = false,
 }: ListingCardProps) {
   return (
-    <article className="border-line hover:shadow-lift group relative flex flex-col overflow-hidden border bg-white transition-all duration-300 hover:-translate-y-1.5">
+    <article className="border-line hover:shadow-lift group relative flex flex-col overflow-hidden border bg-white transition-all duration-300 hover:-translate-y-1.5 cursor-pointer">
+      <Link
+        href={`/properties/${listing.slug}`}
+        className="absolute inset-0 z-0"
+        aria-label={listing.title}
+      />
+
       <div className={cn('bg-sand relative overflow-hidden', featured ? 'h-[340px]' : 'h-[250px]')}>
         <Image
           src={listing.image}
@@ -35,20 +41,29 @@ export function ListingCard({
         />
         <span
           className={cn(
-            'absolute top-4 left-4 px-2.5 py-1.5 text-[9px] font-bold tracking-[0.14em] uppercase',
+            'absolute top-4 left-4 px-2.5 py-1.5 text-[9px] font-bold tracking-[0.14em] uppercase z-10',
             listing.badgeTone === 'gold' ? 'bg-gold text-navy' : 'bg-navy/94 text-white',
           )}
         >
           {listing.badge}
         </span>
-        <FavoriteButton title={listing.title} />
+        <span
+          className={cn(
+            'absolute top-4 right-4 px-3 py-1.5 text-[9.5px] font-bold tracking-[0.16em] uppercase z-10 shadow-xs border border-white/20',
+            listing.listingType === 'sale'
+              ? 'bg-navy text-white'
+              : 'bg-gold text-navy',
+          )}
+        >
+          {listing.listingType === 'sale' ? 'FOR SALE' : 'FOR RENT'}
+        </span>
       </div>
 
-      <div className="flex flex-1 flex-col p-5">
+      <div className="flex flex-1 flex-col p-5 pointer-events-none">
         <p className="text-gold text-[9px] font-bold tracking-[0.12em] uppercase">
           {listing.location}
         </p>
-        <h3 className="font-display text-navy mt-2 text-[20px] leading-[1.08] font-normal text-balance">
+        <h3 className="font-display text-navy group-hover:text-gold mt-2 text-[20px] leading-[1.08] font-normal text-balance transition-colors">
           {listing.title}
         </h3>
 
@@ -72,7 +87,9 @@ export function ListingCard({
               ) : null}
             </span>
           </p>
-          <ListingQuickView listing={listing} />
+          <div className="pointer-events-auto">
+            <ListingQuickView listing={listing} />
+          </div>
         </div>
       </div>
     </article>

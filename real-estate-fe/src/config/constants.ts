@@ -31,39 +31,52 @@ export const SOCIAL_LINKS = [
   { name: 'WhatsApp', href: 'https://wa.me/842363888888', icon: 'whatsapp' },
   { name: 'Facebook', href: 'https://facebook.com', icon: 'facebook' },
   { name: 'Instagram', href: 'https://instagram.com', icon: 'instagram' },
+  { name: 'TikTok', href: 'https://tiktok.com', icon: 'tiktok' },
   { name: 'YouTube', href: 'https://youtube.com', icon: 'youtube' },
 ] as const;
 
 export type SocialLink = (typeof SOCIAL_LINKS)[number];
 
-/** Hàng tab phía dưới của header.
- *  `children` = menu xổ xuống; RENT và BUY là hai mục chính nên có submenu. */
+export const NAV_LOCATIONS = [
+  { area: 'Son Tra', label: 'Son Tra Peninsula' },
+  { area: 'Ngu Hanh Son', label: 'Ngu Hanh Son & Non Nuoc' },
+  { area: 'Hai Chau', label: 'Hai Chau City Centre' },
+  { area: 'My An', label: 'My An & An Thuong' },
+  { area: 'Hoa Hai', label: 'Hoa Hai Beachfront' },
+] as const;
+
 export const NAV_ITEMS = [
-  { href: '#top', label: 'Home' },
+  { href: '/', label: 'Home' },
   {
-    href: '#rent',
+    href: '/properties?type=rent',
     label: 'Rent',
     children: [
-      { href: '#rent', label: 'Apartments' },
-      { href: '#rent', label: 'Villas' },
-      { href: '#rent', label: 'Penthouses' },
-      { href: '#rent', label: 'Beach residences' },
+      { href: '/properties?type=rent&propertyType=Apartment', label: 'Apartments' },
+      { href: '/properties?type=rent&propertyType=Villa', label: 'Villas' },
+      { href: '/properties?type=rent&propertyType=Penthouse', label: 'Penthouses' },
+      { href: '/properties?type=rent&propertyType=Beach residence', label: 'Beach residences' },
     ],
+    locations: NAV_LOCATIONS.map((loc) => ({
+      href: `/properties?type=rent&area=${encodeURIComponent(loc.area)}`,
+      label: loc.label,
+    })),
   },
   {
-    href: '#buy',
+    href: '/properties?type=sale',
     label: 'Buy',
     children: [
-      { href: '#buy', label: 'Apartments' },
-      { href: '#buy', label: 'Villas' },
-      { href: '#buy', label: 'Penthouses' },
-      { href: '#buy', label: 'Beach residences' },
+      { href: '/properties?type=sale&propertyType=Apartment', label: 'Apartments' },
+      { href: '/properties?type=sale&propertyType=Villa', label: 'Villas' },
+      { href: '/properties?type=sale&propertyType=Penthouse', label: 'Penthouses' },
+      { href: '/properties?type=sale&propertyType=Beach residence', label: 'Beach residences' },
     ],
+    locations: NAV_LOCATIONS.map((loc) => ({
+      href: `/properties?type=sale&area=${encodeURIComponent(loc.area)}`,
+      label: loc.label,
+    })),
   },
-  // ⚠️ Section #news CHƯA TỒN TẠI — anchor này chưa nhảy tới đâu cả.
-  { href: '#news', label: 'News' },
-  { href: '#tips', label: 'Tips' },
-  { href: '#story', label: 'About us' },
+  { href: '/news', label: 'News' },
+  { href: '/about', label: 'About us' },
 ] as const;
 
 export type NavItem = (typeof NAV_ITEMS)[number];
@@ -105,9 +118,11 @@ export const OFFICE_COORDS = { lat: 16.0544, lng: 108.2022 } as const;
 /** ⚠️ Địa chỉ placeholder — thay bằng địa chỉ thật trước khi lên production. */
 export const OFFICE_ADDRESS = '36 Bạch Đằng, Hải Châu, Đà Nẵng, Việt Nam';
 
-export const GOOGLE_MAPS_EMBED_URL = `https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3834.1!2d${OFFICE_COORDS.lng}!3d${OFFICE_COORDS.lat}!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMTbCsDAzJzE1LjgiTiAxMDjCsDEyJzA3LjkiRQ!5e0!3m2!1svi!2s!4v1` as const;
+export const GOOGLE_MAPS_EMBED_URL =
+  `https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3834.1!2d${OFFICE_COORDS.lng}!3d${OFFICE_COORDS.lat}!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMTbCsDAzJzE1LjgiTiAxMDjCsDEyJzA3LjkiRQ!5e0!3m2!1svi!2s!4v1` as const;
 
-export const GOOGLE_MAPS_LINK = `https://www.google.com/maps?q=${OFFICE_COORDS.lat},${OFFICE_COORDS.lng}` as const;
+export const GOOGLE_MAPS_LINK =
+  `https://www.google.com/maps?q=${OFFICE_COORDS.lat},${OFFICE_COORDS.lng}` as const;
 
 export const QUOTE_SERVICE_OPTIONS = [
   { value: 'buy', label: 'Buy a property' },

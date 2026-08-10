@@ -6,8 +6,18 @@ const STEPS = [
     title: 'Consultation',
     detail: 'Understand your brief, budget, and timeline.',
     icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="h-6 w-6">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M20 2H4a2 2 0 00-2 2v12a2 2 0 002 2h3l5 4 5-4h3a2 2 0 002-2V4a2 2 0 00-2-2z" />
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={1.5}
+        className="h-6 w-6"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M20 2H4a2 2 0 00-2 2v12a2 2 0 002 2h3l5 4 5-4h3a2 2 0 002-2V4a2 2 0 00-2-2z"
+        />
         <circle cx="8" cy="10" r="1" fill="currentColor" stroke="none" />
         <circle cx="12" cy="10" r="1" fill="currentColor" stroke="none" />
         <circle cx="16" cy="10" r="1" fill="currentColor" stroke="none" />
@@ -19,7 +29,13 @@ const STEPS = [
     title: 'Shortlist',
     detail: 'Curate verified options and virtual previews.',
     icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="h-6 w-6">
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={1.5}
+        className="h-6 w-6"
+      >
         <rect x="3" y="2" width="18" height="20" rx="2" />
         <path strokeLinecap="round" d="M8 7h8M8 11h8M8 15h5" />
         <path strokeLinecap="round" strokeLinejoin="round" d="M16 14l1.5 1.5L20 13" />
@@ -31,7 +47,13 @@ const STEPS = [
     title: 'Viewing',
     detail: 'Accompanied visits and neighbourhood context.',
     icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="h-6 w-6">
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={1.5}
+        className="h-6 w-6"
+      >
         <path strokeLinecap="round" strokeLinejoin="round" d="M3 21h18M5 21V7l7-4 7 4v14" />
         <rect x="9" y="13" width="6" height="8" rx="0.5" />
         <rect x="10" y="8" width="4" height="3" rx="0.5" />
@@ -43,10 +65,20 @@ const STEPS = [
     title: 'Negotiation',
     detail: 'Fair terms, legal review, and due diligence.',
     icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="h-6 w-6">
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={1.5}
+        className="h-6 w-6"
+      >
         <path strokeLinecap="round" strokeLinejoin="round" d="M7 11l3-3 2 2 5-5" />
         <path strokeLinecap="round" strokeLinejoin="round" d="M14 5h3v3" />
-        <path strokeLinecap="round" strokeLinejoin="round" d="M3 17l3 3h4l1.5-1.5M21 17l-3 3h-4l-1.5-1.5" />
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M3 17l3 3h4l1.5-1.5M21 17l-3 3h-4l-1.5-1.5"
+        />
         <path strokeLinecap="round" d="M9 14l6 0" />
       </svg>
     ),
@@ -56,8 +88,18 @@ const STEPS = [
     title: 'Handover',
     detail: 'Contracts, keys, and ongoing assistance.',
     icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="h-6 w-6">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M15 3a3 3 0 11-6 0M21 10a2 2 0 00-2-2h-4l-3 3-3-3H5a2 2 0 00-2 2v1a2 2 0 002 2h14a2 2 0 002-2v-1z" />
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={1.5}
+        className="h-6 w-6"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M15 3a3 3 0 11-6 0M21 10a2 2 0 00-2-2h-4l-3 3-3-3H5a2 2 0 00-2 2v1a2 2 0 002 2h14a2 2 0 002-2v-1z"
+        />
         <path strokeLinecap="round" d="M12 13v5" />
         <circle cx="12" cy="20" r="2" />
       </svg>
@@ -115,7 +157,7 @@ export function WhyChooseSection() {
               {index < STEPS.length - 1 && (
                 <span
                   aria-hidden
-                  className="text-gold/40 absolute -right-3 top-[52px] z-10 hidden text-[18px] font-light lg:block"
+                  className="text-gold/40 absolute top-[52px] -right-3 z-10 hidden text-[18px] font-light lg:block"
                 >
                   +
                 </span>

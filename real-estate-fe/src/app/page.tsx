@@ -22,10 +22,16 @@ export default async function HomePage() {
     <>
       <SiteHeader />
 
-      <main>
-        <HeroSection />
-        <PropertySearch />
-        <StorySection />
+      <main className="animate-fade-in">
+        <div className="animate-fade-in-up">
+          <HeroSection />
+        </div>
+        <div className="animate-fade-in-up stagger-1">
+          <PropertySearch />
+        </div>
+        <div className="animate-fade-in-up stagger-2">
+          <StorySection />
+        </div>
 
         <ListingsSection
           id="buy"
@@ -57,4 +63,3 @@ export default async function HomePage() {
     </>
   );
 }
-

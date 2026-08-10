@@ -70,7 +70,7 @@ export function ListingsSection({
         </div>
 
         <div className="mt-10 flex justify-center">
-          <ButtonLink href="#contact" variant="outline" className="text-navy">
+          <ButtonLink href={id === 'buy' ? '/properties?type=sale' : '/properties?type=rent'} variant="outline" className="text-navy">
             {ctaLabel} <span aria-hidden>→</span>
           </ButtonLink>
         </div>

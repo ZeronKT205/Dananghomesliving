@@ -32,13 +32,16 @@ export function SiteHeader() {
   }, []);
 
   useEffect(() => {
-    const sections = NAV_ITEMS.map((item) => document.querySelector(item.href)).filter(
-      (element): element is Element => element !== null,
-    );
+    const hashItems = NAV_ITEMS.filter((item) => item.href.includes('#'));
+    const sections = hashItems
+      .map((item) => {
+        const hash = item.href.slice(item.href.indexOf('#'));
+        return document.querySelector(hash);
+      })
+      .filter((element): element is Element => element !== null);
     if (sections.length === 0) return;
 
-    // Giữ tập section đang giao nhau thay vì chỉ nhận entry mới nhất — nếu không,
-    // cuộn ngược lên đầu trang sẽ vẫn còn sáng mục cuối cùng từng đi qua.
+    // Giữ tập section đang giao nhau thay vì chỉ nhận entry mới nhất
     const visible = new Set<string>();
     const observer = new IntersectionObserver(
       (entries) => {
@@ -46,7 +49,10 @@ export function SiteHeader() {
           if (entry.isIntersecting) visible.add(entry.target.id);
           else visible.delete(entry.target.id);
         }
-        const current = NAV_ITEMS.find((item) => visible.has(item.href.slice(1)));
+        const current = hashItems.find((item) => {
+          const hash = item.href.slice(item.href.indexOf('#') + 1);
+          return visible.has(hash);
+        });
         setActiveHref(current?.href ?? '');
       },
       { rootMargin: '-40% 0px -50% 0px' },
@@ -95,7 +101,7 @@ export function SiteHeader() {
             </div>
 
             <Link
-              href="#top"
+              href="/"
               aria-label={`${APP_NAME} home`}
               className="flex items-center gap-2.5 justify-self-center"
             >
@@ -168,6 +174,7 @@ export function SiteHeader() {
           <ul className="grid">
             {NAV_ITEMS.map((item) => {
               const children = 'children' in item ? item.children : undefined;
+              const locations = 'locations' in item ? item.locations : undefined;
               return (
                 <li key={item.label} className="border-line border-b py-2.5">
                   <Link
@@ -191,6 +198,26 @@ export function SiteHeader() {
                         </li>
                       ))}
                     </ul>
+                  ) : null}
+                  {locations ? (
+                    <div className="mt-2 pl-3">
+                      <span className="text-gold text-[10px] font-bold tracking-wider uppercase">
+                        Locations
+                      </span>
+                      <ul className="border-gold/30 mt-1 grid gap-1 border-l pl-2">
+                        {locations.map((loc) => (
+                          <li key={loc.label}>
+                            <Link
+                              href={loc.href}
+                              onClick={() => setMenuOpen(false)}
+                              className="text-muted hover:text-gold block text-[12px] transition-colors"
+                            >
+                              {loc.label}
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
                   ) : null}
                 </li>
               );

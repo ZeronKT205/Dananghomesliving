@@ -24,9 +24,7 @@ export function OfficeLocationSection() {
         {/* Left column — text */}
         <div>
           <SectionKicker className="text-gold-soft">Office &amp; Location</SectionKicker>
-          <SectionTitle className="text-white">
-            Visit us in the heart of Da Nang.
-          </SectionTitle>
+          <SectionTitle className="text-white">Visit us in the heart of Da Nang.</SectionTitle>
 
           <p className="mt-5 max-w-[480px] text-[15px] text-white/70">
             Our office is centrally located for easy access. Drop by for a coffee, a conversation
@@ -55,12 +53,7 @@ export function OfficeLocationSection() {
           </dl>
 
           <div className="mt-8 flex flex-wrap gap-3">
-            <ButtonLink
-              href={GOOGLE_MAPS_LINK}
-              variant="gold"
-              target="_blank"
-              rel="noreferrer"
-            >
+            <ButtonLink href={GOOGLE_MAPS_LINK} variant="gold" target="_blank" rel="noreferrer">
               Open in Google Maps <span aria-hidden>→</span>
             </ButtonLink>
             <ButtonLink href={CONTACT_PHONE_HREF} variant="outline" className="text-white">

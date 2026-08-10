@@ -22,6 +22,11 @@ export type Listing = {
   badgeTone: 'gold' | 'navy';
   image: string;
   imageAlt: string;
+  propertyType?: string;
+  areaName?: string;
+  description?: string;
+  features?: string[];
+  gallery?: string[];
 };
 
 export type Article = {
@@ -32,4 +37,14 @@ export type Article = {
   excerpt: string;
   image: string;
   imageAlt: string;
+  date?: string;
+  author?: {
+    name: string;
+    avatar?: string;
+    role?: string;
+  };
+  content?: string;
+  tags?: string[];
+  featured?: boolean;
 };
+

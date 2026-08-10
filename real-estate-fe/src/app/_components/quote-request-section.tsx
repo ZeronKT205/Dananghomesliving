@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
-import { SectionKicker, SectionTitle } from '@/components/ui/section-heading';
+import { SectionKicker } from '@/components/ui/section-heading';
 import { QUOTE_SERVICE_OPTIONS } from '@/config/constants';
 import { cn } from '@/lib/utils';
 
@@ -113,39 +113,41 @@ export function QuoteRequestSection() {
   }, [submitted]);
 
   return (
-    <section id="quote" className="bg-ivory py-20 lg:py-24">
+    <section id="quote" className="border-t border-line bg-ivory pt-16 pb-8 lg:pt-20 lg:pb-10 text-navy relative">
       <div className="container-page grid items-start gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16">
         {/* ── Left — copy + commitment points ─────────────── */}
         <div>
           <SectionKicker>Start your journey</SectionKicker>
-          <SectionTitle>A great home begins with the right conversation.</SectionTitle>
-          <p className="text-muted mt-5 max-w-[520px] text-[15px]">
+          <h2 className="font-display text-navy mt-2 text-[32px] leading-tight font-normal sm:text-[40px]">
+            A great home begins with the right conversation.
+          </h2>
+          <p className="text-muted mt-5 max-w-[520px] text-[15px] leading-relaxed">
             Share your requirements — preferred area, budget and move-in timeline. We will respond
             with a curated shortlist and arrange viewings at your convenience.
           </p>
 
           <div className="mt-8 grid gap-5 sm:grid-cols-2">
             {COMMITMENTS.map((c) => (
-              <div key={c.title} className="border-line border-l-[3px] pl-4">
+              <div key={c.title} className="border-gold border-l-[3px] pl-4">
                 <strong className="text-navy block text-[14px] font-semibold">{c.title}</strong>
-                <span className="text-muted block text-[12px]">{c.desc}</span>
+                <span className="text-muted block text-[12px] mt-0.5">{c.desc}</span>
               </div>
             ))}
           </div>
         </div>
 
-        {/* ── Right — form card ────────────────────────────── */}
-        <div className="border-line shadow-lift relative overflow-hidden border bg-white p-7 sm:p-9">
+        {/* ── Right — Light Bright Luxury Form Card ────────────────────────────── */}
+        <div className="border border-line bg-white shadow-lift relative overflow-hidden p-7 sm:p-9 text-navy">
           {submitted ? (
-            <div className="flex min-h-[380px] flex-col items-center justify-center text-center">
+            <div className="flex min-h-[380px] flex-col items-center justify-center text-center animate-fade-in">
               <canvas
                 ref={canvasRef}
                 className="pointer-events-none absolute inset-0 h-full w-full"
               />
-              <div className="bg-gold mb-5 grid h-16 w-16 place-items-center rounded-full text-[28px] font-bold text-white">
+              <div className="bg-gold mb-5 grid h-16 w-16 place-items-center text-[28px] font-bold text-navy animate-checkmark rounded-full">
                 ✓
               </div>
-              <h3 className="font-display text-navy text-[22px] leading-tight font-normal">
+              <h3 className="font-display text-navy text-[24px] leading-tight font-normal">
                 Enquiry sent successfully
               </h3>
               <p className="text-muted mx-auto mt-3 max-w-[320px] text-[14px]">
@@ -158,7 +160,7 @@ export function QuoteRequestSection() {
             </div>
           ) : (
             <>
-              <h3 className="font-display text-navy text-[22px] leading-tight font-normal">
+              <h3 className="font-display text-navy text-[24px] leading-tight font-normal">
                 Request a consultation
               </h3>
               <p className="text-muted mt-1 text-[13px]">
@@ -226,9 +228,11 @@ export function QuoteRequestSection() {
                       Interest *
                     </label>
                     <select id="q-interest" required className={cn(inputClass)}>
-                      <option value="">— Select —</option>
+                      <option value="" className="text-navy bg-white">
+                        — Select —
+                      </option>
                       {QUOTE_SERVICE_OPTIONS.map((opt) => (
-                        <option key={opt.value} value={opt.value}>
+                        <option key={opt.value} value={opt.value} className="text-navy bg-white">
                           {opt.label}
                         </option>
                       ))}
@@ -264,6 +268,6 @@ export function QuoteRequestSection() {
   );
 }
 
-/* ── Shared input styling ─────────────────────────────────── */
+/* ── Light Bright Shared Input Styling ─────────────────────────── */
 const inputClass =
-  'w-full border border-line bg-paper px-4 py-3 text-[14px] text-ink placeholder:text-muted/60 transition-colors focus:border-gold focus:outline-none';
+  'w-full border border-line bg-paper px-4 py-3 text-[14px] text-navy placeholder:text-muted/60 transition-colors focus:border-gold focus:bg-white focus:outline-none';

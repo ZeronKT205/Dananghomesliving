@@ -106,9 +106,18 @@ export function YouTubeIcon(props: IconProps) {
   );
 }
 
+export function TikTokIcon(props: IconProps) {
+  return (
+    <BrandIcon {...props}>
+      <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64c.29 0 .56.04.82.12V9.38a6.34 6.34 0 0 0-1-.08 6.34 6.34 0 1 0 6.34 6.34V8.3a8.16 8.16 0 0 0 4.95 1.66V6.51a4.85 4.85 0 0 1-1-.18Z" />
+    </BrandIcon>
+  );
+}
+
 export const SOCIAL_ICONS = {
   whatsapp: WhatsAppIcon,
   facebook: FacebookIcon,
   instagram: InstagramIcon,
+  tiktok: TikTokIcon,
   youtube: YouTubeIcon,
 } as const;

@@ -52,8 +52,11 @@ export function ListingQuickView({ listing }: { listing: Listing }) {
     <>
       <button
         type="button"
-        onClick={() => setOpen(true)}
-        className="text-navy border-gold focus-visible:outline-gold hover:text-gold cursor-pointer border-b pb-1 text-[10px] font-extrabold tracking-[0.12em] uppercase transition-colors focus-visible:outline-2 focus-visible:outline-offset-2"
+        onClick={(e) => {
+          e.stopPropagation();
+          setOpen(true);
+        }}
+        className="text-navy border-gold focus-visible:outline-gold hover:text-gold cursor-pointer border-b pb-1 text-[10px] font-extrabold tracking-[0.12em] uppercase transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 relative z-10"
       >
         View property
       </button>
