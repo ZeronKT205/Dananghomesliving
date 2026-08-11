@@ -2,8 +2,8 @@ import Link from 'next/link';
 
 import { APP_NAME } from '@/config/constants';
 
-import { SiteFooter } from '../_components/site-footer';
-import { SiteHeader } from '../_components/site-header';
+import { SiteFooter } from '../../_components/site-footer';
+import { SiteHeader } from '../../_components/site-header';
 
 import type { Metadata } from 'next';
 
@@ -59,10 +59,10 @@ export default function AboutPage() {
                 ← Về Trang Chủ
               </Link>
               <Link
-                href="/news"
+                href="/tips"
                 className="border border-line text-navy hover:border-gold hover:text-gold font-bold text-[12px] uppercase tracking-wider px-6 py-3.5 transition-colors w-full sm:w-auto"
               >
-                Xem Tin Tức BĐS →
+                Xem Tips BĐS →
               </Link>
             </div>
           </div>

@@ -1,16 +1,16 @@
 import { APP_NAME } from '@/config/constants';
 import { getArticles } from '@/lib/db/articles';
 
-import { QuoteRequestSection } from '../_components/quote-request-section';
-import { SiteFooter } from '../_components/site-footer';
-import { SiteHeader } from '../_components/site-header';
+import { QuoteRequestSection } from '../../_components/quote-request-section';
+import { SiteFooter } from '../../_components/site-footer';
+import { SiteHeader } from '../../_components/site-header';
 
 import { NewsClientGrid } from './_components/news-client-grid';
 
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: `News & Market Insights | ${APP_NAME}`,
+  title: `Tips & Market Insights | ${APP_NAME}`,
   description:
     'Stay informed with curated real estate analysis, neighbourhood guides, ownership policies, and luxury coastal living insights in Da Nang.',
 };
@@ -32,7 +32,7 @@ export default async function NewsPage() {
                   Editorial &amp; Market Insights
                 </span>
                 <h1 className="font-display text-navy mt-2 text-[36px] leading-[1.1] font-normal sm:text-[46px] lg:text-[54px]">
-                  Da Nang Real Estate News
+                  Da Nang Real Estate Tips
                 </h1>
               </div>
 
