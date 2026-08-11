@@ -1,3 +1,5 @@
+import { useTranslations } from 'next-intl';
+
 import { ButtonLink } from '@/components/ui/button';
 import { SectionKicker } from '@/components/ui/section-heading';
 import { HERO_PROOF_POINTS } from '@/config/constants';
@@ -5,6 +7,8 @@ import { HERO_PROOF_POINTS } from '@/config/constants';
 import { HeroGallery } from './hero-gallery';
 
 export function HeroSection() {
+  const t = useTranslations('Hero');
+
   return (
     <section id="top" aria-labelledby="hero-title" className="bg-ivory relative overflow-hidden">
       {/* Vòng tròn vàng mảnh thò ra mép trái — chi tiết trang trí của bản thiết kế. */}
@@ -15,15 +19,15 @@ export function HeroSection() {
 
       <div className="container-page relative grid items-center gap-12 py-14 lg:grid-cols-[minmax(0,0.86fr)_minmax(480px,1.14fr)] lg:gap-14 lg:py-20">
         <div className="relative z-10">
-          <SectionKicker>Premium real estate in Da Nang</SectionKicker>
+          <SectionKicker>{t('subtitle')}</SectionKicker>
 
           <h1
             id="hero-title"
             className="font-display text-navy mt-5 text-[clamp(40px,5.4vw,68px)] leading-[0.92] font-normal tracking-[-0.035em] text-balance"
           >
-            Exceptional homes.
-            <br />
-            <em className="text-gold not-italic">Effortless living.</em>
+            {t.rich('title', {
+              gold: (chunks) => <span className="text-gold block">{chunks}</span>
+            })}
           </h1>
 
           <p className="mt-6 max-w-[520px] text-[15px] text-[#5f6b78]">

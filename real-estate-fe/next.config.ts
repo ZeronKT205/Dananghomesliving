@@ -1,4 +1,7 @@
 import type { NextConfig } from 'next';
+import createNextIntlPlugin from 'next-intl/plugin';
+
+const withNextIntl = createNextIntlPlugin();
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
@@ -8,7 +11,13 @@ const nextConfig: NextConfig = {
     // Mọi giá trị `quality` dùng trong <Image> phải khai ở đây.
     // Next 16 sẽ bắt buộc; khai sẵn để khỏi vỡ khi nâng cấp.
     qualities: [75, 90],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+      },
+    ],
   },
 };
 
-export default nextConfig;
+export default withNextIntl(nextConfig);

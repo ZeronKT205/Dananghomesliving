@@ -1,10 +1,10 @@
 import Image from 'next/image';
+import Link from 'next/link';
 
 import { cn } from '@/lib/utils';
 import type { Listing } from '@/types';
 
 import { FavoriteButton } from './favorite-button';
-import { ListingQuickView } from './listing-quick-view';
 
 type ListingCardProps = {
   listing: Listing;
@@ -24,7 +24,7 @@ export function ListingCard({
 }: ListingCardProps) {
   return (
     <article className="border-line hover:shadow-lift group relative flex flex-col overflow-hidden border bg-white transition-all duration-300 hover:-translate-y-1.5">
-      <div className={cn('bg-sand relative overflow-hidden', featured ? 'h-[340px]' : 'h-[250px]')}>
+      <Link href={`/vi/properties/${listing.slug}`} className={cn('bg-sand relative overflow-hidden block cursor-pointer', featured ? 'h-[340px]' : 'h-[250px]')}>
         <Image
           src={listing.image}
           alt={listing.imageAlt}
@@ -35,12 +35,16 @@ export function ListingCard({
         />
         <span
           className={cn(
-            'absolute top-4 left-4 px-2.5 py-1.5 text-[9px] font-bold tracking-[0.14em] uppercase',
+            'absolute top-4 left-4 px-2.5 py-1.5 text-[9px] font-bold tracking-[0.14em] uppercase z-10',
             listing.badgeTone === 'gold' ? 'bg-gold text-navy' : 'bg-navy/94 text-white',
           )}
         >
           {listing.badge}
         </span>
+      </Link>
+      
+      {/* Nút Favorite (Tránh đặt trong Link để không bị lỗi hydration do thẻ a lồng nhau hoặc click propagation) */}
+      <div className="absolute top-0 right-0 z-10">
         <FavoriteButton title={listing.title} />
       </div>
 
@@ -49,7 +53,9 @@ export function ListingCard({
           {listing.location}
         </p>
         <h3 className="font-display text-navy mt-2 text-[20px] leading-[1.08] font-normal text-balance">
-          {listing.title}
+          <Link href={`/vi/properties/${listing.slug}`} className="hover:text-gold transition-colors">
+            {listing.title}
+          </Link>
         </h3>
 
         <ul className="border-line text-muted mt-4 flex flex-wrap gap-x-4 gap-y-2 border-y py-3 text-[12px]">
@@ -72,7 +78,12 @@ export function ListingCard({
               ) : null}
             </span>
           </p>
-          <ListingQuickView listing={listing} />
+          <Link 
+            href={`/vi/properties/${listing.slug}`}
+            className="text-navy border-gold focus-visible:outline-gold hover:text-gold cursor-pointer border-b pb-1 text-[10px] font-extrabold tracking-[0.12em] uppercase transition-colors focus-visible:outline-2 focus-visible:outline-offset-2"
+          >
+            View property
+          </Link>
         </div>
       </div>
     </article>

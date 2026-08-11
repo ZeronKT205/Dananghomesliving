@@ -1,19 +1,20 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useTransition } from 'react';
+import { useLocale } from 'next-intl';
 
 import { ChevronDownIcon } from '@/components/ui/icons';
 import { LANGUAGES } from '@/config/constants';
-import type { LanguageCode } from '@/config/constants';
 import { cn } from '@/lib/utils';
+import { usePathname, useRouter } from '@/i18n/routing';
+import type { LanguageCode } from '@/config/constants';
 
-/** Bộ chọn ngôn ngữ: Việt · Anh · Trung · Hàn.
- *  ⚠️ Mới chỉ đổi trạng thái hiển thị — chưa dịch nội dung. Muốn đa ngữ thật
- *  phải dựng route `/[locale]/...` trước; đó là quyết định cấu trúc, không
- *  phải việc của riêng component này. */
 export function LanguageMenu({ className }: { className?: string }) {
   const [open, setOpen] = useState(false);
-  const [current, setCurrent] = useState<LanguageCode>('en');
+  const locale = useLocale() as LanguageCode;
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+  const pathname = usePathname();
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -34,8 +35,15 @@ export function LanguageMenu({ className }: { className?: string }) {
     };
   }, [open]);
 
+  const onLanguageChange = (nextLocale: LanguageCode) => {
+    startTransition(() => {
+      router.replace(pathname, { locale: nextLocale });
+    });
+    setOpen(false);
+  };
+
   return (
-    <div ref={wrapperRef} className={cn('relative', className)}>
+    <div ref={wrapperRef} className={cn('relative', className, isPending && 'opacity-70')}>
       <button
         type="button"
         onClick={() => setOpen((value) => !value)}
@@ -55,17 +63,14 @@ export function LanguageMenu({ className }: { className?: string }) {
           className="border-line shadow-lift absolute top-full left-0 z-50 mt-2 w-[150px] border bg-white py-1"
         >
           {LANGUAGES.map((language) => {
-            const isActive = language.code === current;
+            const isActive = language.code === locale;
             return (
               <li key={language.code} role="none">
                 <button
                   type="button"
                   role="menuitemradio"
                   aria-checked={isActive}
-                  onClick={() => {
-                    setCurrent(language.code);
-                    setOpen(false);
-                  }}
+                  onClick={() => onLanguageChange(language.code)}
                   className={cn(
                     'hover:bg-ivory flex w-full cursor-pointer items-center justify-between px-3.5 py-2 text-left text-[12.5px] transition-colors',
                     isActive ? 'text-gold font-semibold' : 'text-navy',
