@@ -10,7 +10,10 @@ export function FavoriteButton({ title }: { title: string }) {
   return (
     <button
       type="button"
-      onClick={() => setSaved((value) => !value)}
+      onClick={(e) => {
+        e.stopPropagation();
+        setSaved((value) => !value);
+      }}
       aria-pressed={saved}
       aria-label={saved ? `Remove ${title} from saved` : `Save ${title}`}
       className={`focus-visible:outline-gold absolute top-3 right-3 z-10 grid h-9 w-9 cursor-pointer place-items-center text-base transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 ${

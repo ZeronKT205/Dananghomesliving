@@ -7,22 +7,21 @@ import type { Article } from '@/types';
 
 export function JournalSection({ articles }: { articles: Article[] }) {
   return (
-    // id = "tips" cho khớp tab TIPS trên navbar (khách yêu cầu đổi từ "Blog").
-    <section id="tips" className="bg-white py-20 lg:py-24">
+    <section id="news" className="bg-white py-20 lg:py-24">
       <div className="container-page">
         <SectionHead
           aside={
-            <TextLink href="#contact" className="text-navy hover:text-gold">
-              Receive market notes
+            <TextLink href="/news" className="text-navy hover:text-gold font-bold">
+              View all news &amp; market notes →
             </TextLink>
           }
         >
-          <SectionKicker>Tips</SectionKicker>
-          <SectionTitle>Local insight for better decisions.</SectionTitle>
+          <SectionKicker>News &amp; Market Insights</SectionKicker>
+          <SectionTitle>Local insight for better property decisions.</SectionTitle>
         </SectionHead>
 
         <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-[1.1fr_0.9fr_0.9fr]">
-          {articles.map((article, index) => (
+          {articles.slice(0, 3).map((article, index) => (
             <article
               key={article.slug}
               className={cn(
@@ -50,9 +49,9 @@ export function JournalSection({ articles }: { articles: Article[] }) {
                 <h3 className="font-display text-navy mt-3 text-[19px] leading-[1.12] font-normal text-balance">
                   {article.title}
                 </h3>
-                <p className="text-muted mt-3 mb-5 text-[13px]">{article.excerpt}</p>
-                <TextLink href="#contact" className="text-navy hover:text-gold mt-auto self-start">
-                  Read the story
+                <p className="text-muted mt-3 mb-5 text-[13px] line-clamp-3">{article.excerpt}</p>
+                <TextLink href={`/news/${article.slug}`} className="text-navy hover:text-gold mt-auto self-start font-bold">
+                  Read article
                 </TextLink>
               </div>
             </article>

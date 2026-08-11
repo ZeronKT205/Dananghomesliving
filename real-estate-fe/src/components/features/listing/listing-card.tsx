@@ -41,10 +41,20 @@ export function ListingCard({
         >
           {listing.badge}
         </span>
+        <span
+          className={cn(
+            'absolute top-4 right-4 px-3 py-1.5 text-[9.5px] font-bold tracking-[0.16em] uppercase z-10 shadow-xs border border-white/20',
+            listing.listingType === 'sale'
+              ? 'bg-navy text-white'
+              : 'bg-gold text-navy',
+          )}
+        >
+          {listing.listingType === 'sale' ? 'FOR SALE' : 'FOR RENT'}
+        </span>
       </Link>
       
       {/* Nút Favorite (Tránh đặt trong Link để không bị lỗi hydration do thẻ a lồng nhau hoặc click propagation) */}
-      <div className="absolute top-0 right-0 z-10">
+      <div className="absolute top-0 right-0 z-20">
         <FavoriteButton title={listing.title} />
       </div>
 
@@ -80,9 +90,9 @@ export function ListingCard({
           </p>
           <Link 
             href={`/vi/properties/${listing.slug}`}
-            className="text-navy border-gold focus-visible:outline-gold hover:text-gold cursor-pointer border-b pb-1 text-[10px] font-extrabold tracking-[0.12em] uppercase transition-colors focus-visible:outline-2 focus-visible:outline-offset-2"
+            className="text-navy group-hover:text-gold font-bold text-[10.5px] tracking-[0.12em] uppercase border-b-2 border-gold pb-0.5 transition-colors inline-flex items-center gap-1 focus-visible:outline-2 focus-visible:outline-offset-2"
           >
-            View property
+            View Property <span className="transition-transform duration-300 group-hover:translate-x-1">→</span>
           </Link>
         </div>
       </div>

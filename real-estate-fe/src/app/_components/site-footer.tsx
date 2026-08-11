@@ -12,7 +12,7 @@ import {
 } from '@/config/constants';
 
 // Bỏ "Home" — footer đã ở cuối trang, link về đầu trang không có giá trị ở đây.
-const EXPLORE_LINKS = NAV_ITEMS.filter((item) => item.href !== '#top');
+const EXPLORE_LINKS = NAV_ITEMS.filter((item) => item.href !== '/');
 
 export function SiteFooter() {
   return (
