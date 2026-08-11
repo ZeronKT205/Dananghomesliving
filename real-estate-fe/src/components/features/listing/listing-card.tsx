@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import type { Listing } from '@/types';
 
-import { ListingQuickView } from './listing-quick-view';
 
 type ListingCardProps = {
   listing: Listing;
@@ -87,8 +86,10 @@ export function ListingCard({
               ) : null}
             </span>
           </p>
-          <div className="pointer-events-auto">
-            <ListingQuickView listing={listing} />
+          <div>
+            <span className="text-navy group-hover:text-gold font-bold text-[10.5px] tracking-[0.12em] uppercase border-b-2 border-gold pb-0.5 transition-colors inline-flex items-center gap-1">
+              View Property <span className="transition-transform duration-300 group-hover:translate-x-1">→</span>
+            </span>
           </div>
         </div>
       </div>
