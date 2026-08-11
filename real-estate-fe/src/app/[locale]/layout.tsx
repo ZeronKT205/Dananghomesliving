@@ -1,6 +1,6 @@
 import '../globals.css';
 
-import { DM_Sans, Instrument_Serif } from 'next/font/google';
+import { DM_Sans, Instrument_Serif, Manrope } from 'next/font/google';
 
 import { APP_DESCRIPTION, APP_NAME } from '@/config/constants';
 import { NextIntlClientProvider } from 'next-intl';
@@ -28,10 +28,59 @@ const instrumentSerif = Instrument_Serif({
   display: 'swap',
 });
 
+// Font riêng cho trang quản trị — cùng font với CMS mẫu Đức Giáp.
+// Manrope CÓ subset 'vietnamese' nên chữ có dấu trong CMS hiển thị đúng.
+const manrope = Manrope({
+  subsets: ['latin', 'latin-ext', 'vietnamese'],
+  variable: '--font-manrope',
+  display: 'swap',
+});
+
+const SITE_URL = 'https://dananghomesliving.vercel.app';
+
 export const metadata: Metadata = {
-  // template: trang con chỉ cần khai title riêng, hậu tố tên site tự gắn.
-  title: { default: `${APP_NAME} | Premium Real Estate`, template: `%s | ${APP_NAME}` },
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: `${APP_NAME} — Luxury Real Estate Da Nang`,
+    template: `%s | ${APP_NAME}`,
+  },
   description: APP_DESCRIPTION,
+  keywords: [
+    'Da Nang Real Estate',
+    'Danang Homes',
+    'Luxury Villa Da Nang',
+    'Apartments for Rent Da Nang',
+    'Da Nang Properties',
+  ],
+  authors: [{ name: APP_NAME }],
+  openGraph: {
+    type: 'website',
+    locale: 'en_US',
+    url: SITE_URL,
+    siteName: APP_NAME,
+    title: `${APP_NAME} — Luxury Real Estate Da Nang`,
+    description: APP_DESCRIPTION,
+    images: [
+      {
+        url: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=1200&auto=format&fit=crop',
+        width: 1200,
+        height: 630,
+        alt: `${APP_NAME} — Curated Luxury Residences`,
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: `${APP_NAME} — Luxury Real Estate Da Nang`,
+    description: APP_DESCRIPTION,
+    images: [
+      'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=1200&auto=format&fit=crop',
+    ],
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export const viewport = {
@@ -60,7 +109,7 @@ export default async function RootLayout({
   return (
     <html
       lang={locale}
-      className={`${dmSans.variable} ${instrumentSerif.variable}`}
+      className={`${dmSans.variable} ${instrumentSerif.variable} ${manrope.variable}`}
       suppressHydrationWarning
     >
       <body className="bg-paper text-ink min-h-screen overflow-x-hidden antialiased">
