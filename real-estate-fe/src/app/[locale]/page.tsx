@@ -1,15 +1,15 @@
 import { getArticles } from '@/lib/db/articles';
 import { getListingsByType } from '@/lib/db/listings';
+import { setRequestLocale } from 'next-intl/server';
 
-import { ContactCta } from '../_components/contact-cta';
 import { HeroSection } from '../_components/hero-section';
 import { JournalSection } from '../_components/journal-section';
 import { ListingsSection } from '../_components/listings-section';
 import { PropertySearch } from '../_components/property-search';
+import { QuoteRequestSection } from '../_components/quote-request-section';
 import { SiteFooter } from '../_components/site-footer';
 import { SiteHeader } from '../_components/site-header';
 import { StorySection } from '../_components/story-section';
-import { setRequestLocale } from 'next-intl/server';
 
 export default async function HomePage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -26,16 +26,22 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
     <>
       <SiteHeader />
 
-      <main>
-        <HeroSection />
-        <PropertySearch />
-        <StorySection />
+      <main className="animate-fade-in">
+        <div className="animate-fade-in-up">
+          <HeroSection />
+        </div>
+        <div className="animate-fade-in-up stagger-1">
+          <PropertySearch />
+        </div>
+        <div className="animate-fade-in-up stagger-2">
+          <StorySection />
+        </div>
 
         <ListingsSection
           id="buy"
           kicker="Homes to buy"
           title="Own a distinctive address in Da Nang."
-          lead="Five selected residences across the city’s most desirable coastal and urban neighbourhoods."
+          lead="Five selected residences across the city's most desirable coastal and urban neighbourhoods."
           listings={saleListings}
           ctaLabel="Request the full buyer collection"
           layout="featured"
@@ -54,10 +60,11 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         />
 
         <JournalSection articles={articles} />
-        <ContactCta />
+        <QuoteRequestSection />
       </main>
 
       <SiteFooter />
     </>
   );
 }
+
