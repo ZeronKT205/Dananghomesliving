@@ -38,17 +38,6 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         </div>
 
         <ListingsSection
-          id="buy"
-          kicker="Homes to buy"
-          title="Own a distinctive address in Da Nang."
-          lead="Five selected residences across the city's most desirable coastal and urban neighbourhoods."
-          listings={saleListings}
-          ctaLabel="Request the full buyer collection"
-          layout="featured"
-          className="bg-paper"
-        />
-
-        <ListingsSection
           id="rent"
           kicker="Homes to rent"
           title="Arrive, settle in and feel at home."
@@ -57,6 +46,17 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
           ctaLabel="Tell us your rental brief"
           layout="standard"
           className="bg-ivory"
+        />
+
+        <ListingsSection
+          id="buy"
+          kicker="Homes to buy"
+          title="Own a distinctive address in Da Nang."
+          lead="Five selected residences across the city's most desirable coastal and urban neighbourhoods."
+          listings={saleListings}
+          ctaLabel="Request the full buyer collection"
+          layout="featured"
+          className="bg-paper"
         />
 
         <JournalSection articles={articles} />

@@ -87,7 +87,7 @@ export function SiteHeader() {
         {/* ── Hàng 1 ── grid 3 cột để logo luôn nằm CHÍNH GIỮA viewport,
             không bị lệch theo bề rộng của cụm trái/phải. */}
         <div className="border-line/70 border-b">
-          <div className="container-page text-navy grid h-[68px] grid-cols-[1fr_auto_1fr] items-center gap-3 lg:h-[76px]">
+          <div className="container-page text-navy grid h-[72px] grid-cols-[1fr_auto_1fr] items-center gap-3 lg:h-[88px]">
             <div className="flex items-center gap-1 justify-self-start sm:gap-2">
               <QrContact />
               <a
@@ -103,7 +103,7 @@ export function SiteHeader() {
             <Link
               href="/"
               aria-label={`${APP_NAME} home`}
-              className="flex items-center gap-2.5 justify-self-center"
+              className="flex items-center gap-3 justify-self-center"
             >
               <Image
                 src="/images/brand/logo.webp"
@@ -111,13 +111,13 @@ export function SiteHeader() {
                 width={112}
                 height={112}
                 priority
-                className="ring-gold/50 h-10 w-10 rounded-full object-cover ring-1 lg:h-12 lg:w-12"
+                className="ring-gold/50 h-12 w-12 rounded-full object-cover ring-1 lg:h-16 lg:w-16"
               />
               <span className="grid leading-none">
-                <strong className="font-display text-navy text-[15px] font-normal tracking-[0.02em] whitespace-nowrap sm:text-[17px] lg:text-[19px]">
+                <strong className="font-display text-navy text-[17px] font-normal tracking-[0.02em] whitespace-nowrap sm:text-[19px] lg:text-[23px]">
                   {APP_NAME}
                 </strong>
-                <span className="text-gold mt-1 hidden text-[6.5px] font-bold tracking-[0.22em] uppercase sm:block lg:text-[7.5px]">
+                <span className="text-gold mt-1.5 hidden text-[8px] font-bold tracking-[0.22em] uppercase sm:block lg:text-[9.5px]">
                   {APP_TAGLINE}
                 </span>
               </span>

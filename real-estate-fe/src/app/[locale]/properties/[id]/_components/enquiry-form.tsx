@@ -15,7 +15,7 @@ export function EnquiryForm() {
 
   return (
     <div id="enquiry-form" className="bg-white border border-line rounded-lg p-6 shadow-sm">
-      <h3 className="font-display text-[20px] text-navy font-medium mb-4">Yêu cầu thông tin về BĐS này</h3>
+      <h3 className="text-[15px] text-navy font-extrabold leading-tight mb-4">Yêu cầu thông tin về BĐS này</h3>
       
       {status === 'success' ? (
         <div className="bg-[#f0f9f4] border border-[#d2efe1] text-[#2e8257] p-4 rounded text-center">

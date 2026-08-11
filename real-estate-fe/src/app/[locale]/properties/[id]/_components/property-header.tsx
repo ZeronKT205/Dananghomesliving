@@ -20,7 +20,7 @@ export function PropertyHeader({ title, location, price, stats }: PropertyHeader
       </div>
       
       <div className="flex items-start justify-between">
-        <h1 className="font-display text-[32px] text-navy font-normal leading-tight m-0 p-0">
+        <h1 className="text-[32px] text-navy font-extrabold leading-tight m-0 p-0">
           {title}
         </h1>
         <button 

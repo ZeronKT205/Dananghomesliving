@@ -43,7 +43,7 @@ export function ListingCard({
         </span>
         <span
           className={cn(
-            'absolute top-4 right-4 px-3 py-1.5 text-[9.5px] font-bold tracking-[0.16em] uppercase z-10 shadow-xs border border-white/20',
+            'absolute top-4 right-14 px-3 py-1.5 text-[9.5px] font-bold tracking-[0.16em] uppercase z-10 shadow-xs border border-white/20',
             listing.listingType === 'sale'
               ? 'bg-navy text-white'
               : 'bg-gold text-navy',

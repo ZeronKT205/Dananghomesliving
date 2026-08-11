@@ -36,11 +36,11 @@ export function HeroSection() {
           </p>
 
           <div className="mt-7 flex flex-wrap gap-3">
-            <ButtonLink href="#buy" variant="gold">
-              Explore homes to buy <span aria-hidden>→</span>
+            <ButtonLink href="#rent" variant="gold">
+              View long-term rentals <span aria-hidden>→</span>
             </ButtonLink>
-            <ButtonLink href="#rent" variant="outline" className="text-navy">
-              View long-term rentals
+            <ButtonLink href="#buy" variant="outline" className="text-navy">
+              Explore homes to buy
             </ButtonLink>
           </div>
 
