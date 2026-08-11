@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import { useCallback, useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 type PropertyGalleryProps = {
   mainImage: string;
@@ -34,6 +35,11 @@ export function PropertyGallery({
 
   const [activeIndex, setActiveIndex] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const activePhoto = fullImages[activeIndex] || mainImage;
 
@@ -45,16 +51,24 @@ export function PropertyGallery({
     setActiveIndex((prev) => (prev - 1 + fullImages.length) % fullImages.length);
   }, [fullImages.length]);
 
-  // Handle keyboard arrow keys in Lightbox
+  // Lock background body scroll & handle keyboard shortcut when modal is open
   useEffect(() => {
     if (!lightboxOpen) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') setLightboxOpen(false);
       if (e.key === 'ArrowRight') nextPhoto();
       if (e.key === 'ArrowLeft') prevPhoto();
     };
+
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = previousOverflow;
+    };
   }, [lightboxOpen, nextPhoto, prevPhoto]);
 
   // Max 4 visible thumbnails in 1 single row
@@ -63,18 +77,22 @@ export function PropertyGallery({
 
   return (
     <div className="space-y-3">
-      {/* ── Main Large Viewport Image ── */}
-      <div className="group border-line relative h-[380px] sm:h-[480px] lg:h-[540px] w-full overflow-hidden border bg-sand shadow-xs">
-        <Image
-          key={activePhoto}
-          src={activePhoto}
-          alt={`${imageAlt} - Photo ${activeIndex + 1}`}
-          fill
-          priority
-          sizes="(max-width: 1200px) 100vw, 1200px"
-          className="object-cover transition-transform duration-500 group-hover:scale-[1.015] cursor-pointer animate-image-swap"
-          onClick={() => setLightboxOpen(true)}
-        />
+      {/* ── Main Large Viewport Image (Stacked CSS opacity transition for 60fps butter-smooth switching) ── */}
+      <div className="group border-line relative h-[340px] sm:h-[440px] lg:h-[480px] w-full overflow-hidden border bg-sand shadow-xs">
+        {fullImages.map((imgUrl, idx) => (
+          <Image
+            key={imgUrl}
+            src={imgUrl}
+            alt={`${imageAlt} - Photo ${idx + 1}`}
+            fill
+            priority={idx === 0}
+            sizes="(max-width: 1200px) 100vw, 1200px"
+            className={`object-cover transition-opacity duration-300 ease-in-out group-hover:scale-[1.015] cursor-pointer ${
+              activeIndex === idx ? 'opacity-100 z-1 pointer-events-auto' : 'opacity-0 z-0 pointer-events-none'
+            }`}
+            onClick={() => setLightboxOpen(true)}
+          />
+        ))}
 
         {/* Counter Badge */}
         <div className="absolute top-4 right-4 z-10 bg-navy/90 text-white backdrop-blur-xs px-3 py-1.5 text-[11px] font-bold tracking-wider uppercase border border-white/20">
@@ -89,7 +107,7 @@ export function PropertyGallery({
             prevPhoto();
           }}
           aria-label="Previous photo"
-          className="absolute left-4 top-1/2 -translate-y-1/2 z-10 bg-navy/80 hover:bg-gold hover:text-navy text-white border border-white/20 w-11 h-11 flex items-center justify-center text-2xl shadow-lg transition-all duration-200 cursor-pointer rounded-full"
+          className="absolute left-4 top-1/2 -translate-y-1/2 z-10 bg-navy/85 hover:bg-gold hover:text-navy text-white border border-white/20 w-11 h-11 flex items-center justify-center text-2xl shadow-lg transition-all duration-200 cursor-pointer rounded-full"
         >
           ‹
         </button>
@@ -102,7 +120,7 @@ export function PropertyGallery({
             nextPhoto();
           }}
           aria-label="Next photo"
-          className="absolute right-4 top-1/2 -translate-y-1/2 z-10 bg-navy/80 hover:bg-gold hover:text-navy text-white border border-white/20 w-11 h-11 flex items-center justify-center text-2xl shadow-lg transition-all duration-200 cursor-pointer rounded-full"
+          className="absolute right-4 top-1/2 -translate-y-1/2 z-10 bg-navy/85 hover:bg-gold hover:text-navy text-white border border-white/20 w-11 h-11 flex items-center justify-center text-2xl shadow-lg transition-all duration-200 cursor-pointer rounded-full"
         >
           ›
         </button>
@@ -136,10 +154,10 @@ export function PropertyGallery({
                   setActiveIndex(idx);
                 }
               }}
-              className={`border-line relative h-20 sm:h-24 md:h-28 overflow-hidden border transition-all duration-200 cursor-pointer ${
+              className={`border-line relative h-18 sm:h-22 md:h-24 overflow-hidden border transition-all duration-200 cursor-pointer ${
                 activeIndex === idx && !isLastSlotWithMore
                   ? 'ring-2 ring-gold border-gold opacity-100 shadow-xs'
-                  : 'opacity-85 hover:opacity-100'
+                  : 'opacity-80 hover:opacity-100'
               }`}
             >
               <Image
@@ -171,12 +189,12 @@ export function PropertyGallery({
         })}
       </div>
 
-      {/* ── Fullscreen Lightbox Modal ── */}
-      {lightboxOpen && (
+      {/* ── Fullscreen Lightbox Modal (Portaled directly to document.body to cover header & viewport cleanly) ── */}
+      {lightboxOpen && mounted && createPortal(
         <div
           role="dialog"
           aria-modal="true"
-          className="fixed inset-0 z-200 bg-black/95 backdrop-blur-md flex flex-col justify-between p-4 sm:p-8 text-white"
+          className="fixed inset-0 z-[9999] bg-black/95 backdrop-blur-md flex flex-col justify-between p-4 sm:p-8 text-white animate-fade-in"
         >
           {/* Top Bar */}
           <div className="flex items-center justify-between z-10">
@@ -186,6 +204,7 @@ export function PropertyGallery({
             <button
               type="button"
               onClick={() => setLightboxOpen(false)}
+              aria-label="Close modal"
               className="border border-white/30 hover:border-gold hover:text-gold w-10 h-10 flex items-center justify-center text-xl cursor-pointer transition-colors"
             >
               ✕
@@ -196,11 +215,12 @@ export function PropertyGallery({
           <div className="relative flex-1 my-4 flex items-center justify-center">
             <div className="relative w-full h-full max-w-6xl max-h-[80vh]">
               <Image
+                key={activePhoto}
                 src={activePhoto}
                 alt={`${title} full view`}
                 fill
                 sizes="100vw"
-                className="object-contain"
+                className="object-contain animate-fade-in"
               />
             </div>
 
@@ -209,15 +229,15 @@ export function PropertyGallery({
               type="button"
               onClick={prevPhoto}
               aria-label="Previous image"
-              className="absolute left-2 sm:left-6 border border-white/20 bg-black/50 hover:bg-gold hover:text-navy text-white w-12 h-12 flex items-center justify-center text-2xl cursor-pointer transition-colors rounded-full"
+              className="absolute left-2 sm:left-6 border border-white/20 bg-black/60 hover:bg-gold hover:text-navy text-white w-12 h-12 flex items-center justify-center text-2xl cursor-pointer transition-colors rounded-full"
             >
               ‹
             </button>
             <button
               type="button"
               onClick={nextPhoto}
-              aria-label="Next photo"
-              className="absolute right-2 sm:right-6 border border-white/20 bg-black/50 hover:bg-gold hover:text-navy text-white w-12 h-12 flex items-center justify-center text-2xl cursor-pointer transition-colors rounded-full"
+              aria-label="Next image"
+              className="absolute right-2 sm:right-6 border border-white/20 bg-black/60 hover:bg-gold hover:text-navy text-white w-12 h-12 flex items-center justify-center text-2xl cursor-pointer transition-colors rounded-full"
             >
               ›
             </button>
@@ -238,7 +258,8 @@ export function PropertyGallery({
               </button>
             ))}
           </div>
-        </div>
+        </div>,
+        document.body,
       )}
     </div>
   );

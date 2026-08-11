@@ -32,10 +32,51 @@ const manrope = Manrope({
   display: 'swap',
 });
 
+const SITE_URL = 'https://dananghomesliving.vercel.app';
+
 export const metadata: Metadata = {
-  // template: trang con chỉ cần khai title riêng, hậu tố tên site tự gắn.
-  title: { default: `${APP_NAME} | Premium Real Estate`, template: `%s | ${APP_NAME}` },
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: `${APP_NAME} — Luxury Real Estate Da Nang`,
+    template: `%s | ${APP_NAME}`,
+  },
   description: APP_DESCRIPTION,
+  keywords: [
+    'Da Nang Real Estate',
+    'Danang Homes',
+    'Luxury Villa Da Nang',
+    'Apartments for Rent Da Nang',
+    'Da Nang Properties',
+  ],
+  authors: [{ name: APP_NAME }],
+  openGraph: {
+    type: 'website',
+    locale: 'en_US',
+    url: SITE_URL,
+    siteName: APP_NAME,
+    title: `${APP_NAME} — Luxury Real Estate Da Nang`,
+    description: APP_DESCRIPTION,
+    images: [
+      {
+        url: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=1200&auto=format&fit=crop',
+        width: 1200,
+        height: 630,
+        alt: `${APP_NAME} — Curated Luxury Residences`,
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: `${APP_NAME} — Luxury Real Estate Da Nang`,
+    description: APP_DESCRIPTION,
+    images: [
+      'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=1200&auto=format&fit=crop',
+    ],
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export const viewport = {

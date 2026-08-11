@@ -24,9 +24,34 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     };
   }
 
+  const imageUrl = article.image.startsWith('http')
+    ? article.image
+    : `https://dananghomesliving.vercel.app${article.image}`;
+
   return {
-    title: `${article.title} | ${APP_NAME}`,
+    title: `${article.title} — ${APP_NAME}`,
     description: article.excerpt,
+    openGraph: {
+      title: article.title,
+      description: article.excerpt,
+      url: `https://dananghomesliving.vercel.app/news/${article.slug}`,
+      siteName: APP_NAME,
+      images: [
+        {
+          url: imageUrl,
+          width: 1200,
+          height: 630,
+          alt: article.title,
+        },
+      ],
+      type: 'article',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: article.title,
+      description: article.excerpt,
+      images: [imageUrl],
+    },
   };
 }
 

@@ -27,9 +27,36 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     };
   }
 
+  const pageTitle = `${listing.title} — ${listing.price}`;
+  const pageDesc = `${listing.title} in ${listing.location}. ${listing.beds} Beds · ${listing.baths} Baths · ${listing.area}. ${listing.description}`;
+  const imageUrl = listing.image.startsWith('http')
+    ? listing.image
+    : `https://dananghomesliving.vercel.app${listing.image}`;
+
   return {
-    title: `${listing.title} | ${APP_NAME}`,
-    description: listing.description || `${listing.title} located in ${listing.location}.`,
+    title: pageTitle,
+    description: pageDesc,
+    openGraph: {
+      title: pageTitle,
+      description: pageDesc,
+      url: `https://dananghomesliving.vercel.app/properties/${listing.slug}`,
+      siteName: APP_NAME,
+      images: [
+        {
+          url: imageUrl,
+          width: 1200,
+          height: 630,
+          alt: listing.title,
+        },
+      ],
+      type: 'article',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: pageTitle,
+      description: pageDesc,
+      images: [imageUrl],
+    },
   };
 }
 

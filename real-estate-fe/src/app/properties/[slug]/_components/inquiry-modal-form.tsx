@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 type InquiryModalFormProps = {
   propertyTitle: string;
@@ -18,6 +19,7 @@ export function InquiryModalForm({
   onClose,
 }: InquiryModalFormProps) {
   const [submitted, setSubmitted] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -27,33 +29,43 @@ export function InquiryModalForm({
   });
 
   useEffect(() => {
-    if (!isOpen) {
-      setSubmitted(false);
-    }
-  }, [isOpen]);
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
+    if (!isOpen) {
+      setSubmitted(false);
+      return;
+    }
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isOpen) {
         onClose();
       }
     };
+
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = previousOverflow;
+    };
   }, [isOpen, onClose]);
 
-  if (!isOpen) return null;
+  if (!isOpen || !mounted) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitted(true);
   };
 
-  return (
+  return createPortal(
     <div
       role="dialog"
       aria-modal="true"
-      className="fixed inset-0 z-200 bg-navy/80 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6 overflow-y-auto animate-fade-in"
+      className="fixed inset-0 z-[9999] bg-navy/80 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6 overflow-y-auto animate-fade-in"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
@@ -172,6 +184,7 @@ export function InquiryModalForm({
           </div>
         )}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
