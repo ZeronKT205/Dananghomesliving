@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '../../../_components/ui/card';
 import { MapPicker } from '@/components/ui/map-picker';
 
@@ -12,23 +12,32 @@ const initialPlaces = [
   { id: 5, name: 'Trường Quốc tế', time: '2 phút' },
 ];
 
-export function LocationEditor() {
-  const [places, setPlaces] = useState(initialPlaces);
-  const [nextId, setNextId] = useState(6);
-  const [latitude, setLatitude] = useState<number | null>(16.0544);
-  const [longitude, setLongitude] = useState<number | null>(108.2022);
-  const [address, setAddress] = useState('Hòa Hải, Ngũ Hành Sơn, Đà Nẵng');
+export function LocationEditor({ isNew }: { isNew?: boolean }) {
+  const [places, setPlaces] = useState(isNew ? [] : initialPlaces);
+  const [nextId, setNextId] = useState(isNew ? 1 : 6);
+  const [latitude, setLatitude] = useState<number | null>(isNew ? 16.0544 : 16.0544);
+  const [longitude, setLongitude] = useState<number | null>(isNew ? 108.2022 : 108.2022);
+  const [address, setAddress] = useState(isNew ? '' : 'Hòa Hải, Đà Nẵng');
+  const [ward, setWard] = useState(isNew ? '' : 'Hòa Hải');
+  const [city, setCity] = useState(isNew ? '' : 'Đà Nẵng');
   const [isSearching, setIsSearching] = useState(false);
 
   const searchLocation = async () => {
     if (!address) return;
     setIsSearching(true);
     try {
-      const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`);
+      const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&addressdetails=1&accept-language=vi`);
       const data = await res.json();
       if (data && data.length > 0) {
-        setLatitude(parseFloat(data[0].lat));
-        setLongitude(parseFloat(data[0].lon));
+        const item = data[0];
+        setLatitude(parseFloat(item.lat));
+        setLongitude(parseFloat(item.lon));
+        
+        if (item.address) {
+          const addr = item.address;
+          setWard(addr.quarter || addr.neighbourhood || addr.suburb || addr.village || addr.hamlet || ward);
+          setCity(addr.city || addr.province || addr.state || addr.region || city);
+        }
       } else {
         alert('Không tìm thấy tọa độ cho địa chỉ này.');
       }
@@ -38,6 +47,48 @@ export function LocationEditor() {
     } finally {
       setIsSearching(false);
     }
+  };
+
+  const reverseGeocode = useCallback(async (lat: number, lng: number) => {
+    try {
+      const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&addressdetails=1&accept-language=vi`);
+      const data = await res.json();
+      if (data && data.address) {
+        const addr = data.address;
+        
+        // Cải thiện logic lấy địa chỉ cho Việt Nam
+        // Phường / Xã
+        const newWard = addr.quarter || addr.neighbourhood || addr.suburb || addr.village || addr.hamlet || '';
+        // Tỉnh / Thành phố
+        const newCity = addr.city || addr.province || addr.state || addr.region || '';
+        
+        if (newWard) setWard(newWard);
+        if (newCity) setCity(newCity);
+        
+        // Build short address
+        const parts = [];
+        if (addr.house_number) parts.push(addr.house_number);
+        if (addr.road) parts.push(addr.road);
+        
+        // Nếu đã có số nhà, đường thì thêm phường, tỉnh
+        if (newWard) parts.push(newWard);
+        if (newCity) parts.push(newCity);
+        
+        if (parts.length > 0) {
+          setAddress(parts.join(', '));
+        } else {
+          setAddress(data.display_name);
+        }
+      }
+    } catch (error) {
+      console.error('Lỗi reverse geocoding:', error);
+    }
+  }, []);
+
+  const handleLocationChange = (lat: number, lng: number) => {
+    setLatitude(lat);
+    setLongitude(lng);
+    reverseGeocode(lat, lng);
   };
 
   const addPlace = () => {
@@ -62,14 +113,14 @@ export function LocationEditor() {
         
         <div className="grid grid-cols-2 gap-6 mb-8">
           <div className="col-span-2">
-            <label className="block text-[12px] font-bold text-navy uppercase tracking-wider mb-2">Địa chỉ</label>
+            <label className="block text-[12px] font-bold text-navy uppercase tracking-wider mb-2">Địa chỉ chi tiết</label>
             <div className="flex gap-2">
               <input 
                 type="text" 
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
                 onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); searchLocation(); } }}
-                placeholder="Nhập địa chỉ..."
+                placeholder="VD: 123 Đường Nguyễn Văn Linh..."
                 className="flex-1 px-4 py-2.5 border border-line rounded-md text-[14px] text-navy focus:outline-navy focus:border-navy"
               />
               <button 
@@ -81,29 +132,40 @@ export function LocationEditor() {
                 {isSearching ? 'Đang tìm...' : 'Tìm trên bản đồ'}
               </button>
             </div>
+            <p className="text-[11px] text-muted mt-1.5">Bạn có thể nhập địa chỉ chi tiết (Đường, Tổ...) hoặc click trên bản đồ.</p>
           </div>
 
           <div>
             <label className="block text-[12px] font-bold text-navy uppercase tracking-wider mb-2">Phường / Xã</label>
-            <input type="text" defaultValue="Hòa Hải" className="w-full px-4 py-2.5 border border-line rounded-md text-[14px] text-navy focus:outline-navy focus:border-navy" />
-          </div>
-          <div>
-            <label className="block text-[12px] font-bold text-navy uppercase tracking-wider mb-2">Quận / Huyện</label>
-            <input type="text" defaultValue="Ngũ Hành Sơn" className="w-full px-4 py-2.5 border border-line rounded-md text-[14px] text-navy focus:outline-navy focus:border-navy" />
+            <input 
+              type="text" 
+              value={ward}
+              onChange={(e) => setWard(e.target.value)}
+              placeholder="VD: Hòa Hải" 
+              className="w-full px-4 py-2.5 border border-line rounded-md text-[14px] text-navy focus:outline-navy focus:border-navy" 
+            />
           </div>
           <div>
             <label className="block text-[12px] font-bold text-navy uppercase tracking-wider mb-2">Tỉnh / Thành phố</label>
-            <input type="text" defaultValue="Đà Nẵng" className="w-full px-4 py-2.5 border border-line rounded-md text-[14px] text-navy focus:outline-navy focus:border-navy" />
+            <input 
+              type="text" 
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
+              placeholder="VD: Đà Nẵng" 
+              className="w-full px-4 py-2.5 border border-line rounded-md text-[14px] text-navy focus:outline-navy focus:border-navy" 
+            />
           </div>
+
           
-          <div className="flex gap-4">
+          <div className="flex gap-4 col-span-2">
             <div className="flex-1">
               <label className="block text-[12px] font-bold text-navy uppercase tracking-wider mb-2">Vĩ độ</label>
               <input 
                 type="text" 
                 value={latitude ?? ''} 
                 onChange={(e) => setLatitude(Number(e.target.value))}
-                className="w-full px-4 py-2.5 border border-line rounded-md text-[14px] text-navy focus:outline-navy focus:border-navy" 
+                className="w-full px-4 py-2.5 border border-line rounded-md text-[14px] text-navy focus:outline-navy focus:border-navy bg-gray-50" 
+                readOnly
               />
             </div>
             <div className="flex-1">
@@ -112,7 +174,8 @@ export function LocationEditor() {
                 type="text" 
                 value={longitude ?? ''} 
                 onChange={(e) => setLongitude(Number(e.target.value))}
-                className="w-full px-4 py-2.5 border border-line rounded-md text-[14px] text-navy focus:outline-navy focus:border-navy" 
+                className="w-full px-4 py-2.5 border border-line rounded-md text-[14px] text-navy focus:outline-navy focus:border-navy bg-gray-50" 
+                readOnly
               />
             </div>
           </div>
@@ -123,10 +186,7 @@ export function LocationEditor() {
           <MapPicker 
             latitude={latitude}
             longitude={longitude}
-            onChangeLocation={(lat, lng) => {
-              setLatitude(lat);
-              setLongitude(lng);
-            }}
+            onChangeLocation={handleLocationChange}
           />
         </div>
 

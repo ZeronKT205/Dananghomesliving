@@ -1,5 +1,7 @@
+import Link from 'next/link';
 import { IcBuilding, IcLayers, IcPlus } from '../_components/icons';
 import { PropertyCard } from '../_components/property-card';
+import { AdminMapWrapper } from './_components/admin-map-wrapper';
 import {
   EmptyState,
   PageHead,
@@ -17,6 +19,7 @@ const TABS = [
   { value: 'sale', label: 'Mua', icon: <IcBuilding size={14} /> },
   { value: 'rent', label: 'Thuê', icon: <IcBuilding size={14} /> },
   { value: 'groups', label: 'Nhóm bất động sản', icon: <IcLayers size={14} /> },
+  { value: 'map', label: 'Bản đồ', icon: <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" /></svg> },
 ] as const;
 
 const STATE_OPTIONS = ['Mọi trạng thái', 'Đang hiển thị', 'Bản nháp', 'Đã ẩn'] as const;
@@ -37,6 +40,8 @@ export default async function AdminPropertiesPage({
     count:
       item.value === 'groups'
         ? GROUPS.length
+        : item.value === 'map'
+        ? PROPERTIES.length
         : PROPERTIES.filter((p) => p.deal === item.value).length,
   }));
 
@@ -53,7 +58,9 @@ export default async function AdminPropertiesPage({
         <Tabs basePath="/admin/properties" current={current} items={tabsWithCount} />
       </Panel>
 
-      {current === 'groups' ? (
+      {current === 'map' ? (
+        <AdminMapWrapper properties={PROPERTIES} />
+      ) : current === 'groups' ? (
         <>
           <Toolbar>
             <SearchInput placeholder="Tìm nhóm…" />
@@ -97,7 +104,10 @@ export default async function AdminPropertiesPage({
             <SearchInput placeholder="Tìm bất động sản…" />
             <SelectInput label="Lọc theo nhóm" options={groupOptions} />
             <SelectInput label="Lọc theo trạng thái" options={STATE_OPTIONS} />
-            <PendingButton icon={<IcPlus size={14} />}>Thêm bất động sản</PendingButton>
+            <Link href="/admin/properties/new" className="bg-navy text-white hover:bg-gold inline-flex h-9 shrink-0 items-center gap-2 rounded-md px-4 text-[12.5px] font-bold transition-colors">
+              <IcPlus size={14} />
+              Thêm bất động sản
+            </Link>
           </Toolbar>
 
           <p className="text-muted text-[12px]">

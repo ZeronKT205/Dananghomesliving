@@ -2,6 +2,7 @@ import { BarChart, DonutChart } from './_components/charts';
 import { IcBuilding, IcCheck, IcClock, IcInbox, IcNews, IcPhone } from './_components/icons';
 import { Avatar, EmptyState, PageHead, Panel, PanelLink, Pill, StatCard } from './_components/ui';
 import { GROUPS, INQUIRIES, INQUIRIES_BY_DAY, NEWS, PROPERTIES } from './_data/mock';
+import { AdminMapWrapper } from './properties/_components/admin-map-wrapper';
 
 export default function AdminOverviewPage() {
   const pending = INQUIRIES.filter((item) => item.status === 'new');
@@ -72,7 +73,36 @@ export default function AdminOverviewPage() {
         </Panel>
       </div>
 
-      <div className="grid items-start gap-4 xl:grid-cols-[1.6fr_1fr]">
+      <div className="grid items-start gap-4 xl:grid-cols-[1.6fr_1fr] mb-4">
+        <AdminMapWrapper properties={PROPERTIES} />
+
+        <Panel
+          title="Nhóm bất động sản"
+          desc="Phân loại đang dùng ngoài website"
+          extra={<PanelLink href="/admin/properties?tab=groups">Quản lý</PanelLink>}
+          className="h-full"
+        >
+          <ul className="grid gap-2.5">
+            {GROUPS.map((group) => {
+              const count = PROPERTIES.filter((item) => item.groupId === group.id).length;
+              return (
+                <li
+                  key={group.id}
+                  className="border-line-soft flex items-center gap-2.5 border-b pb-2.5 last:border-b-0 last:pb-0"
+                >
+                  <span className="text-navy flex-1 text-[12.5px] font-bold">{group.name}</span>
+                  {group.onHome ? <Pill tone="ok">Trang chủ</Pill> : null}
+                  <span className="text-muted w-6 text-right text-[12px] tabular-nums">
+                    {count}
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
+        </Panel>
+      </div>
+
+      <div className="grid items-start gap-4">
         <Panel
           title="Cần gọi lại"
           desc="Khách chưa được liên hệ, cũ xếp trước"
@@ -117,30 +147,6 @@ export default function AdminOverviewPage() {
               ))}
             </ul>
           )}
-        </Panel>
-
-        <Panel
-          title="Nhóm bất động sản"
-          desc="Phân loại đang dùng ngoài website"
-          extra={<PanelLink href="/admin/properties?tab=groups">Quản lý</PanelLink>}
-        >
-          <ul className="grid gap-2.5">
-            {GROUPS.map((group) => {
-              const count = PROPERTIES.filter((item) => item.groupId === group.id).length;
-              return (
-                <li
-                  key={group.id}
-                  className="border-line-soft flex items-center gap-2.5 border-b pb-2.5 last:border-b-0 last:pb-0"
-                >
-                  <span className="text-navy flex-1 text-[12.5px] font-bold">{group.name}</span>
-                  {group.onHome ? <Pill tone="ok">Trang chủ</Pill> : null}
-                  <span className="text-muted w-6 text-right text-[12px] tabular-nums">
-                    {count}
-                  </span>
-                </li>
-              );
-            })}
-          </ul>
         </Panel>
       </div>
     </>

@@ -3,10 +3,10 @@
 import { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '../../../_components/ui/card';
 
-export function PublishingSettings() {
-  const [isPublic, setIsPublic] = useState(true);
+export function PublishingSettings({ isNew }: { isNew?: boolean }) {
+  const [isPublic, setIsPublic] = useState(!isNew);
   const [isSaving, setIsSaving] = useState(false);
-  const [status, setStatus] = useState('published');
+  const [status, setStatus] = useState(isNew ? 'draft' : 'published');
 
   const handleSave = () => {
     setIsSaving(true);
@@ -56,16 +56,18 @@ export function PublishingSettings() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-[11px] font-bold text-navy uppercase tracking-wider mb-1.5">Ngày đăng</label>
-            <div className="text-[13px] text-navy px-3 py-2 bg-gray-50 border border-line rounded-md">20/05/2024</div>
+        {!isNew && (
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-[11px] font-bold text-navy uppercase tracking-wider mb-1.5">Ngày đăng</label>
+              <div className="text-[13px] text-navy px-3 py-2 bg-gray-50 border border-line rounded-md">20/05/2024</div>
+            </div>
+            <div>
+              <label className="block text-[11px] font-bold text-navy uppercase tracking-wider mb-1.5">Cập nhật lần cuối</label>
+              <div className="text-[13px] text-navy px-3 py-2 bg-gray-50 border border-line rounded-md">Vừa xong</div>
+            </div>
           </div>
-          <div>
-            <label className="block text-[11px] font-bold text-navy uppercase tracking-wider mb-1.5">Cập nhật lần cuối</label>
-            <div className="text-[13px] text-navy px-3 py-2 bg-gray-50 border border-line rounded-md">Vừa xong</div>
-          </div>
-        </div>
+        )}
 
         <div className="pt-4 mt-2 border-t border-line">
           <button 
@@ -81,10 +83,10 @@ export function PublishingSettings() {
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
-                Đang cập nhật...
+                {isNew ? 'Đang tạo...' : 'Đang cập nhật...'}
               </>
             ) : (
-              'Cập nhật Bất động sản'
+              isNew ? 'Tạo Bất động sản' : 'Cập nhật Bất động sản'
             )}
           </button>
         </div>

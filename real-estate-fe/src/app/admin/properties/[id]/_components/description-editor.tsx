@@ -1,6 +1,6 @@
 import { Card, CardHeader, CardTitle, CardContent } from '../../../_components/ui/card';
 
-export function DescriptionEditor() {
+export function DescriptionEditor({ isNew }: { isNew?: boolean }) {
   return (
     <Card>
       <CardHeader>
@@ -15,7 +15,7 @@ export function DescriptionEditor() {
           </div>
           <textarea 
             rows={3}
-            defaultValue="Nằm trong khu vực đắc địa tại Hòa Hải, Biệt thự Ocean Estate mang đến không gian sống rộng rãi, nội thất cao cấp và sự giao thoa hoàn hảo giữa không gian trong nhà và ngoài trời."
+            defaultValue={isNew ? '' : "Nằm trong khu vực đắc địa tại Hòa Hải, Biệt thự Ocean Estate mang đến không gian sống rộng rãi, nội thất cao cấp và sự giao thoa hoàn hảo giữa không gian trong nhà và ngoài trời."}
             className="w-full px-4 py-3 border border-line rounded-md text-[14px] text-navy focus:outline-navy focus:border-navy resize-y bg-white"
           />
           <p className="text-[11px] text-muted mt-1.5">Sẽ hiển thị trên các thẻ bất động sản (cards) và trong kết quả tìm kiếm.</p>
@@ -59,7 +59,7 @@ export function DescriptionEditor() {
             
             <textarea 
               rows={12}
-              defaultValue="Ocean Estate Villa là một căn biệt thự 3 phòng ngủ tuyệt đẹp tọa lạc tại khu vực cao cấp Hòa Hải, Quận Ngũ Hành Sơn.&#10;&#10;Được thiết kế cho lối sống hiện đại, biệt thự cung cấp không gian nội thất rộng rãi, các trang thiết bị cao cấp cùng sự kết nối liền mạch với không gian ngoài trời, bể bơi riêng tư và khu vườn xanh mát."
+              defaultValue={isNew ? '' : "Ocean Estate Villa là một căn biệt thự 3 phòng ngủ tuyệt đẹp tọa lạc tại khu vực cao cấp Hòa Hải, Quận Ngũ Hành Sơn.\n\nĐược thiết kế cho lối sống hiện đại, biệt thự cung cấp không gian nội thất rộng rãi, các trang thiết bị cao cấp cùng sự kết nối liền mạch với không gian ngoài trời, bể bơi riêng tư và khu vườn xanh mát."}
               className="w-full px-4 py-4 border-none text-[14px] text-navy focus:outline-none resize-y"
             />
           </div>

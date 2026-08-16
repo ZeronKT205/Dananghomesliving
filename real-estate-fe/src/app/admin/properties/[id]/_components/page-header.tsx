@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useState } from 'react';
 
-export function PageHeader() {
+export function PageHeader({ isNew }: { isNew?: boolean }) {
   const [isSaving, setIsSaving] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
 
@@ -18,29 +18,44 @@ export function PageHeader() {
 
   return (
     <div className="bg-white border-b border-line sticky top-0 z-30 px-8 py-5 flex items-center justify-between shadow-sm">
-      <div>
-        <div className="flex items-center gap-3 mb-1">
-          <span className="text-[11px] font-bold tracking-widest uppercase text-muted">Chỉnh sửa</span>
-          <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-green-100 text-green-800 border border-green-200">
-            Đã xuất bản
-          </span>
-        </div>
-        <h1 className="font-bold text-navy text-[24px] leading-none tracking-tight">
-          Biệt thự Ocean Estate
-        </h1>
-        <div className="flex items-center gap-4 mt-2 text-[12px] text-muted">
-          <span>Mã BĐS: DHV-240523</span>
-          <span className="w-1 h-1 rounded-full bg-line"></span>
-          <span>Cập nhật: 2 ngày trước</span>
-          <span className="w-1 h-1 rounded-full bg-line"></span>
-          <span>Ngày tạo: 20/05/2024</span>
+      <div className="flex gap-4 items-start">
+        <Link href="/admin/properties" className="mt-1.5 p-2 hover:bg-gray-100 rounded-md transition-colors text-muted hover:text-navy">
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+        </Link>
+        <div>
+          <div className="flex items-center gap-3 mb-1">
+            <span className="text-[11px] font-bold tracking-widest uppercase text-muted">
+              {isNew ? 'Thêm mới' : 'Chỉnh sửa'}
+            </span>
+            {!isNew && (
+              <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-green-100 text-green-800 border border-green-200">
+                Đã xuất bản
+              </span>
+            )}
+          </div>
+          <h1 className="font-bold text-navy text-[24px] leading-none tracking-tight">
+            {isNew ? 'Bất động sản mới' : 'Biệt thự Ocean Estate'}
+          </h1>
+          {!isNew && (
+            <div className="flex items-center gap-4 mt-2 text-[12px] text-muted">
+              <span>Mã BĐS: DHV-240523</span>
+              <span className="w-1 h-1 rounded-full bg-line"></span>
+              <span>Cập nhật: 2 ngày trước</span>
+              <span className="w-1 h-1 rounded-full bg-line"></span>
+              <span>Ngày tạo: 20/05/2024</span>
+            </div>
+          )}
         </div>
       </div>
       
       <div className="flex items-center gap-3">
-        <Link href="#" className="px-4 py-2 text-[13px] font-medium text-navy hover:bg-gray-50 border border-transparent rounded transition-all active:scale-[0.98] active:bg-gray-100">
-          Xem trước
-        </Link>
+        {!isNew && (
+          <Link href="#" className="px-4 py-2 text-[13px] font-medium text-navy hover:bg-gray-50 border border-transparent rounded transition-all active:scale-[0.98] active:bg-gray-100">
+            Xem trước
+          </Link>
+        )}
         <button className="px-4 py-2 text-[13px] font-medium text-navy hover:bg-gray-50 border border-line rounded transition-all active:scale-[0.98] active:bg-gray-100 flex items-center gap-2">
           Thao tác khác
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -68,7 +83,7 @@ export function PageHeader() {
               Đã lưu
             </>
           ) : (
-            'Lưu thay đổi'
+            isNew ? 'Tạo bất động sản' : 'Lưu thay đổi'
           )}
         </button>
       </div>

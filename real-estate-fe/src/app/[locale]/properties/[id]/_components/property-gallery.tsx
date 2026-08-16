@@ -60,15 +60,15 @@ export function PropertyGallery({ images, badges }: PropertyGalleryProps) {
         {/* Navigation Arrows */}
         <button 
           onClick={handlePrev}
-          className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 rounded-full flex items-center justify-center text-navy opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white shadow-sm z-10"
+          className="absolute left-4 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 bg-white/90 rounded-full flex items-center justify-center text-navy opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity hover:bg-white shadow-sm z-10 active:scale-95"
         >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+          <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
         </button>
         <button 
           onClick={handleNext}
-          className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 rounded-full flex items-center justify-center text-navy opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white shadow-sm z-10"
+          className="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 bg-white/90 rounded-full flex items-center justify-center text-navy opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity hover:bg-white shadow-sm z-10 active:scale-95"
         >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+          <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
         </button>
 
         {/* Image Counter */}
@@ -78,12 +78,12 @@ export function PropertyGallery({ images, badges }: PropertyGalleryProps) {
       </div>
 
       {/* Thumbnails */}
-      <div className="grid grid-cols-5 gap-3">
+      <div className="flex sm:grid sm:grid-cols-5 gap-2 sm:gap-3 overflow-x-auto no-scrollbar snap-x snap-mandatory pb-2 sm:pb-0">
         {thumbnails.map((src, i) => (
           <div 
             key={i} 
             onClick={() => setCurrentIndex(i)}
-            className="relative aspect-[4/3] rounded overflow-hidden cursor-pointer bg-gray-100"
+            className="relative w-24 sm:w-auto shrink-0 aspect-[4/3] rounded overflow-hidden cursor-pointer bg-gray-100 snap-center"
           >
             <Image src={src} alt="Thumbnail" fill className={`object-cover hover:scale-105 transition-transform duration-300 ${currentIndex !== i && 'opacity-60 hover:opacity-100'}`} />
             {currentIndex === i && <div className="absolute inset-0 border-2 border-[#C99224] rounded pointer-events-none z-10"></div>}
@@ -92,7 +92,7 @@ export function PropertyGallery({ images, badges }: PropertyGalleryProps) {
         {images.length > 5 && (
           <div 
             onClick={() => setCurrentIndex(5)}
-            className="relative aspect-[4/3] rounded border border-line flex items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors bg-white group"
+            className="relative w-24 sm:w-auto shrink-0 aspect-[4/3] rounded border border-line flex items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors bg-white group snap-center"
           >
             <span className="font-bold text-navy text-[13px] group-hover:text-[#C99224] transition-colors">+{images.length - 5}</span>
           </div>

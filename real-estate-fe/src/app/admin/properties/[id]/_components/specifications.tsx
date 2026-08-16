@@ -11,7 +11,7 @@ const specFields = [
   { label: 'Chỗ đỗ xe', defaultValue: '2' },
 ];
 
-export function Specifications() {
+export function Specifications({ isNew }: { isNew?: boolean }) {
   return (
     <Card>
       <CardHeader>
@@ -24,7 +24,7 @@ export function Specifications() {
               <label className="block text-[11px] font-bold text-muted uppercase tracking-wider mb-2">{field.label}</label>
               <input 
                 type="text" 
-                defaultValue={field.defaultValue}
+                defaultValue={isNew ? '' : field.defaultValue}
                 className="w-full px-3 py-2 border border-line rounded-md text-[13px] text-navy focus:outline-navy focus:border-navy"
               />
             </div>
@@ -47,7 +47,7 @@ export function Specifications() {
           <div>
             <label className="block text-[11px] font-bold text-muted uppercase tracking-wider mb-2">Sở hữu</label>
             <div className="relative">
-              <select className="w-full appearance-none px-3 py-2 border border-line rounded-md text-[13px] text-navy focus:outline-navy focus:border-navy bg-white" defaultValue="freehold">
+              <select className="w-full appearance-none px-3 py-2 border border-line rounded-md text-[13px] text-navy focus:outline-navy focus:border-navy bg-white" defaultValue={isNew ? 'freehold' : 'freehold'}>
                 <option value="freehold">Lâu dài</option>
                 <option value="leasehold">Có thời hạn (50 năm)</option>
               </select>

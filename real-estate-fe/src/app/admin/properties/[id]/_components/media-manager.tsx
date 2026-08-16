@@ -10,9 +10,9 @@ const initialImages = [
   { id: 3, src: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80' },
 ];
 
-export function MediaManager() {
-  const [images, setImages] = useState(initialImages);
-  const [coverDeleted, setCoverDeleted] = useState(false);
+export function MediaManager({ isNew }: { isNew?: boolean }) {
+  const [images, setImages] = useState(isNew ? [] : initialImages);
+  const [coverDeleted, setCoverDeleted] = useState(isNew ? true : false);
 
   const removeImage = (id: number) => {
     setImages(images.filter(img => img.id !== id));

@@ -11,11 +11,18 @@ import { PublishingSettings } from './_components/publishing-settings';
 import { ActivityLog } from './_components/activity-log';
 import { PageHeader } from './_components/page-header';
 
-export default function EditPropertyPage() {
+export default async function EditPropertyPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+  const isNew = id === 'new';
+
   return (
     <div className="min-h-[calc(100vh-76px)]">
       {/* Sticky Top Header for this specific page */}
-      <PageHeader />
+      <PageHeader isNew={isNew} />
 
       <div className="p-8">
         <div className="max-w-[1400px] mx-auto">
@@ -24,21 +31,21 @@ export default function EditPropertyPage() {
             
             {/* Left Column: Main Editing (70%) */}
             <div className="space-y-8 min-w-0">
-              <BasicInfo />
-              <Specifications />
-              <MediaManager />
-              <DescriptionEditor />
-              <AmenitiesSelector />
-              <LocationEditor />
-              <SimilarProperties />
-              <ActivityLog />
+              <BasicInfo isNew={isNew} />
+              <Specifications isNew={isNew} />
+              <MediaManager isNew={isNew} />
+              <DescriptionEditor isNew={isNew} />
+              <AmenitiesSelector isNew={isNew} />
+              <LocationEditor isNew={isNew} />
+              {!isNew && <SimilarProperties isNew={isNew} />}
+              {!isNew && <ActivityLog isNew={isNew} />}
             </div>
 
             {/* Right Column: Settings & Publishing (30%) */}
             <div className="space-y-8">
-              <PublishingSettings />
-              <PublicPreview />
-              <SeoSettings />
+              <PublishingSettings isNew={isNew} />
+              {!isNew && <PublicPreview isNew={isNew} />}
+              <SeoSettings isNew={isNew} />
             </div>
 
           </div>

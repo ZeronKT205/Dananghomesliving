@@ -1,6 +1,6 @@
 import { Card, CardHeader, CardTitle, CardContent } from '../../../_components/ui/card';
 
-export function BasicInfo() {
+export function BasicInfo({ isNew }: { isNew?: boolean }) {
   return (
     <Card>
       <CardHeader>
@@ -12,7 +12,7 @@ export function BasicInfo() {
           <label className="block text-[12px] font-bold text-navy uppercase tracking-wider mb-2">Tên bất động sản</label>
           <input 
             type="text" 
-            defaultValue="Biệt thự Ocean Estate"
+            defaultValue={isNew ? '' : 'Biệt thự Ocean Estate'}
             className="w-full px-4 py-2.5 border border-line rounded-md text-[14px] text-navy focus:outline-navy focus:border-navy"
           />
         </div>
@@ -33,7 +33,7 @@ export function BasicInfo() {
         <div>
           <label className="block text-[12px] font-bold text-navy uppercase tracking-wider mb-2">Loại hình</label>
           <div className="relative">
-            <select className="w-full appearance-none px-4 py-2.5 border border-line rounded-md text-[14px] text-navy focus:outline-navy focus:border-navy bg-white" defaultValue="villa">
+            <select className="w-full appearance-none px-4 py-2.5 border border-line rounded-md text-[14px] text-navy focus:outline-navy focus:border-navy bg-white" defaultValue={isNew ? 'apartment' : 'villa'}>
               <option value="apartment">Căn hộ</option>
               <option value="villa">Biệt thự</option>
               <option value="penthouse">Penthouse</option>
@@ -50,7 +50,7 @@ export function BasicInfo() {
             <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted">$</span>
             <input 
               type="text" 
-              defaultValue="3,596,000"
+              defaultValue={isNew ? '' : '3,596,000'}
               className="w-full pl-8 pr-4 py-2.5 border border-line rounded-md text-[14px] text-navy focus:outline-navy focus:border-navy"
             />
           </div>
@@ -61,7 +61,7 @@ export function BasicInfo() {
           <div className="relative">
             <input 
               type="text" 
-              defaultValue="90,000,000,000"
+              defaultValue={isNew ? '' : '90,000,000,000'}
               className="w-full pr-12 pl-4 py-2.5 border border-line rounded-md text-[14px] text-navy focus:outline-navy focus:border-navy"
             />
             <span className="absolute right-4 top-1/2 -translate-y-1/2 text-muted text-[13px]">VND</span>
@@ -73,7 +73,7 @@ export function BasicInfo() {
             <div className="relative flex items-center justify-center">
               <input 
                 type="checkbox" 
-                defaultChecked 
+                defaultChecked={!isNew} 
                 className="w-4 h-4 border border-line bg-white rounded focus:ring-gold appearance-none checked:bg-gold checked:border-gold transition-colors cursor-pointer" 
               />
               <svg className="absolute w-3 h-3 text-white pointer-events-none opacity-0 peer-checked:opacity-100" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
@@ -84,7 +84,7 @@ export function BasicInfo() {
             <div className="relative flex items-center justify-center">
               <input 
                 type="checkbox" 
-                defaultChecked 
+                defaultChecked={!isNew} 
                 className="w-4 h-4 border border-line bg-white rounded focus:ring-gold appearance-none checked:bg-gold checked:border-gold transition-colors cursor-pointer" 
               />
               <svg className="absolute w-3 h-3 text-white pointer-events-none opacity-0 peer-checked:opacity-100" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>

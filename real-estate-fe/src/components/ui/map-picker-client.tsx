@@ -54,16 +54,16 @@ function MapViewUpdaterInner({ center, useMap }: { center: [number, number], use
 }
 
 // Component xử lý sự kiện click trên bản đồ
-function MapEventsHandler({ onChangeLocation, useMapEvents }: { onChangeLocation: (lat: number, lng: number) => void, useMapEvents: any }) {
+function MapEventsHandler({ onChangeLocation, useMapEvents }: { onChangeLocation?: (lat: number, lng: number) => void, useMapEvents: any }) {
   useMapEvents({
     click(e: any) {
-      onChangeLocation(e.latlng.lat, e.latlng.lng);
+      if (onChangeLocation) onChangeLocation(e.latlng.lat, e.latlng.lng);
     },
   });
   return null;
 }
 
-export default function MapPickerClient({ latitude, longitude, onChangeLocation, className = '' }: MapPickerProps) {
+export default function MapPickerClient({ latitude, longitude, onChangeLocation, className = '', readOnly = false }: MapPickerProps) {
   const [mapLayerType, setMapLayerType] = useState<"osm" | "satellite">("osm");
   const [isLayersOpen, setIsLayersOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -86,6 +86,7 @@ export default function MapPickerClient({ latitude, longitude, onChangeLocation,
   const markerEventHandlers = useMemo(
     () => ({
       dragend(e: any) {
+        if (readOnly || !onChangeLocation) return;
         const marker = e.target;
         if (marker != null) {
           const latLng = marker.getLatLng();
@@ -93,7 +94,7 @@ export default function MapPickerClient({ latitude, longitude, onChangeLocation,
         }
       },
     }),
-    [onChangeLocation],
+    [onChangeLocation, readOnly],
   );
 
   return (
@@ -162,18 +163,18 @@ export default function MapPickerClient({ latitude, longitude, onChangeLocation,
         />
         
         <MapViewUpdaterInner center={centerPosition} useMap={useMap} />
-        <MapEventsHandler onChangeLocation={onChangeLocation} useMapEvents={useMapEvents} />
+        {!readOnly && <MapEventsHandler onChangeLocation={onChangeLocation} useMapEvents={useMapEvents} />}
         
         {latitude !== null && longitude !== null && (
           <Marker
             position={[latitude, longitude]}
             icon={customIcon}
-            draggable={true}
+            draggable={!readOnly}
             eventHandlers={markerEventHandlers}
           >
             <Popup>
               <strong>Vị trí đã chọn</strong>
-              <p className="text-sm mt-1">Kéo thả để di chuyển, hoặc nhấp vào bản đồ để chọn lại.</p>
+              {!readOnly && <p className="text-sm mt-1">Kéo thả để di chuyển, hoặc nhấp vào bản đồ để chọn lại.</p>}
             </Popup>
           </Marker>
         )}

@@ -4,8 +4,9 @@ import dynamic from 'next/dynamic';
 export interface MapPickerProps {
   latitude: number | null;
   longitude: number | null;
-  onChangeLocation: (lat: number, lng: number) => void;
+  onChangeLocation?: (lat: number, lng: number) => void;
   className?: string;
+  readOnly?: boolean;
 }
 
 const MapPickerClient = dynamic(() => import('./map-picker-client'), {

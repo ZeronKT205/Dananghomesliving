@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '../../../_components/ui/card';
 
 const initialAmenities = [
@@ -20,8 +20,13 @@ const initialAmenities = [
   { label: 'Phòng Giúp Việc', checked: false },
 ];
 
-export function AmenitiesSelector() {
-  const [amenities, setAmenities] = useState(initialAmenities);
+export function AmenitiesSelector({ isNew }: { isNew?: boolean }) {
+  const [amenities, setAmenities] = useState(() => {
+    if (isNew) {
+      return initialAmenities.map(a => ({ ...a, checked: false }));
+    }
+    return initialAmenities;
+  });
 
   const toggleAmenity = (index: number) => {
     const newAmenities = [...amenities];
