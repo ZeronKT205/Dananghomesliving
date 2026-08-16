@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '../../../_components/ui/card';
+import { MapPicker } from '@/components/ui/map-picker';
 
 const initialPlaces = [
   { id: 1, name: 'Bãi biển Mỹ Khê', time: '5 phút' },
@@ -14,6 +15,30 @@ const initialPlaces = [
 export function LocationEditor() {
   const [places, setPlaces] = useState(initialPlaces);
   const [nextId, setNextId] = useState(6);
+  const [latitude, setLatitude] = useState<number | null>(16.0544);
+  const [longitude, setLongitude] = useState<number | null>(108.2022);
+  const [address, setAddress] = useState('Hòa Hải, Ngũ Hành Sơn, Đà Nẵng');
+  const [isSearching, setIsSearching] = useState(false);
+
+  const searchLocation = async () => {
+    if (!address) return;
+    setIsSearching(true);
+    try {
+      const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`);
+      const data = await res.json();
+      if (data && data.length > 0) {
+        setLatitude(parseFloat(data[0].lat));
+        setLongitude(parseFloat(data[0].lon));
+      } else {
+        alert('Không tìm thấy tọa độ cho địa chỉ này.');
+      }
+    } catch (error) {
+      console.error('Lỗi khi tìm vị trí:', error);
+      alert('Lỗi kết nối khi tìm vị trí.');
+    } finally {
+      setIsSearching(false);
+    }
+  };
 
   const addPlace = () => {
     setPlaces([...places, { id: nextId, name: 'Địa điểm mới', time: '0 phút' }]);
@@ -38,11 +63,24 @@ export function LocationEditor() {
         <div className="grid grid-cols-2 gap-6 mb-8">
           <div className="col-span-2">
             <label className="block text-[12px] font-bold text-navy uppercase tracking-wider mb-2">Địa chỉ</label>
-            <input 
-              type="text" 
-              defaultValue="Hòa Hải, Ngũ Hành Sơn, Đà Nẵng"
-              className="w-full px-4 py-2.5 border border-line rounded-md text-[14px] text-navy focus:outline-navy focus:border-navy"
-            />
+            <div className="flex gap-2">
+              <input 
+                type="text" 
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); searchLocation(); } }}
+                placeholder="Nhập địa chỉ..."
+                className="flex-1 px-4 py-2.5 border border-line rounded-md text-[14px] text-navy focus:outline-navy focus:border-navy"
+              />
+              <button 
+                type="button"
+                onClick={searchLocation}
+                disabled={isSearching}
+                className="bg-navy text-white px-4 py-2.5 rounded-md text-[13px] font-bold hover:bg-navy/90 transition-colors disabled:opacity-50 whitespace-nowrap"
+              >
+                {isSearching ? 'Đang tìm...' : 'Tìm trên bản đồ'}
+              </button>
+            </div>
           </div>
 
           <div>
@@ -61,28 +99,35 @@ export function LocationEditor() {
           <div className="flex gap-4">
             <div className="flex-1">
               <label className="block text-[12px] font-bold text-navy uppercase tracking-wider mb-2">Vĩ độ</label>
-              <input type="text" defaultValue="16.0028" className="w-full px-4 py-2.5 border border-line rounded-md text-[14px] text-navy focus:outline-navy focus:border-navy" />
+              <input 
+                type="text" 
+                value={latitude ?? ''} 
+                onChange={(e) => setLatitude(Number(e.target.value))}
+                className="w-full px-4 py-2.5 border border-line rounded-md text-[14px] text-navy focus:outline-navy focus:border-navy" 
+              />
             </div>
             <div className="flex-1">
               <label className="block text-[12px] font-bold text-navy uppercase tracking-wider mb-2">Kinh độ</label>
-              <input type="text" defaultValue="108.2612" className="w-full px-4 py-2.5 border border-line rounded-md text-[14px] text-navy focus:outline-navy focus:border-navy" />
+              <input 
+                type="text" 
+                value={longitude ?? ''} 
+                onChange={(e) => setLongitude(Number(e.target.value))}
+                className="w-full px-4 py-2.5 border border-line rounded-md text-[14px] text-navy focus:outline-navy focus:border-navy" 
+              />
             </div>
           </div>
         </div>
 
         {/* Map Preview Placeholder */}
         <div className="mb-8">
-          <div className="w-full h-[240px] bg-gray-100 border border-line rounded-md relative overflow-hidden flex flex-col items-center justify-center">
-            {/* Visual map placeholder */}
-            <div className="absolute inset-0 opacity-30" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'20\' height=\'20\' viewBox=\'0 0 20 20\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cpath d=\'M0 0h20v20H0V0zm10 17a7 7 0 1 0 0-14 7 7 0 0 0 0 14zm0-2a5 5 0 1 1 0-10 5 5 0 0 1 0 10z\' fill=\'%23061D36\' fill-opacity=\'0.2\' fill-rule=\'evenodd\'/%3E%3C/svg%3E")', backgroundSize: '40px 40px' }}></div>
-            <div className="relative z-10 w-8 h-8 text-navy drop-shadow-md">
-              <svg fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z" /></svg>
-            </div>
-            <div className="relative z-10 mt-3 flex gap-2">
-              <button className="bg-white border border-line text-[11px] font-bold px-3 py-1.5 rounded shadow-sm hover:text-gold transition-all active:scale-[0.95] active:bg-gray-50">Ghim Vị Trí</button>
-              <button className="bg-white border border-line text-[11px] font-bold px-3 py-1.5 rounded shadow-sm hover:text-gold transition-all active:scale-[0.95] active:bg-gray-50">Sử Dụng Tọa Độ Này</button>
-            </div>
-          </div>
+          <MapPicker 
+            latitude={latitude}
+            longitude={longitude}
+            onChangeLocation={(lat, lng) => {
+              setLatitude(lat);
+              setLongitude(lng);
+            }}
+          />
         </div>
 
         {/* Nearby Places */}
