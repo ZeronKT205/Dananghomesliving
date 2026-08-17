@@ -5,8 +5,8 @@ import { notFound } from 'next/navigation';
 import { APP_NAME } from '@/config/constants';
 import { getArticleBySlug, getArticles } from '@/lib/db/articles';
 
-import { SiteFooter } from '../../_components/site-footer';
-import { SiteHeader } from '../../_components/site-header';
+import { SiteFooter } from '@/app/_components/site-footer';
+import { SiteHeader } from '@/app/_components/site-header';
 
 import type { Metadata } from 'next';
 
