@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+
 import { Card, CardHeader, CardTitle, CardContent } from '../../../_components/ui/card';
 
 const initialAmenities = [

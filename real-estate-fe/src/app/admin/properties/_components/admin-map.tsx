@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo, useRef } from "react";
+
 import geoData from "@/assets/danang-wards.json";
 import "leaflet/dist/leaflet.css";
 
@@ -161,7 +162,7 @@ export function AdminMap({ properties }: AdminMapProps) {
     let fillColor = "#ffffff"; // Trắng đục
     let fillOpacity = 0.3; // Fill trắng mờ
     let color = "#ffffff"; // Viền trắng
-    let weight = 1.5;
+    const weight = 1.5;
     let opacity = 0.6; // Viền trắng mờ
 
     if (count >= 5) {

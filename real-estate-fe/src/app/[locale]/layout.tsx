@@ -1,11 +1,11 @@
 import '../globals.css';
 
 import { DM_Sans, Instrument_Serif, Manrope } from 'next/font/google';
-
-import { APP_DESCRIPTION, APP_NAME } from '@/config/constants';
+import { notFound } from 'next/navigation';
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, setRequestLocale } from 'next-intl/server';
-import { notFound } from 'next/navigation';
+
+import { APP_DESCRIPTION, APP_NAME } from '@/config/constants';
 import { routing } from '@/i18n/routing';
 
 import type { Metadata } from 'next';

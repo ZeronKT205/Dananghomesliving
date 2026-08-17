@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import { useState } from 'react';
+
 import { Card, CardHeader, CardTitle, CardContent } from '../../../_components/ui/card';
 
 const initialImages = [

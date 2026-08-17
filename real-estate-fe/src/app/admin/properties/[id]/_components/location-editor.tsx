@@ -1,8 +1,10 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { Card, CardHeader, CardTitle, CardContent } from '../../../_components/ui/card';
+
 import { MapPicker } from '@/components/ui/map-picker';
+
+import { Card, CardHeader, CardTitle, CardContent } from '../../../_components/ui/card';
 
 const initialPlaces = [
   { id: 1, name: 'Bãi biển Mỹ Khê', time: '5 phút' },

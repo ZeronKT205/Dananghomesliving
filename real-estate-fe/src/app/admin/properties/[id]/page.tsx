@@ -1,15 +1,15 @@
-import { BasicInfo } from './_components/basic-info';
-import { Specifications } from './_components/specifications';
-import { MediaManager } from './_components/media-manager';
-import { DescriptionEditor } from './_components/description-editor';
-import { AmenitiesSelector } from './_components/amenities-selector';
-import { LocationEditor } from './_components/location-editor';
-import { PublicPreview } from './_components/public-preview';
-import { SimilarProperties } from './_components/similar-properties';
-import { SeoSettings } from './_components/seo-settings';
-import { PublishingSettings } from './_components/publishing-settings';
 import { ActivityLog } from './_components/activity-log';
+import { AmenitiesSelector } from './_components/amenities-selector';
+import { BasicInfo } from './_components/basic-info';
+import { DescriptionEditor } from './_components/description-editor';
+import { LocationEditor } from './_components/location-editor';
+import { MediaManager } from './_components/media-manager';
 import { PageHeader } from './_components/page-header';
+import { PublicPreview } from './_components/public-preview';
+import { PublishingSettings } from './_components/publishing-settings';
+import { SeoSettings } from './_components/seo-settings';
+import { SimilarProperties } from './_components/similar-properties';
+import { Specifications } from './_components/specifications';
 
 export default async function EditPropertyPage({
   params,

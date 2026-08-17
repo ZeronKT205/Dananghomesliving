@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
+
 import { MOCK_PROPERTIES } from '@/lib/mock-data';
 
 interface SimilarPropertiesPublicProps {

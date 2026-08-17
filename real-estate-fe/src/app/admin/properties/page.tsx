@@ -1,7 +1,7 @@
 import Link from 'next/link';
+
 import { IcBuilding, IcLayers, IcPlus } from '../_components/icons';
 import { PropertyCard } from '../_components/property-card';
-import { AdminMapWrapper } from './_components/admin-map-wrapper';
 import {
   EmptyState,
   PageHead,
@@ -14,6 +14,8 @@ import {
   Toolbar,
 } from '../_components/ui';
 import { GROUPS, PROPERTIES } from '../_data/mock';
+
+import { AdminMapWrapper } from './_components/admin-map-wrapper';
 
 const TABS = [
   { value: 'sale', label: 'Mua', icon: <IcBuilding size={14} /> },

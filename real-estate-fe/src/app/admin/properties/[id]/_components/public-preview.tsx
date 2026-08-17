@@ -1,4 +1,5 @@
 import Image from 'next/image';
+
 import { Card, CardHeader, CardTitle, CardContent } from '../../../_components/ui/card';
 
 export function PublicPreview() {

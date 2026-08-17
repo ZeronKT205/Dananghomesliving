@@ -1,4 +1,5 @@
-import { ReactNode } from 'react';
+import { type ReactNode } from 'react';
+
 import { Card, CardContent } from './ui/card';
 
 export function PlaceholderPage({ title, description, icon }: { title: string; description: string; icon: ReactNode }) {

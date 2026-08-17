@@ -1,15 +1,19 @@
 import { notFound } from 'next/navigation';
+
 import { MOCK_PROPERTIES } from '@/lib/mock-data';
+
+import { SiteFooter } from '../../../_components/site-footer';
+import { SiteHeader } from '../../../_components/site-header';
+
+import { ContactButtons } from './_components/contact-buttons';
+import { EnquiryForm } from './_components/enquiry-form';
 import { PropertyGallery } from './_components/property-gallery';
 import { PropertyHeader } from './_components/property-header';
-import { ContactButtons } from './_components/contact-buttons';
-import { PropertyTabs } from './_components/property-tabs';
-import { PropertyOverview } from './_components/property-overview';
 import { PropertyLocation } from './_components/property-location';
-import { EnquiryForm } from './_components/enquiry-form';
+import { PropertyOverview } from './_components/property-overview';
+import { PropertyTabs } from './_components/property-tabs';
 import { SimilarPropertiesPublic } from './_components/similar-properties-public';
-import { SiteHeader } from '../../../_components/site-header';
-import { SiteFooter } from '../../../_components/site-footer';
+
 
 export default async function PropertyDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;

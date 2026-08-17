@@ -1,6 +1,7 @@
+import { setRequestLocale } from 'next-intl/server';
+
 import { getArticles } from '@/lib/db/articles';
 import { getListingsByType } from '@/lib/db/listings';
-import { setRequestLocale } from 'next-intl/server';
 
 import { HeroSection } from '../_components/hero-section';
 import { JournalSection } from '../_components/journal-section';

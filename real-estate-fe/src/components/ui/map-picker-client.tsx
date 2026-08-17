@@ -1,10 +1,11 @@
 'use client';
 
+import L from 'leaflet';
 import { useEffect, useState, useMemo, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from 'react-leaflet';
-import L from 'leaflet';
+
 import 'leaflet/dist/leaflet.css';
-import { MapPickerProps } from './map-picker';
+import { type MapPickerProps } from './map-picker';
 
 const DEFAULT_CENTER: [number, number] = [16.0544, 108.2022]; // Đà Nẵng
 const CURRENT_LOCATION_ZOOM = 16;

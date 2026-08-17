@@ -1,13 +1,13 @@
 'use client';
 
-import { useEffect, useRef, useState, useTransition } from 'react';
 import { useLocale } from 'next-intl';
+import { useEffect, useRef, useState, useTransition } from 'react';
 
 import { ChevronDownIcon } from '@/components/ui/icons';
 import { LANGUAGES } from '@/config/constants';
-import { cn } from '@/lib/utils';
-import { usePathname, useRouter } from '@/i18n/routing';
 import type { LanguageCode } from '@/config/constants';
+import { usePathname, useRouter } from '@/i18n/routing';
+import { cn } from '@/lib/utils';
 
 export function LanguageMenu({ className }: { className?: string }) {
   const [open, setOpen] = useState(false);
