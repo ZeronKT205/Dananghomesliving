@@ -8,19 +8,19 @@ import { cn } from '@/lib/utils';
 import type { ListingType } from '@/types';
 
 const TABS: { value: ListingType; label: string }[] = [
-  { value: 'sale', label: 'BẤT ĐỘNG SẢN MUA' },
-  { value: 'rent', label: 'BẤT ĐỘNG SẢN THUÊ' },
+  { value: 'sale', label: 'BUY' },
+  { value: 'rent', label: 'RENT' },
 ];
 
-export function PropertySearch() {
+export function PropertySearch({ redirectOnlyOnSubmit = false }: { redirectOnlyOnSubmit?: boolean }) {
   return (
-    <Suspense fallback={<div className="h-28 w-full bg-white/50 animate-pulse rounded-2xl" />}>
-      <PropertySearchInner />
+    <Suspense fallback={null}>
+      <PropertySearchInner redirectOnlyOnSubmit={redirectOnlyOnSubmit} />
     </Suspense>
   );
 }
 
-function PropertySearchInner() {
+function PropertySearchInner({ redirectOnlyOnSubmit }: { redirectOnlyOnSubmit: boolean }) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -41,9 +41,12 @@ function PropertySearchInner() {
 
   const handleTabChange = (newTab: ListingType) => {
     setTab(newTab);
-    const params = new URLSearchParams(searchParams.toString());
-    params.set('type', newTab);
-    router.push(`/properties?${params.toString()}`, { scroll: false });
+    // Chỉ chuyển hướng ngay nếu KHÔNG PHẢI trang Home (khi redirectOnlyOnSubmit = false)
+    if (!redirectOnlyOnSubmit) {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set('type', newTab);
+      router.push(`/properties?${params.toString()}`, { scroll: false });
+    }
   };
 
   const handleSubmit = (event: React.FormEvent) => {
@@ -59,11 +62,14 @@ function PropertySearchInner() {
       params.set('propertyType', selectedType);
     }
 
+    // Chuyển hướng sang trang danh sách bất động sản với các tham số tìm kiếm
     router.push(`/properties?${params.toString()}`, { scroll: false });
 
-    requestAnimationFrame(() => {
-      document.getElementById('properties-results')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    });
+    if (!redirectOnlyOnSubmit) {
+      requestAnimationFrame(() => {
+        document.getElementById('properties-results')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    }
 
     setTimeout(() => {
       setIsSearching(false);
@@ -71,63 +77,62 @@ function PropertySearchInner() {
   };
 
   return (
-    <div className="w-full">
+    <div className="w-full flex flex-col items-center">
+      {/* 1. Centered BUY & RENT 2-Button Toggle with Smooth Sliding Pill */}
+      <div
+        role="tablist"
+        aria-label="Listing type"
+        className="relative inline-flex bg-white p-1 rounded-none border border-line shadow-sm mb-3 z-10 overflow-hidden"
+      >
+        {/* Sliding Pill Background Indicator */}
+        <div
+          className={cn(
+            'absolute top-1 bottom-1 w-[calc(50%-4px)] bg-navy rounded-none transition-all duration-300 ease-out shadow-xs',
+            tab === 'sale' ? 'left-1' : 'left-[calc(50%+2px)]'
+          )}
+        />
+
+        {TABS.map((item) => {
+          const isActive = item.value === tab;
+          return (
+            <button
+              key={item.value}
+              type="button"
+              role="tab"
+              aria-selected={isActive}
+              onClick={() => handleTabChange(item.value)}
+              className={cn(
+                'relative z-10 px-10 py-2.5 text-[11.5px] font-bold tracking-[0.18em] uppercase transition-colors duration-200 cursor-pointer rounded-none min-w-[120px] text-center',
+                isActive
+                  ? 'text-white font-extrabold'
+                  : 'text-navy/75 hover:text-navy'
+              )}
+            >
+              {item.label}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* 2. Compact Filter Bar */}
       <form
         onSubmit={handleSubmit}
-        className="w-full bg-white/95 backdrop-blur-md border border-line shadow-lift rounded-2xl p-4 sm:p-5 transition-all"
-        role="search"
-        aria-label="Tìm kiếm bất động sản Đà Nẵng"
+        className="w-full bg-white border border-line shadow-lift rounded-none p-2 sm:p-3"
       >
-        {/* Top bar: Tab Selectors */}
-        <div className="flex items-center justify-between border-b border-line pb-3.5 mb-4">
-          <div 
-            role="tablist"
-            aria-label="Loại hình giao dịch"
-            className="inline-flex bg-paper p-1 rounded-xl border border-line"
-          >
-            {TABS.map((item) => {
-              const isActive = item.value === tab;
-              return (
-                <button
-                  key={item.value}
-                  type="button"
-                  role="tab"
-                  aria-selected={isActive}
-                  onClick={() => handleTabChange(item.value)}
-                  className={cn(
-                    'px-4 sm:px-6 py-2 text-[11px] font-bold tracking-[0.14em] uppercase transition-all duration-200 cursor-pointer rounded-lg text-center',
-                    isActive 
-                      ? 'bg-navy text-white shadow-xs font-bold' 
-                      : 'text-muted hover:text-navy hover:bg-black/5'
-                  )}
-                >
-                  {item.label}
-                </button>
-              );
-            })}
-          </div>
-
-          <span className="hidden md:inline-flex items-center gap-1.5 text-xs text-muted font-medium">
-            <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-            Cập nhật liên tục 120+ bất động sản
-          </span>
-        </div>
-
-        {/* Filter Selects Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_1fr_auto] gap-3 items-center">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_1fr_auto] gap-2 items-center">
           {/* Area */}
-          <div className="bg-paper border border-line/80 hover:border-gold/50 focus-within:border-gold px-4 py-2.5 rounded-xl transition-colors">
+          <div className="bg-paper border border-line px-3.5 py-2 rounded-none flex flex-col justify-center">
             <label
-              htmlFor="area-select"
-              className="text-[9px] font-bold tracking-[0.14em] text-gold uppercase block mb-0.5"
+              htmlFor="area"
+              className="text-[8px] font-bold tracking-[0.14em] text-muted uppercase block mb-0.5"
             >
               Khu vực (Area)
             </label>
             <select
-              id="area-select"
+              id="area"
               value={selectedArea}
               onChange={(e) => setSelectedArea(e.target.value)}
-              className="text-navy font-medium focus:outline-none w-full cursor-pointer bg-transparent py-0.5 text-[13px] tracking-tight"
+              className="text-navy focus:outline-none w-full cursor-pointer bg-transparent py-0 text-[12.5px] font-semibold"
             >
               {SEARCH_AREAS.map((option) => (
                 <option key={option} value={option}>{option}</option>
@@ -136,18 +141,18 @@ function PropertySearchInner() {
           </div>
 
           {/* Property Type */}
-          <div className="bg-paper border border-line/80 hover:border-gold/50 focus-within:border-gold px-4 py-2.5 rounded-xl transition-colors">
+          <div className="bg-paper border border-line px-3.5 py-2 rounded-none flex flex-col justify-center">
             <label
-              htmlFor="property-type-select"
-              className="text-[9px] font-bold tracking-[0.14em] text-gold uppercase block mb-0.5"
+              htmlFor="property-type"
+              className="text-[8px] font-bold tracking-[0.14em] text-muted uppercase block mb-0.5"
             >
               Loại hình (Property Type)
             </label>
             <select
-              id="property-type-select"
+              id="property-type"
               value={selectedType}
               onChange={(e) => setSelectedType(e.target.value)}
-              className="text-navy font-medium focus:outline-none w-full cursor-pointer bg-transparent py-0.5 text-[13px] tracking-tight"
+              className="text-navy focus:outline-none w-full cursor-pointer bg-transparent py-0 text-[12.5px] font-semibold"
             >
               {SEARCH_PROPERTY_TYPES.map((option) => (
                 <option key={option} value={option}>{option}</option>
@@ -156,17 +161,17 @@ function PropertySearchInner() {
           </div>
 
           {/* Budget */}
-          <div className="bg-paper border border-line/80 hover:border-gold/50 focus-within:border-gold px-4 py-2.5 rounded-xl transition-colors">
+          <div className="bg-paper border border-line px-3.5 py-2 rounded-none flex flex-col justify-center">
             <label
-              htmlFor="budget-select"
-              className="text-[9px] font-bold tracking-[0.14em] text-gold uppercase block mb-0.5"
+              htmlFor="budget"
+              className="text-[8px] font-bold tracking-[0.14em] text-muted uppercase block mb-0.5"
             >
               Mức ngân sách (Budget)
             </label>
             <select
-              id="budget-select"
+              id="budget"
               defaultValue={SEARCH_BUDGETS[0]}
-              className="text-navy font-medium focus:outline-none w-full cursor-pointer bg-transparent py-0.5 text-[13px] tracking-tight"
+              className="text-navy focus:outline-none w-full cursor-pointer bg-transparent py-0 text-[12.5px] font-semibold"
             >
               {SEARCH_BUDGETS.map((option) => (
                 <option key={option} value={option}>{option}</option>
@@ -174,11 +179,11 @@ function PropertySearchInner() {
             </select>
           </div>
 
-          {/* Search Action Button */}
+          {/* Submit Search Button with Loading Spinner & Scroll Action */}
           <button
             type="submit"
             disabled={isSearching}
-            className="w-full lg:w-auto bg-navy hover:bg-gold text-white hover:text-navy px-8 py-4 text-[12px] font-bold uppercase tracking-[0.16em] transition-all rounded-xl cursor-pointer flex items-center justify-center gap-2.5 shrink-0 active:scale-98 shadow-sm hover:shadow-md disabled:opacity-75"
+            className="w-full lg:w-auto bg-navy hover:bg-gold text-white hover:text-navy px-7 py-3.5 text-[11px] font-bold uppercase tracking-[0.16em] transition-all rounded-none cursor-pointer flex items-center justify-center gap-2 shrink-0 active:scale-97 shadow-sm disabled:opacity-75"
           >
             {isSearching ? (
               <>
@@ -191,7 +196,7 @@ function PropertySearchInner() {
             ) : (
               <>
                 TÌM KIẾM
-                <span className="text-base leading-none transition-transform duration-300 group-hover:translate-x-1">→</span>
+                <span className="transition-transform duration-300 group-hover:translate-x-1">→</span>
               </>
             )}
           </button>
@@ -200,4 +205,3 @@ function PropertySearchInner() {
     </div>
   );
 }
-

@@ -1,6 +1,7 @@
 import { useTranslations } from 'next-intl';
 
 import { ButtonLink } from '@/components/ui/button';
+import { SectionKicker } from '@/components/ui/section-heading';
 import { HERO_PROOF_POINTS } from '@/config/constants';
 
 import { HeroGallery } from './hero-gallery';
@@ -10,76 +11,48 @@ export function HeroSection() {
   const t = useTranslations('Hero');
 
   return (
-    <section id="hero" aria-labelledby="hero-title" className="bg-ivory relative pt-8 pb-12 lg:pt-14 lg:pb-16 overflow-hidden">
-      {/* Decorative Gold Accent Background */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute -top-24 -left-24 h-[420px] w-[420px] rounded-full border border-gold/15 blur-[1px] hidden lg:block"
-      />
-
-      {/* Structured Data (JSON-LD) for SEO & Google Search Console indexing */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            '@context': 'https://schema.org',
-            '@type': 'RealEstateAgent',
-            name: 'Da Nang Homes & Living',
-            description: 'Bất động sản cao cấp tại Đà Nẵng - Mua bán & Cho thuê Căn hộ, Biệt thự biển sang trọng.',
-            url: 'https://dananghomesliving.com',
-            address: {
-              '@type': 'PostalAddress',
-              addressLocality: 'Đà Nẵng',
-              addressCountry: 'VN',
-            },
-            areaServed: 'Đà Nẵng',
-            priceRange: '$$$',
-          }),
-        }}
+    <section id="top" aria-labelledby="hero-title" className="bg-ivory relative overflow-hidden pb-12 lg:pb-16">
+      {/* Vòng tròn vàng mảnh thò ra mép trái */}
+      <span
+        aria-hidden
+        className="border-gold/20 pointer-events-none absolute top-24 -left-28 hidden h-[420px] w-[420px] rounded-full border lg:block"
       />
 
       <div className="container-page relative">
-        {/* Main Grid: Copy Left, Gallery Right */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 xl:gap-14 items-center mb-8 lg:mb-12">
-          {/* Left Column: Heading, Lead & CTAs */}
-          <div className="lg:col-span-6 z-10 flex flex-col justify-center">
-            <div className="inline-flex items-center gap-2 mb-3">
-              <span className="h-px w-6 bg-gold" />
-              <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-gold">
-                {t('subtitle')}
-              </span>
-            </div>
+        <div className="grid items-center gap-12 py-12 lg:grid-cols-[minmax(0,0.86fr)_minmax(480px,1.14fr)] lg:gap-14 lg:py-16">
+          <div className="relative z-10">
+            <SectionKicker>{t('subtitle')}</SectionKicker>
 
             <h1
               id="hero-title"
-              className="font-display text-navy text-4xl sm:text-5xl xl:text-6xl font-normal leading-[1.08] tracking-tight text-balance"
+              className="font-display text-navy mt-5 text-[clamp(40px,5.4vw,68px)] leading-[0.92] font-normal tracking-[-0.035em] text-balance"
             >
               {t.rich('title', {
-                gold: (chunks) => <span className="text-gold italic font-serif block sm:inline">{chunks}</span>
+                gold: (chunks) => <span className="text-gold block">{chunks}</span>
               })}
             </h1>
 
-            <p className="mt-5 text-[15px] sm:text-[16px] text-muted leading-relaxed max-w-xl">
-              Bộ sưu tập bất động sản hạng sang, căn hộ mặt biển và biệt thự riêng tư được tuyển chọn dành cho khách hàng quốc tế, cư dân dài hạn và nhà đầu tư tại Đà Nẵng.
+            <p className="mt-6 max-w-[520px] text-[15px] text-[#5f6b78]">
+              A carefully curated collection of premium apartments, beachfront residences and private
+              villas for international buyers, long-stay residents and investors.
             </p>
 
-            <div className="mt-7 flex flex-wrap items-center gap-3">
-              <ButtonLink href="#rent" variant="gold" className="px-6 py-3.5 text-xs font-bold uppercase tracking-wider rounded-xl">
-                Xem bất động sản thuê <span aria-hidden>→</span>
+            <div className="mt-7 flex flex-wrap gap-3">
+              <ButtonLink href="#rent" variant="gold">
+                View long-term rentals <span aria-hidden>→</span>
               </ButtonLink>
-              <ButtonLink href="#buy" variant="outline" className="text-navy px-6 py-3.5 text-xs font-bold uppercase tracking-wider border-navy/20 hover:border-navy rounded-xl">
-                Khám phá mua nhà
+              <ButtonLink href="#buy" variant="outline" className="text-navy">
+                Explore homes to buy
               </ButtonLink>
             </div>
 
-            {/* Proof Points Stats */}
-            <dl className="mt-8 pt-6 border-t border-line grid grid-cols-3 gap-4 max-w-md">
+            <dl className="border-line mt-9 flex flex-wrap gap-x-8 gap-y-4 border-t pt-6">
               {HERO_PROOF_POINTS.map((point) => (
-                <div key={point.label} className="flex flex-col">
-                  <dd className="font-display text-navy text-2xl font-semibold leading-none">
+                <div key={point.label}>
+                  <dd className="font-display text-navy text-[24px] leading-none font-normal">
                     {point.value}
                   </dd>
-                  <dt className="mt-1.5 text-[10px] font-bold tracking-widest text-muted uppercase">
+                  <dt className="text-muted mt-1.5 text-[9px] font-bold tracking-[0.14em] uppercase">
                     {point.label}
                   </dt>
                 </div>
@@ -87,15 +60,12 @@ export function HeroSection() {
             </dl>
           </div>
 
-          {/* Right Column: Hero Gallery */}
-          <div className="lg:col-span-6 z-10">
-            <HeroGallery />
-          </div>
+          <HeroGallery />
         </div>
 
-        {/* Integrated Property Search Bar */}
-        <div className="relative z-20">
-          <PropertySearch />
+        {/* Integrated Property Search on Home Page with redirectOnlyOnSubmit={true} */}
+        <div className="relative z-20 pt-2">
+          <PropertySearch redirectOnlyOnSubmit={true} />
         </div>
       </div>
     </section>
