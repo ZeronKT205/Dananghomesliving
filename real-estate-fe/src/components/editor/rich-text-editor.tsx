@@ -215,11 +215,11 @@ export function RichTextEditor({ value, onChange, placeholder, contentKey }: Ric
   );
 }
 
-/* ── Thanh công cụ cố định ─────────────────────────────── */
+/* ── Thanh công cụ cố định & Thao tác chèn Block ─────────────────────────────── */
 
 function Toolbar({ editor }: { editor: Editor }) {
   return (
-    <div className="border-line bg-ivory/40 sticky top-14 z-10 flex flex-wrap items-center gap-0.5 rounded-t-md border-b px-2 py-1.5">
+    <div className="border-line bg-ivory/40 sticky top-14 z-10 flex flex-wrap items-center gap-1 rounded-t-md border-b px-2.5 py-2">
       <select
         value={editor.isActive('heading', { level: 2 }) ? 'h2' : editor.isActive('heading', { level: 3 }) ? 'h3' : 'p'}
         onChange={(e) => {
@@ -227,11 +227,11 @@ function Toolbar({ editor }: { editor: Editor }) {
           if (v === 'p') editor.chain().focus().setParagraph().run();
           else editor.chain().focus().toggleHeading({ level: v === 'h2' ? 2 : 3 }).run();
         }}
-        className="border-line text-navy mr-1 h-7 rounded border bg-white px-2 text-[12px] font-medium"
+        className="border-line text-navy mr-1 h-7.5 rounded border bg-white px-2 text-[12px] font-semibold cursor-pointer"
       >
-        <option value="p">Nội dung</option>
-        <option value="h2">Tiêu đề lớn</option>
-        <option value="h3">Tiêu đề nhỏ</option>
+        <option value="p">Nội dung (Paragraph)</option>
+        <option value="h2">Tiêu đề lớn (Heading 2)</option>
+        <option value="h3">Tiêu đề nhỏ (Heading 3)</option>
       </select>
 
       <Btn active={editor.isActive('bold')} onClick={() => editor.chain().focus().toggleBold().run()} label="Đậm (Ctrl+B)">
@@ -254,14 +254,28 @@ function Toolbar({ editor }: { editor: Editor }) {
         ❝
       </Btn>
       <Sep />
-      <Btn active={editor.isActive('callout')} onClick={() => editor.chain().focus().setCallout('note').run()} label="Hộp ghi nhớ">
-        📌
-      </Btn>
+      {/* Quick Insert Components */}
+      <button
+        type="button"
+        onClick={() => editor.chain().focus().setCallout('note').run()}
+        className="bg-gold/10 hover:bg-gold/20 text-[#8f6614] border border-gold/30 rounded px-2 py-1 text-[11.5px] font-bold flex items-center gap-1 transition-colors"
+        title="Chèn hộp ghi nhớ"
+      >
+        📌 Ghi nhớ
+      </button>
+
+      <button
+        type="button"
+        onClick={() => promptImage(editor)}
+        className="bg-navy/5 hover:bg-navy/10 text-navy border border-line rounded px-2 py-1 text-[11.5px] font-bold flex items-center gap-1 transition-colors"
+        title="Chèn ảnh + chú thích"
+      >
+        🖼 Chèn ảnh
+      </button>
+
+      <Sep />
       <Btn active={editor.isActive('link')} onClick={() => promptLink(editor)} label="Liên kết">
         🔗
-      </Btn>
-      <Btn active={false} onClick={() => promptImage(editor)} label="Chèn ảnh">
-        🖼
       </Btn>
       <Sep />
       <Btn active={false} onClick={() => editor.chain().focus().undo().run()} label="Hoàn tác">
@@ -270,11 +284,10 @@ function Toolbar({ editor }: { editor: Editor }) {
       <Btn active={false} onClick={() => editor.chain().focus().redo().run()} label="Làm lại">
         ↷
       </Btn>
-
-      <span className="text-muted ml-auto pr-1 text-[11px]">Bôi đen chữ hoặc bấm chuột phải để có thêm lựa chọn</span>
     </div>
   );
 }
+
 
 function Btn({
   active,

@@ -8,6 +8,7 @@ import {
   BLOCKS_SCHEMA,
   blocksToHtml,
   inspectBlocks,
+  normalizeBlocks,
   type ArticleBlock,
 } from './article-blocks';
 import { callGemini } from './gemini-client';
@@ -135,7 +136,8 @@ async function askForBlocks(system: string, user: string): Promise<RawCompose> {
 }
 
 function normalize(raw: RawCompose): { article: ComposedArticle; blocks: ArticleBlock[] } {
-  const blocks = Array.isArray(raw.blocks) ? raw.blocks : [];
+  // Chuẩn hoá trước: mô hình điền các trường optional không nhất quán.
+  const blocks = normalizeBlocks(raw.blocks);
   const html = sanitizeArticleHtml(blocksToHtml(blocks));
 
   const tags = Array.isArray(raw.tags)

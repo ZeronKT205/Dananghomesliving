@@ -94,6 +94,66 @@ function isCalloutVariant(v: unknown): v is CalloutVariant {
   return v === 'note' || v === 'tip' || v === 'warning';
 }
 
+/**
+ * Chuẩn hoá khối về đúng một hình dạng trước khi dựng HTML hoặc đo.
+ *
+ * Cần thiết vì schema JSON chỉ bắt buộc `type`; mọi trường khác đều optional,
+ * nên mô hình tự do chọn cách điền. Thực tế nó trả hộp ghi nhớ bằng `text`
+ * thay vì `paragraphs` — khối bị bỏ qua lúc dựng HTML trong khi hàm đo vẫn
+ * đếm là có, tức số liệu báo cho biên tập bị sai.
+ *
+ * Chuẩn hoá một lần ở đây, cả render lẫn đo đều dùng kết quả này.
+ */
+export function normalizeBlocks(input: unknown): ArticleBlock[] {
+  if (!Array.isArray(input)) return [];
+  const out: ArticleBlock[] = [];
+
+  for (const b of input) {
+    if (!b || typeof b !== 'object') continue;
+    const raw = b as Record<string, unknown>;
+    const text = typeof raw.text === 'string' ? raw.text : '';
+    const list = Array.isArray(raw.items) ? raw.items.map(String).filter((i) => i.trim()) : [];
+    const paras = Array.isArray(raw.paragraphs) ? raw.paragraphs.map(String).filter((p) => p.trim()) : [];
+
+    switch (raw.type) {
+      case 'paragraph':
+        if (text.trim()) out.push({ type: 'paragraph', text });
+        break;
+
+      case 'heading':
+        if (text.trim()) out.push({ type: 'heading', level: raw.level === 3 ? 3 : 2, text });
+        break;
+
+      case 'list':
+        if (list.length) out.push({ type: 'list', ordered: raw.ordered === true, items: list });
+        break;
+
+      case 'callout': {
+        // Nhận cả `paragraphs` lẫn `text` — mô hình dùng lẫn lộn hai trường.
+        const body = paras.length ? paras : text.trim() ? [text] : [];
+        if (body.length) {
+          out.push({
+            type: 'callout',
+            variant: isCalloutVariant(raw.variant) ? raw.variant : 'note',
+            paragraphs: body,
+          });
+        }
+        break;
+      }
+
+      case 'quote':
+        if (text.trim()) out.push({ type: 'quote', text });
+        break;
+
+      case 'divider':
+        out.push({ type: 'divider' });
+        break;
+    }
+  }
+
+  return out;
+}
+
 /** Blocks → HTML đúng schema của trình soạn thảo. */
 export function blocksToHtml(blocks: ArticleBlock[]): string {
   const out: string[] = [];
