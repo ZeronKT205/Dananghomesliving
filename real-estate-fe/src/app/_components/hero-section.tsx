@@ -63,12 +63,13 @@ export function HeroSection() {
           <HeroGallery />
         </div>
 
-        {/* Integrated Property Search on Home Page with redirectOnlyOnSubmit={true} */}
+        {/* Integrated Property Search on Home Page with layout="inline" */}
         <div className="relative z-20 pt-2">
-          <PropertySearch redirectOnlyOnSubmit={true} />
+          <PropertySearch layout="inline" redirectOnlyOnSubmit={true} />
         </div>
       </div>
     </section>
   );
 }
+
 
