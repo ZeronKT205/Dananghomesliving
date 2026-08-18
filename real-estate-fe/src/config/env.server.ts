@@ -39,6 +39,16 @@ const ServerEnvSchema = z.object({
   // sửa CORS…). Thao tác upload/download thường ngày dùng cặp access key ở trên.
   CLOUDFLARE_API_TOKEN: z.string().optional(),
 
+  // ---------- AI (dựng bài + dịch) ----------
+  // Console Anthropic > API Keys. Có khoá này là CMS dùng Claude.
+  ANTHROPIC_API_KEY: z.string().optional(),
+  ANTHROPIC_MODEL: z.string().optional(),
+  // Google AI Studio. Đường dự phòng — gói miễn phí chỉ 20 lượt/ngày mỗi model.
+  GEMINI_API_KEY: z.string().optional(),
+  TRANSLATION_MODEL: z.string().optional(),
+  // 'anthropic' | 'gemini'. Bỏ trống thì tự chọn Anthropic nếu có khoá.
+  AI_PROVIDER: z.enum(['anthropic', 'gemini']).optional(),
+
   // ---------- Origin được phép gọi API ----------
   // Danh sách origin, phân tách bằng dấu phẩy. Dùng cho CORS ở route handler
   // và để kiểm tra Origin/Referer khi chống CSRF.

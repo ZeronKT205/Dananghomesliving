@@ -22,6 +22,7 @@ export function ComposePanel({
   localeLabel,
   hasContent,
   canTranslate,
+  modelName,
   onComposed,
 }: {
   locale: string;
@@ -29,6 +30,8 @@ export function ComposePanel({
   /** Đang có nội dung → cảnh báo trước khi ghi đè. */
   hasContent: boolean;
   canTranslate: boolean;
+  /** Tên model đang chạy — hiện ra để biên tập biết bài do đâu ra. */
+  modelName: string;
   onComposed: (r: ComposedPayload) => void;
 }) {
   const [open, setOpen] = useState(false);
@@ -91,6 +94,7 @@ export function ComposePanel({
             Dán ghi chú, bản nháp hay nội dung copy từ nơi khác. AI viết thành bài 800–1200 từ có tiêu đề mục, hộp ghi
             nhớ, danh sách và in đậm số liệu — bằng {localeLabel}.
           </p>
+          <p className="text-muted mt-1 text-[11px]">Model: {modelName}</p>
         </div>
         <button
           type="button"

@@ -5,7 +5,7 @@ import { ApiError } from '@/lib/api/http';
 import { sanitizeArticleHtml } from '@/lib/sanitize-html';
 
 import { applySegments, blocksToHtml, blocksToSegments, htmlToBlocks } from './article-blocks';
-import { callGemini, isGeminiConfigured } from './gemini-client';
+import { callAi, isAiConfigured } from './ai-client';
 
 /** Dịch nội dung bài viết sang các ngôn ngữ còn lại bằng Gemini. */
 
@@ -26,17 +26,36 @@ export interface TranslatableArticle {
 export type TranslationResult = Partial<Record<Locale, TranslatableArticle>>;
 
 /**
- * Model KHÔNG nhận và KHÔNG trả HTML. Nó chỉ thấy `segments` — mảng chuỗi đã
- * bóc ra khỏi khung bài — và phải trả về đúng chừng ấy chuỗi theo đúng thứ tự.
- * Khung HTML do server dựng lại, nên bản dịch luôn có y hệt tiêu đề mục, danh
- * sách và hộp ghi nhớ như bản gốc.
+ * Model KHÔNG nhận và KHÔNG trả HTML. Nó chỉ thấy các đoạn văn bản đã bóc ra
+ * khỏi khung bài, và phải trả lại đúng chừng ấy đoạn. Khung HTML do server dựng
+ * lại, nên bản dịch luôn có y hệt tiêu đề mục, danh sách và hộp ghi nhớ như bản
+ * gốc.
+ *
+ * Mỗi đoạn là một OBJECT có số thứ tự `i`, không phải chuỗi trần.
+ *
+ * Lý do: đã đo được lần bản tiếng Trung trả về 2.473 phần tử cho bài 35 đoạn —
+ * model tách từng KÝ TỰ thành một phần tử. Mảng chuỗi trần thì không có gì để
+ * phát hiện sớm, và cũng không có cách nào ghép lại. Bắt buộc mỗi phần tử phải
+ * có số thứ tự khiến kiểu hỏng đó không thành hình được, đồng thời cho phép
+ * ghép theo số chứ không theo vị trí — model đảo thứ tự cũng không sao.
  */
 const RESPONSE_SCHEMA = {
   type: 'OBJECT',
   properties: {
     title: { type: 'STRING' },
     excerpt: { type: 'STRING' },
-    segments: { type: 'ARRAY', items: { type: 'STRING' } },
+    segments: {
+      type: 'ARRAY',
+      items: {
+        type: 'OBJECT',
+        properties: {
+          i: { type: 'INTEGER' },
+          text: { type: 'STRING' },
+        },
+        propertyOrdering: ['i', 'text'],
+        required: ['i', 'text'],
+      },
+    },
   },
   propertyOrdering: ['title', 'excerpt', 'segments'],
   required: ['title', 'excerpt', 'segments'],
@@ -45,7 +64,50 @@ const RESPONSE_SCHEMA = {
 interface RawTranslation {
   title: string;
   excerpt: string;
-  segments: string[];
+  segments: Array<{ i: number; text: string }>;
+}
+
+/**
+ * Xếp các đoạn đã dịch về đúng thứ tự gốc.
+ *
+ * Trả `null` nếu thiếu bất kỳ số thứ tự nào — thà báo hỏng một ngôn ngữ còn hơn
+ * đăng bài thủng mất vài đoạn mà không ai để ý.
+ */
+function orderSegments(raw: RawTranslation['segments'], expected: number): string[] | null {
+  if (!Array.isArray(raw)) return null;
+
+  const byIndex = new Map<number, string>();
+  for (const seg of raw) {
+    if (!seg || typeof seg !== 'object') continue;
+    const i = Number(seg.i);
+    if (!Number.isInteger(i) || i < 0 || i >= expected) continue;
+    // Trùng số thì lấy bản đầu: bản sau thường là do model tự lặp lại.
+    if (!byIndex.has(i)) byIndex.set(i, String(seg.text ?? ''));
+  }
+
+  if (byIndex.size !== expected) return null;
+  return Array.from({ length: expected }, (_, i) => byIndex.get(i)!);
+}
+
+/**
+ * Bỏ dấu tiếng Việt — chỉ dùng cho bản dịch sang ngôn ngữ KHÁC tiếng Việt.
+ *
+ * Prompt đã yêu cầu viết tên riêng dạng Latin không dấu, nhưng model tuân
+ * không đều: đã đo được bản tiếng Hàn giữ nguyên "An Thượng" ở tiêu đề trong
+ * khi thân bài viết đúng "An Thuong". Luật này ép được bằng code thì không nên
+ * trông vào model.
+ *
+ * An toàn với cả bốn ngôn ngữ đích: chữ Hán và Hangul không mang dấu tổ hợp
+ * trong dải U+0300–U+036F, nên chỉ những từ tiếng Việt còn sót lại bị đổi.
+ * NFC ở cuối ghép lại âm tiết Hangul mà NFD vừa tách ra.
+ */
+export function stripVietnameseDiacritics(text: string): string {
+  return text
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/đ/g, 'd')
+    .replace(/Đ/g, 'D')
+    .normalize('NFC');
 }
 
 function systemPrompt(from: Locale, to: Locale): string {
@@ -53,9 +115,11 @@ function systemPrompt(from: Locale, to: Locale): string {
     `You translate real-estate editorial content for a Da Nang luxury property agency from ${LOCALE_NAME[from]} into ${LOCALE_NAME[to]}.`,
     '',
     'Input and output shape:',
-    '- `segments` is an ordered array of text fragments taken from one article: paragraphs, section titles, list items, callout lines.',
-    '- Return EXACTLY the same number of segments, in the same order. One input segment produces one output segment.',
-    '- Never merge two segments, never split one, never drop an empty-looking one, never add a segment of your own.',
+    '- The input `segments` is a numbered list of text fragments from ONE article: paragraphs, section titles, list items, callout lines.',
+    '- Return one object per input segment: { "i": <the same number>, "text": "<the translation>" }.',
+    '- `i` must repeat the number of the input segment you translated. Never renumber, never skip a number, never invent one.',
+    '- `text` is the WHOLE translated fragment as a single string. Never split a fragment into characters, words or sentences.',
+    '- Return exactly as many objects as there are input segments — no more, no fewer.',
     '- A segment may look like a fragment out of context. Translate it as part of the same article, but keep it self-contained.',
     '',
     'Formatting markers inside a segment:',
@@ -83,9 +147,16 @@ async function translateOne(source: TranslatableArticle, from: Locale, to: Local
   const blocks = htmlToBlocks(source.content);
   const segments = blocksToSegments(blocks);
 
-  const parsed = await callGemini<RawTranslation>({
+  const parsed = await callAi<RawTranslation>({
     system: systemPrompt(from, to),
-    user: JSON.stringify({ title: source.title, excerpt: source.excerpt, segments }),
+    // Nói thẳng số đoạn phải trả về, và đánh số sẵn đầu vào: model bám theo con
+    // số cụ thể tốt hơn nhiều so với luật chung "giữ đúng số lượng".
+    user: JSON.stringify({
+      title: source.title,
+      excerpt: source.excerpt,
+      segment_count: segments.length,
+      segments: segments.map((text, i) => ({ i, text })),
+    }),
     schema: RESPONSE_SCHEMA,
     label: `dịch sang ${LOCALE_NAME[to]}`,
     // 90s là thiếu — đã đo bản tiếng Trung của một bài 700 từ chạm hạn và
@@ -93,7 +164,13 @@ async function translateOne(source: TranslatableArticle, from: Locale, to: Local
     timeoutMs: 150_000,
   });
 
-  const translatedBlocks = applySegments(blocks, Array.isArray(parsed.segments) ? parsed.segments.map(String) : []);
+  const ordered = orderSegments(parsed.segments, segments.length);
+
+  // Bản tiếng Việt giữ nguyên dấu; ba ngôn ngữ còn lại chỉ được dùng Latin
+  // không dấu cho tên riêng Việt.
+  const plain = (t: string) => (to === 'vi' ? t : stripVietnameseDiacritics(t));
+
+  const translatedBlocks = ordered ? applySegments(blocks, ordered.map(plain)) : null;
 
   if (!translatedBlocks) {
     throw new Error(
@@ -102,8 +179,8 @@ async function translateOne(source: TranslatableArticle, from: Locale, to: Local
   }
 
   return {
-    title: parsed.title?.trim() ?? '',
-    excerpt: parsed.excerpt?.trim() ?? '',
+    title: plain(parsed.title?.trim() ?? ''),
+    excerpt: plain(parsed.excerpt?.trim() ?? ''),
     // Vẫn sanitize dù HTML do server dựng: chữ trong đoạn là của model, và
     // `blocksToHtml` escape trước khi ghép nên đây chỉ là lớp chắn thứ hai.
     content: sanitizeArticleHtml(blocksToHtml(translatedBlocks)),
@@ -142,5 +219,5 @@ export async function translateArticle(
 }
 
 export function isTranslationConfigured(): boolean {
-  return isGeminiConfigured();
+  return isAiConfigured();
 }

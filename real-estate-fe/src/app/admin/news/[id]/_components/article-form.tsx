@@ -46,12 +46,15 @@ export function ArticleForm({
   initial,
   categories,
   translationEnabled,
+  modelName,
   authorName,
 }: {
   initial: ArticleFormValue;
   categories: { id: string; name: string }[];
-  /** Có GEMINI_API_KEY hay không — quyết định hiện nút dịch. */
+  /** Có khoá AI hay không — quyết định hiện nút dựng bài và dịch. */
   translationEnabled: boolean;
+  /** Model đang chạy, hiện cho biên tập biết bài do đâu ra. */
+  modelName: string;
   /** Tên admin đang đăng nhập; hiển thị để biết bài sẽ đứng tên ai. */
   authorName: string;
 }) {
@@ -175,8 +178,7 @@ export function ArticleForm({
       }
       setDirty(false);
       setMessage(res.message ?? 'Đã lưu');
-      if (isNew && res.id) router.replace(`/admin/news/${res.id}`);
-      else router.refresh();
+      router.push('/admin/news');
     });
   }
 
@@ -194,6 +196,14 @@ export function ArticleForm({
       {/* Top Header Bar */}
       <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-4 border border-line shadow-xs">
         <div>
+          <div className="flex items-center gap-2 mb-1">
+            <Link
+              href="/admin/news"
+              className="text-muted hover:text-navy text-[12px] font-bold inline-flex items-center gap-1 transition-colors"
+            >
+              ← Quay lại danh sách tin tức
+            </Link>
+          </div>
           <div className="flex items-center gap-2">
             <span className="bg-navy text-white text-[10px] font-bold tracking-widest uppercase px-2 py-0.5">
               WYSIWYG CANVAS
@@ -242,6 +252,7 @@ export function ArticleForm({
               localeLabel={LOCALE_LABEL[locale] ?? locale}
               hasContent={Boolean((v.content[locale] ?? '').trim())}
               canTranslate={translationEnabled}
+              modelName={modelName}
               onComposed={(r) => {
                 setV((p) => {
                   const next = {
@@ -363,13 +374,19 @@ export function ArticleForm({
                   </div>
                 </div>
               ) : (
-                <div className="border-2 border-dashed border-gold/50 bg-gold/5 hover:bg-gold/10 transition-colors p-8 text-center rounded-none cursor-pointer flex flex-col items-center justify-center gap-2 h-[220px]">
-                  <div className="text-[32px]">📷</div>
-                  <p className="text-navy text-[14px] font-bold">Chưa có ảnh bìa bài viết</p>
-                  <p className="text-muted text-[12px] max-w-md">
-                    Dán đường dẫn URL ảnh ở thanh công cụ bên phải để hiển thị ảnh đại diện bài viết.
-                  </p>
-                </div>
+                /* Chỗ trống của ảnh bìa CHÍNH LÀ vùng thả tệp — đây là nơi mắt
+                   biên tập viên nhìn vào đầu tiên khi thiếu ảnh, bắt họ đi tìm
+                   ô nhập ở cột bên phải là thừa một bước. */
+                <ImageDropZone
+                  ownerType="article"
+                  label="Kéo ảnh bìa vào đây, bấm để chọn tệp, hoặc dán ảnh (Ctrl+V)"
+                  hint="Ảnh được thu nhỏ rồi tải lên Cloudflare R2. JPG, PNG, WebP hoặc GIF."
+                  onUploaded={(img) => {
+                    setV((p) => ({ ...p, coverId: img.id, coverUrl: img.url }));
+                    setDirty(true);
+                    setError(null);
+                  }}
+                />
               )}
             </div>
 

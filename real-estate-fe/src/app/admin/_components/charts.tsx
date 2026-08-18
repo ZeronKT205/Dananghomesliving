@@ -96,7 +96,8 @@ export function DonutChart({
       <div className="relative shrink-0">
         <svg width="150" height="150" viewBox="0 0 150 150" role="img" aria-label={totalLabel}>
           <g transform="rotate(-90 75 75)">
-            {segments.map((segment) => (
+            {/* `index` dùng cho độ trễ hiệu ứng bên dưới — thiếu nó là lỗi biên dịch. */}
+            {segments.map((segment, index) => (
               <circle
                 key={segment.name}
                 cx="75"

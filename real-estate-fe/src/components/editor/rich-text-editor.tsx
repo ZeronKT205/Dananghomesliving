@@ -10,6 +10,7 @@ import { BubbleMenu } from '@tiptap/react/menus';
 import StarterKit from '@tiptap/starter-kit';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { uploadImage } from '@/lib/upload-image';
 import { cn } from '@/lib/utils';
 
 import { Callout, type CalloutVariant } from './callout-extension';
@@ -38,7 +39,37 @@ export interface RichTextEditorProps {
 
 export function RichTextEditor({ value, onChange, placeholder, contentKey }: RichTextEditorProps) {
   const [menu, setMenu] = useState<{ x: number; y: number } | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  /*
+   * `editorProps` được chốt lúc dựng editor, nên các handler bên trong nó giữ
+   * mãi closure của lần render ĐẦU. Vì vậy editor phải lấy qua ref (lần đầu nó
+   * còn là null) và cờ bận cũng phải là ref — đọc state `uploading` ở đó sẽ
+   * vĩnh viễn thấy `false`.
+   */
+  const editorRef = useRef<Editor | null>(null);
+  const busyRef = useRef(false);
+
+  async function insertImageFile(file: File) {
+    const ed = editorRef.current;
+    if (!ed || busyRef.current) return;
+
+    busyRef.current = true;
+    setUploadError(null);
+    setUploading(true);
+    try {
+      const img = await uploadImage(file, { ownerType: 'article' });
+      ed.chain().focus().setImage({ src: img.url, alt: '' }).run();
+    } catch (err) {
+      setUploadError(err instanceof Error ? err.message : 'Tải ảnh lên thất bại.');
+    } finally {
+      busyRef.current = false;
+      setUploading(false);
+    }
+  }
 
   const editor = useEditor({
     // Next.js SSR: tắt render phía server để không lệch DOM khi hydrate.
@@ -58,9 +89,38 @@ export function RichTextEditor({ value, onChange, placeholder, contentKey }: Ric
     content: value || '',
     editorProps: {
       attributes: { class: 'article-body ProseMirror' },
+
+      /*
+       * Dán ảnh (Ctrl+V) và kéo tệp thẳng vào bài.
+       *
+       * Không có hai đường này thì TipTap nhét ảnh vào dưới dạng `data:` base64
+       * — bài phình lên vài MB, nằm luôn trong DB, và trang public tải ì ạch.
+       * Chặn hành vi mặc định rồi tự tải lên R2, chèn lại bằng URL.
+       */
+      handlePaste: (_view, event) => {
+        const file = [...(event.clipboardData?.items ?? [])]
+          .find((i) => i.type.startsWith('image/'))
+          ?.getAsFile();
+        if (!file) return false;
+        event.preventDefault();
+        void insertImageFile(file);
+        return true;
+      },
+
+      handleDrop: (_view, event) => {
+        const file = (event as DragEvent).dataTransfer?.files?.[0];
+        if (!file?.type.startsWith('image/')) return false;
+        event.preventDefault();
+        void insertImageFile(file);
+        return true;
+      },
     },
     onUpdate: ({ editor: e }) => onChange(e.getHTML()),
   });
+
+  useEffect(() => {
+    editorRef.current = editor;
+  }, [editor]);
 
   // Nạp lại nội dung khi `value` đổi TỪ BÊN NGOÀI — đổi tab ngôn ngữ, hoặc AI
   // vừa dựng xong bài.
@@ -102,7 +162,7 @@ export function RichTextEditor({ value, onChange, placeholder, contentKey }: Ric
 
   return (
     <div ref={wrapRef} className="border-line relative rounded-md border bg-white">
-      <Toolbar editor={editor} />
+      <Toolbar editor={editor} uploading={uploading} onPickImage={() => fileRef.current?.click()} />
 
       {/* Bôi đen chữ → thanh định dạng nổi ngay tại chỗ */}
       <BubbleMenu
@@ -134,6 +194,29 @@ export function RichTextEditor({ value, onChange, placeholder, contentKey }: Ric
       <div onContextMenu={openContextMenu} className="px-5 py-4">
         <EditorContent editor={editor} />
       </div>
+
+      <input
+        ref={fileRef}
+        type="file"
+        accept="image/jpeg,image/png,image/webp,image/avif,image/gif"
+        className="sr-only"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          // Xoá giá trị để chọn LẠI đúng tệp vừa rồi vẫn phát `change`.
+          e.target.value = '';
+          if (file) void insertImageFile(file);
+        }}
+      />
+
+      {uploading ? (
+        <div className="border-line text-muted border-t px-5 py-2 text-[12px]">Đang tải ảnh lên Cloudflare R2…</div>
+      ) : null}
+
+      {uploadError ? (
+        <p role="alert" className="border-t border-[#e5b8b8] bg-[#fdf4f4] px-5 py-2 text-[12px] text-[#a33]">
+          {uploadError}
+        </p>
+      ) : null}
 
       {/* Chuột phải → các thao tác thiết kế nhanh */}
       {menu ? (
@@ -183,7 +266,7 @@ export function RichTextEditor({ value, onChange, placeholder, contentKey }: Ric
           </MenuItem>
           <MenuItem
             onClick={() => {
-              promptImage(editor);
+              fileRef.current?.click();
               setMenu(null);
             }}
           >
@@ -217,7 +300,15 @@ export function RichTextEditor({ value, onChange, placeholder, contentKey }: Ric
 
 /* ── Thanh công cụ cố định & Thao tác chèn Block ─────────────────────────────── */
 
-function Toolbar({ editor }: { editor: Editor }) {
+function Toolbar({
+  editor,
+  uploading,
+  onPickImage,
+}: {
+  editor: Editor;
+  uploading: boolean;
+  onPickImage: () => void;
+}) {
   return (
     <div className="border-line bg-ivory/40 sticky top-14 z-10 flex flex-wrap items-center gap-1 rounded-t-md border-b px-2.5 py-2">
       <select
@@ -266,11 +357,12 @@ function Toolbar({ editor }: { editor: Editor }) {
 
       <button
         type="button"
-        onClick={() => promptImage(editor)}
-        className="bg-navy/5 hover:bg-navy/10 text-navy border border-line rounded px-2 py-1 text-[11.5px] font-bold flex items-center gap-1 transition-colors"
-        title="Chèn ảnh + chú thích"
+        onClick={onPickImage}
+        disabled={uploading}
+        className="bg-navy/5 hover:bg-navy/10 text-navy border border-line rounded px-2 py-1 text-[11.5px] font-bold flex items-center gap-1 transition-colors disabled:opacity-50"
+        title="Tải ảnh từ máy lên (cũng có thể dán hoặc kéo thả ảnh vào bài)"
       >
-        🖼 Chèn ảnh
+        {uploading ? '⏳ Đang tải ảnh…' : '🖼 Chèn ảnh'}
       </button>
 
       <Sep />
@@ -354,12 +446,3 @@ function promptLink(editor: Editor) {
   editor.chain().focus().extendMarkRange('link').setLink({ href: url.trim() }).run();
 }
 
-function promptImage(editor: Editor) {
-  const url = window.prompt('Đường dẫn ảnh:', 'https://');
-  if (!url?.trim()) return;
-  if (!/^https?:\/\//i.test(url.trim())) {
-    window.alert('Chỉ chấp nhận đường dẫn bắt đầu bằng http:// hoặc https://');
-    return;
-  }
-  editor.chain().focus().setImage({ src: url.trim() }).run();
-}

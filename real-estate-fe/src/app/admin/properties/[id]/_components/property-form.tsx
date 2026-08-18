@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useMemo, useState, useTransition } from 'react';
 
@@ -222,8 +223,7 @@ export function PropertyForm({
       }
       setDirty(false);
       setMessage(res.message ?? 'Đã lưu');
-      if (isNew && res.id) router.replace(`/admin/properties/${res.id}`);
-      else router.refresh();
+      router.push('/admin/properties');
     });
   }
 
@@ -240,6 +240,12 @@ export function PropertyForm({
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
+          <Link
+            href="/admin/properties"
+            className="text-muted hover:text-navy mb-1.5 inline-flex items-center gap-1 text-[12px] font-bold transition-colors"
+          >
+            ← Quay lại danh sách bất động sản
+          </Link>
           <h1 className="text-navy text-[19px] leading-tight font-extrabold">
             {isNew ? 'Thêm bất động sản' : v.title.vi || v.title.en || 'Sửa bất động sản'}
           </h1>

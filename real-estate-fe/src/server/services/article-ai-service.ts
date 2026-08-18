@@ -11,7 +11,7 @@ import {
   normalizeBlocks,
   type ArticleBlock,
 } from './article-blocks';
-import { callGemini } from './gemini-client';
+import { callAi } from './ai-client';
 import { translateArticle } from './translation-service';
 
 /**
@@ -127,7 +127,7 @@ function systemPrompt(locale: Locale): string {
 const MAX_INPUT_CHARS = 40_000;
 
 async function askForBlocks(system: string, user: string): Promise<RawCompose> {
-  return callGemini<RawCompose>({
+  return callAi<RawCompose>({
     system,
     user,
     schema: BLOCKS_SCHEMA,

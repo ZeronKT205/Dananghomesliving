@@ -2,8 +2,8 @@ import 'server-only';
 
 import { DeleteObjectCommand, GetObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 
-import { serverEnv } from '@/config/env.server';
 import { env } from '@/config/env';
+import { serverEnv } from '@/config/env.server';
 import { ApiError } from '@/lib/api/http';
 
 /**
@@ -90,7 +90,18 @@ export function buildMediaKey(originalName: string, mimeType: string, ownerType 
  */
 export function mediaPublicUrl(key: string): string {
   const host = env.NEXT_PUBLIC_R2_PUBLIC_URL?.replace(/\/+$/, '');
-  return host ? `${host}/${key}` : `/api/media/${key}`;
+
+  /*
+   * Bỏ qua host còn là mẫu điền sẵn.
+   *
+   * `.env.example` ghi `https://pub-xxxx.r2.dev` làm ví dụ, và chuyện chép cả
+   * dòng đó sang `.env.local` rồi quên thay đã xảy ra thật trong dự án này:
+   * ảnh tải lên thành công, `<Image>` không báo lỗi gì, nhưng mọi ảnh đều
+   * hỏng. Zod `.url()` không bắt được vì đó vẫn là một URL hợp lệ.
+   */
+  const isPlaceholder = !host || /pub-x{2,}|<|example\.com/i.test(host);
+
+  return isPlaceholder ? `/api/media/${key}` : `${host}/${key}`;
 }
 
 /* ── Thao tác ──────────────────────────────────────────── */

@@ -2,6 +2,8 @@ import 'server-only';
 
 import { ApiError } from '@/lib/api/http';
 
+import type { AiCall } from './ai-types';
+
 /**
  * Lớp gọi Gemini dùng chung cho dịch thuật và dựng bài.
  *
@@ -58,23 +60,6 @@ async function fetchWithRetry(url: string, init: RequestInit, attempts = 3): Pro
   return last!;
 }
 
-export interface GeminiCall {
-  system: string;
-  user: string;
-  /** JSON Schema (kiểu OBJECT/STRING/ARRAY viết hoa theo quy ước Gemini). */
-  schema: unknown;
-  /** Mô tả việc đang làm, ghép vào thông báo lỗi cho người dùng. */
-  label: string;
-  timeoutMs?: number;
-  maxOutputTokens?: number;
-  /**
-   * Ngân sách token suy nghĩ. Gemini 2.5 bật thinking mặc định và với đầu ra
-   * dài nó có thể nghĩ rất lâu — đã gặp timeout 150s vì việc này. Đặt trần để
-   * thời gian phản hồi ổn định; 0 là tắt hẳn.
-   */
-  thinkingBudget?: number;
-}
-
 /**
  * Gọi Gemini với structured output và trả về object đã parse.
  * Ràng buộc schema để khỏi phải bóc JSON ra khỏi văn xuôi rồi cầu cho parse được.
@@ -87,7 +72,7 @@ export async function callGemini<T>({
   timeoutMs = 120_000,
   maxOutputTokens = 32_000,
   thinkingBudget,
-}: GeminiCall): Promise<T> {
+}: AiCall): Promise<T> {
   const key = geminiApiKey();
 
   const controller = new AbortController();
