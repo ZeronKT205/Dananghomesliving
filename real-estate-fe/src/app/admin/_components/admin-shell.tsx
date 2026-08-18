@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
+import { BrandLogo } from '@/components/ui/brand-logo';
 import { cn } from '@/lib/utils';
 
 import {
@@ -41,8 +42,12 @@ export interface AdminShellProps {
 export function AdminShell({ children, pendingInquiries = 0, currentUser = null }: AdminShellProps) {
   const pathname = usePathname();
   const [navOpen, setNavOpen] = useState(false);
+  const [pendingHref, setPendingHref] = useState<string | null>(null);
 
-  useEffect(() => setNavOpen(false), [pathname]);
+  useEffect(() => {
+    setNavOpen(false);
+    setPendingHref(null);
+  }, [pathname]);
 
   useEffect(() => {
     if (!navOpen) return;
@@ -59,13 +64,11 @@ export function AdminShell({ children, pendingInquiries = 0, currentUser = null 
 
   // Trang đăng nhập nằm dưới /admin nên bị layout này bọc, nhưng nó không được
   // có sidebar/header — người chưa đăng nhập thì chẳng có gì để điều hướng.
-  //
-  // Return sớm PHẢI nằm sau toàn bộ hook. Đặt trước `useEffect` thì lúc ở
-  // /admin/login hai effect không chạy, rời trang đó lại chạy — số hook thay
-  // đổi giữa các lần render và React ném "change in the order of Hooks".
   if (pathname?.startsWith('/admin/login')) {
     return <div className="font-admin text-ink">{children}</div>;
   }
+
+  const activeHref = pendingHref ?? current?.href;
 
   return (
     <div className="font-admin bg-ivory/50 text-ink flex min-h-screen text-[13.5px] leading-[1.55]">
@@ -83,22 +86,12 @@ export function AdminShell({ children, pendingInquiries = 0, currentUser = null 
         )}
       >
         <div className="flex h-14 shrink-0 items-center justify-between gap-2 border-b border-white/10 px-4">
-          <Link href="/admin" className="group/logo flex min-w-0 items-center gap-2.5">
-            <Image
-              src="/images/brand/logo.webp"
-              alt=""
-              width={72}
-              height={72}
-              className="h-8 w-8 shrink-0 rounded-full object-cover transition-transform duration-300 group-hover/logo:scale-110 group-hover/logo:rotate-3"
-            />
-            <span className="min-w-0 leading-none">
-              <strong className="block truncate text-[13px] font-extrabold text-white transition-colors duration-200 group-hover/logo:text-gold-soft">
-                Da Nang Homes
-              </strong>
-              <span className="text-gold-soft mt-1 block text-[8.5px] font-bold tracking-[0.2em] uppercase">
-                Quản trị
-              </span>
-            </span>
+          <Link
+            href="/admin"
+            onClick={() => setPendingHref('/admin')}
+            className="group/logo flex min-w-0 items-center gap-2 transition-transform duration-200 hover:scale-[1.02]"
+          >
+            <BrandLogo light size="sm" subtitle="QUẢN TRỊ" showTagline={false} />
           </Link>
           <button
             type="button"
@@ -116,12 +109,14 @@ export function AdminShell({ children, pendingInquiries = 0, currentUser = null 
           </p>
           <ul className="grid gap-0.5">
             {NAV.map(({ href, label, Icon }) => {
-              const isActive = current?.href === href;
+              const isActive = activeHref === href;
               const badge = href === '/admin/inquiries' ? pendingInquiries : 0;
               return (
                 <li key={href}>
                   <Link
                     href={href}
+                    prefetch={true}
+                    onClick={() => setPendingHref(href)}
                     aria-current={isActive ? 'page' : undefined}
                     className={cn(
                       'focus-visible:outline-gold relative flex items-center gap-3 rounded-md px-3 py-2.5 text-[13px] transition-all duration-200 focus-visible:outline-2 focus-visible:-outline-offset-2',

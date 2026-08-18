@@ -4,8 +4,8 @@ import { LOCALES, type Locale } from '@/config/locales';
 import { ApiError } from '@/lib/api/http';
 import { sanitizeArticleHtml } from '@/lib/sanitize-html';
 
-import { applySegments, blocksToHtml, blocksToSegments, htmlToBlocks } from './article-blocks';
 import { callAi, isAiConfigured } from './ai-client';
+import { applySegments, blocksToHtml, blocksToSegments, htmlToBlocks } from './article-blocks';
 
 /** Dịch nội dung bài viết sang các ngôn ngữ còn lại bằng Gemini. */
 

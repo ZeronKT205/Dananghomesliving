@@ -4,6 +4,7 @@ import { LOCALES, type Locale } from '@/config/locales';
 import { ApiError } from '@/lib/api/http';
 import { sanitizeArticleHtml } from '@/lib/sanitize-html';
 
+import { callAi } from './ai-client';
 import {
   BLOCKS_SCHEMA,
   blocksToHtml,
@@ -11,7 +12,6 @@ import {
   normalizeBlocks,
   type ArticleBlock,
 } from './article-blocks';
-import { callAi } from './ai-client';
 import { translateArticle } from './translation-service';
 
 /**

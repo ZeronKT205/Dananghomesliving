@@ -1,4 +1,7 @@
+'use client';
+
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
 
 import { cn } from '@/lib/utils';
 
@@ -175,15 +178,25 @@ export function Tabs({
   current: string;
   items: readonly { value: string; label: string; count?: number; icon?: ReactNode }[];
 }) {
+  const [pendingValue, setPendingValue] = useState<string | null>(null);
+
+  useEffect(() => {
+    setPendingValue(null);
+  }, [current]);
+
+  const activeValue = pendingValue ?? current;
+
   return (
     <div role="tablist" className="border-line flex gap-0.5 overflow-x-auto border-b">
       {items.map((item) => {
-        const isActive = item.value === current;
+        const isActive = item.value === activeValue;
         const href = item.value === items[0]?.value ? basePath : `${basePath}?tab=${item.value}`;
         return (
           <Link
             key={item.value}
             href={href}
+            scroll={false}
+            onClick={() => setPendingValue(item.value)}
             role="tab"
             aria-selected={isActive}
             className={cn(
