@@ -242,11 +242,11 @@ export function ArticleForm({
       {/* Main Grid: Left Visual Article Canvas — Right Control Panel */}
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
         
-        {/* ── LEFT COLUMN: Real Public Article Canvas ─────────────────────────── */}
-        <div className="bg-paper border border-line p-6 sm:p-10 shadow-sm relative animate-fade-in">
+        {/* ── LEFT COLUMN: Google Forms Style Standalone Block Cards ─────────────────────────── */}
+        <div className="flex flex-col gap-5 animate-fade-in min-w-0">
 
-          {/* AI Quick Generator Box Banner */}
-          <div className="mb-8">
+          {/* AI Quick Generator Card */}
+          <div className="bg-white border border-line p-4 rounded-xl shadow-xs">
             <ComposePanel
               locale={locale}
               localeLabel={LOCALE_LABEL[locale] ?? locale}
@@ -271,8 +271,6 @@ export function ArticleForm({
                 });
                 setDirty(true);
 
-                // Báo cả phần THẤT BẠI. Chỉ khoe số ngôn ngữ dịch được thì biên
-                // tập tưởng đủ 4 bản, lưu luôn, và bản thiếu lặng lẽ lên web.
                 const langs = Object.keys(r.translations).length;
                 const built = `Đã dựng bài ${r.stats.words} từ, ${r.stats.headings} mục, ${r.stats.callouts} hộp ghi nhớ`;
                 const failed = r.failedLocales.length
@@ -289,141 +287,137 @@ export function ArticleForm({
             />
           </div>
 
-          <article className="max-w-4xl mx-auto">
-            {/* Breadcrumb & Category Header */}
-            <div className="mb-4 flex flex-wrap items-center justify-between gap-2 text-[12px] border-b border-line pb-3">
-              <div className="flex items-center gap-2">
-                <span className="text-muted">Trang chủ</span>
-                <span className="text-muted">/</span>
-                <span className="text-muted">Tin tức</span>
-                <span className="text-muted">/</span>
-                <span className="text-gold font-bold uppercase tracking-wider">{currentCategoryName}</span>
-              </div>
-
-              {/* Language Switcher inside Canvas */}
-              <div className="flex items-center gap-2">
-                <span className="text-muted text-[11px] font-bold uppercase">Ngôn ngữ soạn:</span>
-                <LocaleTabs locales={LOCALES} current={locale} onChange={setLocale} filled={filled} />
-              </div>
+          {/* Category & Language Header Card */}
+          <div className="bg-white border border-line p-4 rounded-xl shadow-xs flex flex-wrap items-center justify-between gap-3 text-[12px]">
+            <div className="flex items-center gap-2">
+              <span className="text-muted">Trang chủ</span>
+              <span className="text-muted">/</span>
+              <span className="text-muted">Tin tức</span>
+              <span className="text-muted">/</span>
+              <span className="text-gold font-bold uppercase tracking-wider">{currentCategoryName}</span>
             </div>
 
-            <div className="text-gold flex flex-wrap items-center gap-3 text-[10px] font-bold tracking-[0.15em] uppercase mb-4">
-              <span className="bg-gold/10 text-gold border-gold/30 border px-3 py-1">
-                {currentCategoryName}
-              </span>
-              <span className="text-muted">•</span>
-              <span className="text-muted">5 min read</span>
-              <span className="text-muted">•</span>
-              <span className="text-muted">MỚI CẬP NHẬT</span>
+            <div className="flex items-center gap-2">
+              <span className="text-muted text-[11px] font-bold uppercase">Ngôn ngữ soạn:</span>
+              <LocaleTabs locales={LOCALES} current={locale} onChange={setLocale} filled={filled} />
             </div>
+          </div>
 
-            {/* 1. INLINE EDITABLE TITLE */}
-            <div className="relative group mb-6">
-              <label className="text-[10px] font-bold uppercase tracking-widest text-gold opacity-0 group-hover:opacity-100 transition-opacity block mb-1">
+          {/* 1. TITLE BLOCK CARD */}
+          <div className="bg-white border border-line p-5 sm:p-6 rounded-xl shadow-xs hover:shadow-md transition-shadow relative group">
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-[11px] font-bold uppercase tracking-wider text-gold flex items-center gap-1.5">
                 ✏️ Tiêu đề bài viết ({LOCALE_LABEL[locale]}):
               </label>
-              <textarea
-                rows={2}
-                value={v.title[locale] ?? ''}
-                onChange={(e) => setLoc('title', e.target.value)}
-                placeholder="Nhập tiêu đề bài viết tại đây..."
-                className="font-display text-navy text-[30px] sm:text-[40px] lg:text-[46px] font-normal leading-[1.15] w-full bg-white border border-dashed border-line group-hover:border-gold p-3 focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold/30 transition-all resize-none rounded-none placeholder:text-navy/30"
-              />
+              <span className="text-[10px] text-muted font-mono bg-ivory px-2 py-0.5 rounded border border-line">Khối 1 • Title Block</span>
             </div>
+            <textarea
+              rows={2}
+              value={v.title[locale] ?? ''}
+              onChange={(e) => setLoc('title', e.target.value)}
+              placeholder="Nhập tiêu đề bài viết tại đây..."
+              className="font-display text-navy text-[26px] sm:text-[34px] lg:text-[40px] font-normal leading-[1.2] w-full bg-paper/50 border border-dashed border-line group-hover:border-gold p-3.5 focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold/30 transition-all resize-none rounded-lg placeholder:text-navy/30"
+            />
+          </div>
 
-            {/* 2. AUTHOR INFO BAR */}
-            <div className="border-line border-y my-6 flex items-center justify-between py-3.5 bg-white/60 px-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-navy text-gold border border-gold/40 grid place-items-center font-bold text-[14px]">
-                  {authorName ? authorName.charAt(0).toUpperCase() : 'A'}
-                </div>
-                <div>
-                  <p className="text-navy text-[13px] font-bold">{authorName || 'Quản trị viên'}</p>
-                  <p className="text-muted text-[11px]">Chuyên viên biên tập Da Nang Homes &amp; Living</p>
-                </div>
+          {/* 2. AUTHOR & SLUG INFO CARD */}
+          <div className="bg-white border border-line p-4 rounded-xl shadow-xs flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 bg-navy text-gold border border-gold/40 grid place-items-center font-bold text-[13px] rounded-lg">
+                {authorName ? authorName.charAt(0).toUpperCase() : 'A'}
               </div>
-
-              <div className="text-[11px] text-muted font-mono">
-                Slug: <span className="text-navy font-bold">{v.slug || 'chua-tao-slug'}</span>
+              <div>
+                <p className="text-navy text-[13px] font-bold">{authorName || 'Quản trị viên'}</p>
+                <p className="text-muted text-[11px]">Chuyên viên biên tập Da Nang Homes &amp; Living</p>
               </div>
             </div>
 
-            {/* 3. INTERACTIVE VISUAL COVER IMAGE HERO FRAME */}
-            <div className="relative mb-8 group">
-              <label className="text-[10px] font-bold uppercase tracking-widest text-gold opacity-0 group-hover:opacity-100 transition-opacity block mb-1">
+            <div className="text-[11px] text-muted font-mono bg-ivory/60 border border-line px-3 py-1.5 rounded-lg">
+              Slug: <span className="text-navy font-bold">{v.slug || 'chua-tao-slug'}</span>
+            </div>
+          </div>
+
+          {/* 3. COVER IMAGE HERO BLOCK CARD */}
+          <div className="bg-white border border-line p-5 sm:p-6 rounded-xl shadow-xs hover:shadow-md transition-shadow relative group">
+            <div className="flex items-center justify-between mb-3">
+              <label className="text-[11px] font-bold uppercase tracking-wider text-gold flex items-center gap-1.5">
                 🖼 Ảnh bìa chính của bài viết:
               </label>
-
-              {v.coverUrl ? (
-                <div className="border-line relative h-[280px] sm:h-[380px] overflow-hidden border bg-navy/5 shadow-md">
-                  <Image
-                    src={v.coverUrl}
-                    alt="Cover preview"
-                    fill
-                    sizes="(max-width: 1024px) 100vw, 896px"
-                    className="object-cover"
-                  />
-                  <div className="absolute inset-0 bg-navy/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
-                    <button
-                      type="button"
-                      onClick={() => setV((p) => ({ ...p, coverId: null, coverUrl: null }))}
-                      className="bg-red-600 text-white px-4 py-2 text-[12px] font-bold uppercase tracking-wider hover:bg-red-700 transition-colors shadow-md"
-                    >
-                      🗑 Xoá ảnh bìa
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                /* Chỗ trống của ảnh bìa CHÍNH LÀ vùng thả tệp — đây là nơi mắt
-                   biên tập viên nhìn vào đầu tiên khi thiếu ảnh, bắt họ đi tìm
-                   ô nhập ở cột bên phải là thừa một bước. */
-                <ImageDropZone
-                  ownerType="article"
-                  label="Kéo ảnh bìa vào đây, bấm để chọn tệp, hoặc dán ảnh (Ctrl+V)"
-                  hint="Ảnh được thu nhỏ rồi tải lên Cloudflare R2. JPG, PNG, WebP hoặc GIF."
-                  onUploaded={(img) => {
-                    setV((p) => ({ ...p, coverId: img.id, coverUrl: img.url }));
-                    setDirty(true);
-                    setError(null);
-                  }}
-                />
-              )}
+              <span className="text-[10px] text-muted font-mono bg-ivory px-2 py-0.5 rounded border border-line">Khối 2 • Cover Image</span>
             </div>
 
-            {/* 4. INLINE EDITABLE EXCERPT / SUMMARY */}
-            <div className="relative group mb-8">
-              <label className="text-[10px] font-bold uppercase tracking-widest text-gold opacity-0 group-hover:opacity-100 transition-opacity block mb-1">
+            {v.coverUrl ? (
+              <div className="border-line relative h-[280px] sm:h-[360px] overflow-hidden border rounded-lg bg-navy/5 shadow-xs">
+                <Image
+                  src={v.coverUrl}
+                  alt="Cover preview"
+                  fill
+                  sizes="(max-width: 1024px) 100vw, 896px"
+                  className="object-cover"
+                />
+                <div className="absolute inset-0 bg-navy/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setV((p) => ({ ...p, coverId: null, coverUrl: null }))}
+                    className="bg-red-600 text-white px-4 py-2 text-[12px] font-bold uppercase tracking-wider hover:bg-red-700 transition-colors shadow-md rounded-md cursor-pointer"
+                  >
+                    🗑 Xoá ảnh bìa
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <ImageDropZone
+                ownerType="article"
+                label="Kéo ảnh bìa vào đây, bấm để chọn tệp, hoặc dán ảnh (Ctrl+V)"
+                hint="Ảnh được thu nhỏ rồi tải lên Cloudflare R2. JPG, PNG, WebP hoặc GIF."
+                onUploaded={(img) => {
+                  setV((p) => ({ ...p, coverId: img.id, coverUrl: img.url }));
+                  setDirty(true);
+                  setError(null);
+                }}
+              />
+            )}
+          </div>
+
+          {/* 4. EXCERPT / SUMMARY BLOCK CARD */}
+          <div className="bg-white border border-line p-5 sm:p-6 rounded-xl shadow-xs hover:shadow-md transition-shadow relative group">
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-[11px] font-bold uppercase tracking-wider text-gold flex items-center gap-1.5">
                 💬 Tóm tắt bài viết (Quote Excerpt - {LOCALE_LABEL[locale]}):
               </label>
-              <div className="border-gold border-l-4 bg-white p-3 shadow-xs">
-                <textarea
-                  rows={2}
-                  value={v.excerpt[locale] ?? ''}
-                  onChange={(e) => setLoc('excerpt', e.target.value)}
-                  placeholder="Nhập tóm tắt ngắn bài viết (1-2 câu cô đọng hiển thị nổi bật ở đầu bài và trang danh sách tin tức)..."
-                  className="font-display text-navy text-[18px] sm:text-[20px] font-normal italic leading-relaxed w-full bg-transparent border-none focus:outline-none placeholder:text-muted/40 resize-none"
-                />
-              </div>
+              <span className="text-[10px] text-muted font-mono bg-ivory px-2 py-0.5 rounded border border-line">Khối 3 • Excerpt</span>
             </div>
-
-            {/* 5. MAIN RICH TEXT BODY CONTENT */}
-            <div className="relative group bg-white border border-line p-5 sm:p-7 shadow-xs">
-              <label className="text-[10px] font-bold uppercase tracking-widest text-gold block mb-2">
-                ✍️ Nội dung bài viết chi tiết ({LOCALE_LABEL[locale]}):
-              </label>
-
-              <RichTextEditor
-                value={v.content[locale] ?? ''}
-                onChange={(html) => setLoc('content', html)}
-                contentKey={locale}
-                placeholder="Bắt đầu gõ nội dung chi tiết bài viết tại đây. Sử dụng công cụ chèn ảnh, ghi nhớ, tiêu đề để định dạng..."
+            <div className="border-gold border-l-4 bg-ivory/30 p-3.5 rounded-r-lg shadow-xs">
+              <textarea
+                rows={2}
+                value={v.excerpt[locale] ?? ''}
+                onChange={(e) => setLoc('excerpt', e.target.value)}
+                placeholder="Nhập tóm tắt ngắn bài viết (1-2 câu cô đọng hiển thị nổi bật ở đầu bài và trang danh sách tin tức)..."
+                className="font-display text-navy text-[17px] sm:text-[19px] font-normal italic leading-relaxed w-full bg-transparent border-none focus:outline-none placeholder:text-muted/40 resize-none"
               />
             </div>
+          </div>
+
+          {/* 5. MAIN CONTENT EDITOR BLOCK CARD */}
+          <div className="bg-white border border-line p-5 sm:p-6 rounded-xl shadow-xs hover:shadow-md transition-shadow relative group">
+            <div className="flex items-center justify-between mb-3">
+              <label className="text-[11px] font-bold uppercase tracking-wider text-gold flex items-center gap-1.5">
+                ✍️ Nội dung bài viết chi tiết ({LOCALE_LABEL[locale]}):
+              </label>
+              <span className="text-[10px] text-muted font-mono bg-ivory px-2 py-0.5 rounded border border-line">Khối 4 • Content Body</span>
+            </div>
+
+            <RichTextEditor
+              value={v.content[locale] ?? ''}
+              onChange={(html) => setLoc('content', html)}
+              contentKey={locale}
+              placeholder="Bắt đầu gõ nội dung chi tiết bài viết tại đây. Sử dụng công cụ chèn ảnh, ghi nhớ, tiêu đề để định dạng..."
+            />
 
             {/* HASHTAGS DISPLAY */}
             {v.tags.length > 0 && (
-              <div className="border-line border-t mt-10 pt-6">
-                <span className="text-muted block mb-3 text-[11px] font-bold tracking-wider uppercase">
+              <div className="border-line border-t mt-6 pt-4">
+                <span className="text-muted block mb-2 text-[11px] font-bold tracking-wider uppercase">
                   Hashtag bài viết (Bấm để xoá)
                 </span>
                 <div className="flex flex-wrap gap-2">
@@ -432,7 +426,7 @@ export function ArticleForm({
                       key={t}
                       type="button"
                       onClick={() => set('tags', v.tags.filter((x) => x !== t))}
-                      className="bg-paper border-line text-navy hover:border-red-400 hover:text-red-600 border px-3 py-1 text-[11px] font-medium transition-colors cursor-pointer"
+                      className="bg-paper border-line text-navy hover:border-red-400 hover:text-red-600 border px-3 py-1 text-[11px] font-medium transition-colors cursor-pointer rounded-md"
                     >
                       #{t} ×
                     </button>
@@ -440,7 +434,7 @@ export function ArticleForm({
                 </div>
               </div>
             )}
-          </article>
+          </div>
         </div>
 
         {/* ── RIGHT COLUMN: Sidebar Controls & Tools ─────────────────────────── */}
