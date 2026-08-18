@@ -62,14 +62,22 @@ export function RichTextEditor({ value, onChange, placeholder, contentKey }: Ric
     onUpdate: ({ editor: e }) => onChange(e.getHTML()),
   });
 
-  // Chuyển tab ngôn ngữ → nạp nội dung của locale mới.
-  // `emitUpdate: false` để không gọi onChange ngược lại và ghi đè state cha.
+  // Nạp lại nội dung khi `value` đổi TỪ BÊN NGOÀI — đổi tab ngôn ngữ, hoặc AI
+  // vừa dựng xong bài.
+  //
+  // `value` PHẢI nằm trong deps. Trước đây deps chỉ có [contentKey, editor],
+  // nên khi AI sinh nội dung (locale không đổi) effect không chạy và editor
+  // vẫn trống — nhìn như AI không trả về gì.
+  //
+  // So sánh với getHTML() để không nạp đè lên chính cái người dùng vừa gõ:
+  // mỗi lần gõ, onUpdate đẩy HTML lên cha rồi quay lại đây qua `value`.
   useEffect(() => {
     if (!editor) return;
-    const current = editor.getHTML();
-    if (value !== current) editor.commands.setContent(value || '', { emitUpdate: false });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [contentKey, editor]);
+    const next = value || '';
+    if (next === editor.getHTML()) return;
+    // `emitUpdate: false` để không gọi onChange ngược lại và ghi đè state cha.
+    editor.commands.setContent(next, { emitUpdate: false });
+  }, [value, contentKey, editor]);
 
   useEffect(() => {
     if (!menu) return;

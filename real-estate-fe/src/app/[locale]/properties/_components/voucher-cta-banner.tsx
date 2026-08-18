@@ -1,12 +1,18 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { BrandLogo } from '@/components/ui/brand-logo';
 
 export function VoucherCtaBanner() {
   const [isOpen, setIsOpen] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -103,14 +109,14 @@ export function VoucherCtaBanner() {
         </div>
       </section>
 
-      {/* 🚀 Popup Lightbox Modal Form */}
-      {isOpen && (
-        <div className="fixed inset-0 z-[9999999] flex items-center justify-center p-4 sm:p-6 pt-24 sm:pt-28 pb-8 bg-navy/85 backdrop-blur-md animate-fade-in overflow-y-auto">
+      {/* 🚀 Popup Lightbox Modal Form - Rendered via Portal directly to document.body for full-screen overlay */}
+      {isOpen && mounted && createPortal(
+        <div className="fixed inset-0 z-[99999999] flex items-center justify-center p-4 sm:p-6 bg-navy/85 backdrop-blur-md animate-fade-in overflow-y-auto">
           {/* Backdrop Click to Close */}
           <div className="fixed inset-0" onClick={() => setIsOpen(false)} />
 
           {/* Modal Content Box */}
-          <div className="relative z-10 bg-white border border-gold/40 shadow-2xl w-full max-w-lg p-6 sm:p-8 rounded-none animate-scale-up my-auto max-h-[82vh] overflow-y-auto">
+          <div className="relative z-10 bg-white border border-gold/40 shadow-2xl w-full max-w-lg p-6 sm:p-8 rounded-none animate-scale-up my-auto max-h-[90vh] overflow-y-auto">
 
             {/* Close (X) Button */}
             <button
@@ -279,8 +285,10 @@ export function VoucherCtaBanner() {
               </div>
             )}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );
 }
+

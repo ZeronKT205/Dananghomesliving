@@ -8,8 +8,9 @@ interface BrandLogoProps {
 }
 
 export function BrandLogo({ className = '', light = false, showTagline = true }: BrandLogoProps) {
-  const navyColor = light ? '#FFFFFF' : '#071D36';
+  const navyColor = '#071D36';
   const goldColor = light ? '#E0B75F' : '#C9922E';
+
 
   return (
     <div className={`flex items-center gap-2.5 sm:gap-3.5 select-none ${className}`}>

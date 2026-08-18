@@ -48,7 +48,7 @@ export function ArticleForm({
 }: {
   initial: ArticleFormValue;
   categories: { id: string; name: string }[];
-  /** Có ANTHROPIC_API_KEY hay không — quyết định hiện nút dịch. */
+  /** Có GEMINI_API_KEY hay không — quyết định hiện nút dịch. */
   translationEnabled: boolean;
   /** Tên admin đang đăng nhập; hiển thị để biết bài sẽ đứng tên ai. */
   authorName: string;
@@ -217,16 +217,37 @@ export function ArticleForm({
                 locale={locale}
                 localeLabel={LOCALE_LABEL[locale] ?? locale}
                 hasContent={Boolean((v.content[locale] ?? '').trim())}
+                canTranslate={translationEnabled}
                 onComposed={(r) => {
-                  setV((p) => ({
-                    ...p,
-                    title: { ...p.title, [locale]: r.title },
-                    excerpt: { ...p.excerpt, [locale]: r.excerpt },
-                    content: { ...p.content, [locale]: r.content },
-                    tags: r.tags,
-                  }));
+                  setV((p) => {
+                    const next = {
+                      ...p,
+                      title: { ...p.title, [locale]: r.article.title },
+                      excerpt: { ...p.excerpt, [locale]: r.article.excerpt },
+                      content: { ...p.content, [locale]: r.article.content },
+                      tags: r.article.tags,
+                    };
+                    // Đổ luôn các bản dịch nếu có, để bài lên web đủ 4 ngôn ngữ
+                    // mà không phải bấm thêm nút nào.
+                    for (const [l, t] of Object.entries(r.translations)) {
+                      next.title[l] = t.title;
+                      next.excerpt[l] = t.excerpt;
+                      next.content[l] = t.content;
+                    }
+                    return next;
+                  });
                   setDirty(true);
-                  setMessage('AI đã dựng xong bài — đọc lại và sửa trước khi lưu.');
+
+                  const langs = Object.keys(r.translations).length;
+                  const failed = r.failedLocales
+                    .map((f) => LOCALE_LABEL[f.locale] ?? f.locale)
+                    .join(', ');
+                  setMessage(
+                    `Đã dựng bài ${r.stats.words} từ · ${r.stats.headings} mục · ${r.stats.callouts} hộp ghi nhớ` +
+                      (langs ? ` · dịch xong ${langs} ngôn ngữ` : '') +
+                      (failed ? ` · lỗi: ${failed}` : '') +
+                      ' — đọc lại trước khi lưu.',
+                  );
                 }}
               />
             </div>

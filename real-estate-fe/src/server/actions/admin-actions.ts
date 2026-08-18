@@ -454,25 +454,42 @@ export async function actionTranslateArticle(
 }
 
 /**
- * Dựng bài viết từ nội dung thô.
+ * Dựng bài viết từ nội dung thô, kèm tuỳ chọn dịch luôn sang các ngôn ngữ khác.
  *
  * Không tự lưu — trả về form để biên tập viên xem, sửa rồi mới bấm Lưu. AI
  * dựng bản nháp, người quyết định xuất bản.
  */
 export type ComposeResult =
-  | { ok: true; article: { title: string; excerpt: string; content: string; tags: string[] } }
+  | {
+      ok: true;
+      article: { title: string; excerpt: string; content: string; tags: string[] };
+      translations: Record<string, { title: string; excerpt: string; content: string }>;
+      failedLocales: Array<{ locale: string; message: string }>;
+      stats: { words: number; headings: number; callouts: number };
+    }
   | { ok: false; message: string };
 
-export async function actionComposeArticle(raw: string, locale: string): Promise<ComposeResult> {
+export async function actionComposeArticle(
+  raw: string,
+  locale: string,
+  alsoTranslate = true,
+): Promise<ComposeResult> {
   try {
     await requirePermission('content:write');
-    const { composeArticle } = await import('@/server/services/article-ai-service');
+    const { composeAndTranslate } = await import('@/server/services/article-ai-service');
     const { isLocale } = await import('@/config/locales');
 
     if (!isLocale(locale)) return { ok: false, message: 'Ngôn ngữ không hợp lệ' };
 
-    const article = await composeArticle(raw, locale);
-    return { ok: true, article };
+    const bundle = await composeAndTranslate(raw, locale, alsoTranslate);
+
+    return {
+      ok: true,
+      article: bundle.primary,
+      translations: bundle.translations as never,
+      failedLocales: bundle.failedLocales as never,
+      stats: bundle.stats,
+    };
   } catch (err) {
     const r = fail(err);
     return { ok: false, message: r.ok ? 'Lỗi không xác định' : r.message };
