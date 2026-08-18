@@ -8,6 +8,7 @@ import { useMemo, useState, useTransition } from 'react';
 import { RichTextEditor } from '@/components/editor/rich-text-editor';
 import { ImageDropZone } from '@/components/ui/image-drop-zone';
 import { LOCALES } from '@/config/locales';
+import { useDraftBackup } from '@/hooks/use-draft-backup';
 import {
   actionAddMediaByUrl,
   actionDeleteArticle,
@@ -17,6 +18,7 @@ import {
 
 import { FormCard, LocaleTabs, SaveBar, Toggle, inputClass } from '../../../_components/form-kit';
 
+import { CategoryQuickAdd } from './category-quick-add';
 import { ComposePanel } from './compose-panel';
 
 export interface ArticleFormValue {
@@ -67,6 +69,21 @@ export function ArticleForm({
   const [message, setMessage] = useState<string | null>(null);
   const [dirty, setDirty] = useState(false);
   const [coverInput, setCoverInput] = useState('');
+  // Danh sách chuyên mục là state chứ không dùng thẳng prop: tạo chuyên mục mới
+  // ngay tại chỗ phải hiện ra ô chọn liền, không đợi tải lại trang.
+  const [cats, setCats] = useState(categories);
+
+  /*
+   * Giữ hộ bản nháp và cảnh báo khi rời trang lúc chưa lưu.
+   *
+   * Khoá gắn với id bài; bài chưa tạo dùng 'new'. Chỉ bật khi `dirty` để mở bài
+   * cũ ra xem rồi thoát không tạo ra nháp thừa.
+   */
+  const draft = useDraftBackup<ArticleFormValue>({
+    key: initial.id ?? 'new',
+    value: v,
+    enabled: dirty,
+  });
 
   const isNew = initial.id === null;
 
@@ -83,9 +100,9 @@ export function ArticleForm({
   }
 
   const currentCategoryName = useMemo(() => {
-    const found = categories.find((c) => c.id === v.categoryId);
+    const found = cats.find((c) => c.id === v.categoryId);
     return found ? found.name : 'Chưa chọn chuyên mục';
-  }, [categories, v.categoryId]);
+  }, [cats, v.categoryId]);
 
   const filled = useMemo(
     () => Object.fromEntries(LOCALES.map((l) => [l, Boolean(v.title[l]?.trim())])),
@@ -177,6 +194,9 @@ export function ArticleForm({
         return;
       }
       setDirty(false);
+      // Đã lên server rồi thì nháp không còn việc gì; để lại sẽ hỏi khôi phục
+      // một bản cũ hơn chính bài vừa lưu.
+      draft.clear();
       setMessage(res.message ?? 'Đã lưu');
       router.push('/admin/news');
     });
@@ -186,13 +206,55 @@ export function ArticleForm({
     if (!v.id) return;
     startSaving(async () => {
       const res = await actionDeleteArticle(v.id!);
-      if (res.ok) router.push('/admin/news');
+      if (res.ok) {
+        draft.clear();
+        router.push('/admin/news');
+      }
       else setError(res.message);
     });
   }
 
   return (
     <div className="flex flex-col gap-5">
+      {/*
+        Thanh khôi phục nháp. Hiện ngay đầu trang chứ không phải hộp thoại tự
+        bật: hộp thoại bắt trả lời trước khi làm gì, mà biên tập cần nhìn nội
+        dung hiện tại rồi mới quyết được có khôi phục hay không.
+      */}
+      {draft.found ? (
+        <div className="border-gold/60 bg-gold/10 flex flex-wrap items-center justify-between gap-3 rounded-md border px-4 py-3">
+          <p className="text-navy text-[12.5px]">
+            Tìm thấy bản nháp chưa lưu lúc{' '}
+            <strong>
+              {draft.found.savedAt.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}{' '}
+              {draft.found.savedAt.toLocaleDateString('vi-VN')}
+            </strong>
+            . Khôi phục lại nội dung đang soạn dở?
+          </p>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                setV(draft.found!.value);
+                setDirty(true);
+                draft.discard();
+                setMessage('Đã khôi phục bản nháp — kiểm tra rồi bấm Lưu.');
+              }}
+              className="bg-navy hover:bg-gold h-8 cursor-pointer rounded px-3.5 text-[12px] font-bold text-white transition-colors"
+            >
+              Khôi phục
+            </button>
+            <button
+              type="button"
+              onClick={draft.discard}
+              className="text-muted hover:text-navy cursor-pointer text-[12px] font-bold"
+            >
+              Bỏ nháp
+            </button>
+          </div>
+        </div>
+      ) : null}
+
       {/* Top Header Bar */}
       <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-4 border border-line shadow-xs">
         <div>
@@ -482,19 +544,19 @@ export function ArticleForm({
                   Chuyên mục
                 </label>
                 <select value={v.categoryId} onChange={(e) => set('categoryId', e.target.value)} className={inputClass}>
-                  {categories.length === 0 ? <option value="">— chưa có chuyên mục —</option> : null}
-                  {categories.map((c) => (
+                  {cats.length === 0 ? <option value="">— chưa có chuyên mục —</option> : null}
+                  {cats.map((c) => (
                     <option key={c.id} value={c.id}>
                       {c.name}
                     </option>
                   ))}
                 </select>
-                <Link
-                  href="/admin/news?tab=categories"
-                  className="text-gold hover:text-navy mt-1.5 inline-block text-[11px] font-bold transition-colors"
-                >
-                  + Thêm chuyên mục mới
-                </Link>
+                <CategoryQuickAdd
+                  onCreated={(c) => {
+                    setCats((p) => [...p, c]);
+                    set('categoryId', c.id);
+                  }}
+                />
               </div>
 
               <Toggle checked={v.isFeatured} onChange={(b) => set('isFeatured', b)} label="Bài nổi bật (Featured)" />

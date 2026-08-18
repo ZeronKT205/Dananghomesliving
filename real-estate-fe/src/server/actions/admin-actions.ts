@@ -395,13 +395,19 @@ export async function actionSaveArticleCategory(
       articleCount: 0,
     };
 
+    // Trả về id để nơi gọi thêm thẳng chuyên mục mới vào ô chọn.
+    // Trang soạn bài tạo chuyên mục ngay tại chỗ chứ không điều hướng đi — rời
+    // trang là mất trắng nội dung AI vừa dựng.
+    let savedId = id;
     if (id) {
       await updateArticleCategory(id, payload, user.sub);
     } else {
-      await createArticleCategory(payload, user.sub);
+      const created = await createArticleCategory(payload, user.sub);
+      savedId = created._id.toHexString();
     }
+
     revalidatePath('/admin/news');
-    return { ok: true, message: 'Đã lưu chuyên mục' };
+    return { ok: true, message: 'Đã lưu chuyên mục', id: savedId ?? undefined };
   } catch (err) {
     return fail(err);
   }
