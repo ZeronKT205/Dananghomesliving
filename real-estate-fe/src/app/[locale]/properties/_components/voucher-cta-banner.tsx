@@ -105,12 +105,13 @@ export function VoucherCtaBanner() {
 
       {/* 🚀 Popup Lightbox Modal Form */}
       {isOpen && (
-        <div className="fixed inset-0 z-[100000] flex items-center justify-center p-4 sm:p-6 bg-navy/85 backdrop-blur-md animate-fade-in overflow-y-auto">
+        <div className="fixed inset-0 z-[9999999] flex items-center justify-center p-4 sm:p-6 pt-24 sm:pt-28 pb-8 bg-navy/85 backdrop-blur-md animate-fade-in overflow-y-auto">
           {/* Backdrop Click to Close */}
           <div className="fixed inset-0" onClick={() => setIsOpen(false)} />
 
           {/* Modal Content Box */}
-          <div className="relative z-10 bg-white border border-gold/40 shadow-2xl w-full max-w-lg p-6 sm:p-8 rounded-none animate-scale-up my-auto">
+          <div className="relative z-10 bg-white border border-gold/40 shadow-2xl w-full max-w-lg p-6 sm:p-8 rounded-none animate-scale-up my-auto max-h-[82vh] overflow-y-auto">
+
             {/* Close (X) Button */}
             <button
               type="button"
