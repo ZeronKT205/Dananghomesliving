@@ -268,8 +268,28 @@
   color: var(--color-muted, #7a8395);
 }
 
-/* Ảnh đang chọn: viền vàng để biết đang thao tác lên ảnh nào. */
+/* Ảnh đang chọn: viền vàng đứt nét nổi bật để biết đang thao tác lên ảnh nào. */
 .article-body.ProseMirror img.ProseMirror-selectednode {
-  outline: 2px solid var(--color-gold);
-  outline-offset: 2px;
+  outline: 3px solid var(--color-gold, #c9922e);
+  outline-offset: 3px;
+  box-shadow: 0 8px 30px rgba(7, 29, 54, 0.2);
+  border-radius: 4px;
+}
+
+/* Hover khối văn bản trong Editor (Google Forms UX) */
+.article-body.ProseMirror p,
+.article-body.ProseMirror h2,
+.article-body.ProseMirror h3,
+.article-body.ProseMirror blockquote,
+.article-body.ProseMirror .callout {
+  transition: outline 0.15s ease;
+}
+
+.article-body.ProseMirror p:hover,
+.article-body.ProseMirror h2:hover,
+.article-body.ProseMirror h3:hover,
+.article-body.ProseMirror blockquote:hover,
+.article-body.ProseMirror .callout:hover {
+  outline: 1.5px dashed rgba(201, 146, 46, 0.45);
+  outline-offset: 4px;
 }

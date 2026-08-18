@@ -167,6 +167,7 @@ export function RichTextEditor({ value, onChange, placeholder, contentKey }: Ric
       {/* Bôi đen chữ → thanh định dạng nổi ngay tại chỗ */}
       <BubbleMenu
         editor={editor}
+        shouldShow={({ editor }) => !editor.isActive('image') && !editor.state.selection.empty}
         className="border-line flex items-center gap-0.5 rounded-md border bg-white p-1 shadow-[0_4px_16px_rgb(7_29_54/0.14)]"
       >
         <Btn active={editor.isActive('bold')} onClick={() => editor.chain().focus().toggleBold().run()} label="Đậm">
@@ -190,6 +191,112 @@ export function RichTextEditor({ value, onChange, placeholder, contentKey }: Ric
           🔗
         </Btn>
       </BubbleMenu>
+
+      {/* Click chọn Ảnh → Thanh thao tác nhanh cho ảnh */}
+      <BubbleMenu
+        editor={editor}
+        shouldShow={({ editor }) => editor.isActive('image')}
+        className="border-line flex items-center gap-1 rounded-md border bg-navy text-white p-1.5 shadow-[0_6px_24px_rgb(7_29_54/0.2)]"
+      >
+        <button
+          type="button"
+          onClick={() => fileRef.current?.click()}
+          className="bg-gold text-navy hover:bg-gold-soft px-2.5 py-1 text-[11.5px] font-bold rounded transition-colors flex items-center gap-1"
+        >
+          🖼 Đổi ảnh khác
+        </button>
+        <Sep />
+        <button
+          type="button"
+          onClick={() => editor.chain().focus().setTextAlign('left').run()}
+          className={cn("px-2 py-0.5 text-[11px] font-bold rounded transition-colors", editor.isActive({ textAlign: 'left' }) ? 'bg-white/20 text-gold-soft' : 'text-white/70 hover:text-white')}
+        >
+          Trái
+        </button>
+        <button
+          type="button"
+          onClick={() => editor.chain().focus().setTextAlign('center').run()}
+          className={cn("px-2 py-0.5 text-[11px] font-bold rounded transition-colors", editor.isActive({ textAlign: 'center' }) ? 'bg-white/20 text-gold-soft' : 'text-white/70 hover:text-white')}
+        >
+          Giữa
+        </button>
+        <button
+          type="button"
+          onClick={() => editor.chain().focus().setTextAlign('right').run()}
+          className={cn("px-2 py-0.5 text-[11px] font-bold rounded transition-colors", editor.isActive({ textAlign: 'right' }) ? 'bg-white/20 text-gold-soft' : 'text-white/70 hover:text-white')}
+        >
+          Phải
+        </button>
+        <Sep />
+        <button
+          type="button"
+          onClick={() => editor.chain().focus().deleteSelection().run()}
+          className="bg-red-500/20 text-red-300 hover:bg-red-600 hover:text-white px-2.5 py-1 text-[11.5px] font-bold rounded transition-colors flex items-center gap-1"
+        >
+          🗑 Xoá ảnh
+        </button>
+      </BubbleMenu>
+
+      {/* ── GOOGLE FORMS STYLE FLOATING SIDE ACTION BAR ────────────────────── */}
+      <aside className="absolute -right-13 top-14 z-30 hidden md:flex flex-col gap-1.5 rounded-xl border border-line bg-white p-1.5 shadow-lg">
+        <button
+          type="button"
+          onClick={() => editor.chain().focus().splitBlock().run()}
+          className="group relative grid h-9 w-9 place-items-center rounded-lg border border-transparent text-navy transition-all hover:border-gold hover:bg-gold/10 hover:text-gold active:scale-95 cursor-pointer"
+        >
+          <span className="font-extrabold text-[16px]">＋</span>
+          <span className="pointer-events-none absolute left-full ml-2.5 hidden whitespace-nowrap rounded bg-navy px-2.5 py-1 text-[11px] font-bold text-white shadow-md group-hover:block z-40">
+            Thêm đoạn mới
+          </span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => fileRef.current?.click()}
+          disabled={uploading}
+          className="group relative grid h-9 w-9 place-items-center rounded-lg border border-transparent text-navy transition-all hover:border-gold hover:bg-gold/10 hover:text-gold active:scale-95 disabled:opacity-50 cursor-pointer"
+        >
+          <span className="text-[15px]">🖼</span>
+          <span className="pointer-events-none absolute left-full ml-2.5 hidden whitespace-nowrap rounded bg-navy px-2.5 py-1 text-[11px] font-bold text-white shadow-md group-hover:block z-40">
+            Chèn ảnh từ máy
+          </span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => editor.chain().focus().setCallout('note').run()}
+          className="group relative grid h-9 w-9 place-items-center rounded-lg border border-transparent text-navy transition-all hover:border-gold hover:bg-gold/10 hover:text-gold active:scale-95 cursor-pointer"
+        >
+          <span className="text-[14px]">📌</span>
+          <span className="pointer-events-none absolute left-full ml-2.5 hidden whitespace-nowrap rounded bg-navy px-2.5 py-1 text-[11px] font-bold text-white shadow-md group-hover:block z-40">
+            Chèn hộp ghi nhớ
+          </span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+          className="group relative grid h-9 w-9 place-items-center rounded-lg border border-transparent text-navy transition-all hover:border-gold hover:bg-gold/10 hover:text-gold active:scale-95 cursor-pointer"
+        >
+          <span className="font-extrabold text-[12px]">H2</span>
+          <span className="pointer-events-none absolute left-full ml-2.5 hidden whitespace-nowrap rounded bg-navy px-2.5 py-1 text-[11px] font-bold text-white shadow-md group-hover:block z-40">
+            Tiêu đề mục (H2)
+          </span>
+        </button>
+
+        <div className="my-0.5 h-px w-full bg-line" />
+
+        <button
+          type="button"
+          onClick={() => editor.chain().focus().deleteSelection().run()}
+          className="group relative grid h-9 w-9 place-items-center rounded-lg border border-transparent text-red-600 transition-all hover:border-red-200 hover:bg-red-50 active:scale-95 cursor-pointer"
+        >
+          <span className="text-[14px]">🗑</span>
+          <span className="pointer-events-none absolute left-full ml-2.5 hidden whitespace-nowrap rounded bg-red-800 px-2.5 py-1 text-[11px] font-bold text-white shadow-md group-hover:block z-40">
+            Xoá đoạn / khối này
+          </span>
+        </button>
+      </aside>
 
       <div onContextMenu={openContextMenu} className="px-5 py-4">
         <EditorContent editor={editor} />
@@ -345,11 +452,30 @@ function Toolbar({
         ❝
       </Btn>
       <Sep />
-      {/* Quick Insert Components */}
+      {/* Quick Insert & Delete Block Buttons */}
+      <button
+        type="button"
+        onClick={() => editor.chain().focus().splitBlock().run()}
+        className="bg-navy/5 hover:bg-navy/10 text-navy border border-line rounded px-2 py-1 text-[11.5px] font-bold flex items-center gap-1 transition-colors cursor-pointer"
+        title="Thêm một đoạn văn mới bên dưới"
+      >
+        ➕ Thêm đoạn
+      </button>
+
+      <button
+        type="button"
+        onClick={onPickImage}
+        disabled={uploading}
+        className="bg-navy/5 hover:bg-navy/10 text-navy border border-line rounded px-2.5 py-1 text-[11.5px] font-bold flex items-center gap-1 transition-colors disabled:opacity-50 cursor-pointer"
+        title="Tải ảnh từ máy lên (cũng có thể dán hoặc kéo thả ảnh vào bài)"
+      >
+        {uploading ? '⏳ Đang tải ảnh…' : '🖼 Chèn ảnh'}
+      </button>
+
       <button
         type="button"
         onClick={() => editor.chain().focus().setCallout('note').run()}
-        className="bg-gold/10 hover:bg-gold/20 text-[#8f6614] border border-gold/30 rounded px-2 py-1 text-[11.5px] font-bold flex items-center gap-1 transition-colors"
+        className="bg-gold/10 hover:bg-gold/20 text-[#8f6614] border border-gold/30 rounded px-2 py-1 text-[11.5px] font-bold flex items-center gap-1 transition-colors cursor-pointer"
         title="Chèn hộp ghi nhớ"
       >
         📌 Ghi nhớ
@@ -357,12 +483,11 @@ function Toolbar({
 
       <button
         type="button"
-        onClick={onPickImage}
-        disabled={uploading}
-        className="bg-navy/5 hover:bg-navy/10 text-navy border border-line rounded px-2 py-1 text-[11.5px] font-bold flex items-center gap-1 transition-colors disabled:opacity-50"
-        title="Tải ảnh từ máy lên (cũng có thể dán hoặc kéo thả ảnh vào bài)"
+        onClick={() => editor.chain().focus().deleteSelection().run()}
+        className="bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 rounded px-2 py-1 text-[11.5px] font-bold flex items-center gap-1 transition-colors cursor-pointer"
+        title="Xoá đoạn văn / khối đang chọn"
       >
-        {uploading ? '⏳ Đang tải ảnh…' : '🖼 Chèn ảnh'}
+        🗑 Xoá đoạn
       </button>
 
       <Sep />
