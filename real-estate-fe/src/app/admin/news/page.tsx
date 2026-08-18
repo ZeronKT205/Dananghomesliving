@@ -1,12 +1,12 @@
 import Image from 'next/image';
 import Link from 'next/link';
 
+import type { PublishState } from '@/lib/db/collections';
 import { listArticleCategories, listArticles } from '@/lib/db/repositories/article-repo';
 import { cn } from '@/lib/utils';
 import { actionDeleteArticle } from '@/server/actions/admin-actions';
 
 import { IcEye, IcLayers, IcNews, IcPlus } from '../_components/icons';
-import { ArticleCategoryManager } from './_components/article-category-manager';
 import { RowActions } from '../_components/row-actions';
 import {
   EmptyState,
@@ -21,7 +21,8 @@ import {
 import { toAdminNewsList } from '../_data/presenters';
 import { PUBLISH_STATE } from '../_data/view-models';
 
-import type { PublishState } from '@/lib/db/collections';
+import { ArticleCategoryManager } from './_components/article-category-manager';
+
 
 export const dynamic = 'force-dynamic';
 

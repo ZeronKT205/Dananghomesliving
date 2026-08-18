@@ -1,5 +1,6 @@
 import Link from 'next/link';
 
+import type { PublishState } from '@/lib/db/collections';
 import { listCategories } from '@/lib/db/repositories/catalog-repo';
 import { listProperties } from '@/lib/db/repositories/property-repo';
 
@@ -19,7 +20,6 @@ import { toAdminProperties } from '../_data/presenters';
 import { AdminMapWrapper } from './_components/admin-map-wrapper';
 import { CategoryManager } from './_components/category-manager';
 
-import type { PublishState } from '@/lib/db/collections';
 
 export const dynamic = 'force-dynamic';
 

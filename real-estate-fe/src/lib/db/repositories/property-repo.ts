@@ -2,7 +2,11 @@ import 'server-only';
 
 import { ObjectId } from 'mongodb';
 
+import type { Paginated } from '@/lib/validations/common';
+import type { PropertyCreateInput, PropertyNearbyQuery, PropertyQuery, PropertyUpdateInput } from '@/lib/validations/property';
+
 import { amenitiesCol, categoriesCol, propertiesCol } from '../collections';
+
 import {
   alive,
   ensureUniqueSlug,
@@ -18,8 +22,6 @@ import {
 } from './base';
 
 import type { PropertyDoc } from '../collections';
-import type { Paginated } from '@/lib/validations/common';
-import type { PropertyCreateInput, PropertyNearbyQuery, PropertyQuery, PropertyUpdateInput } from '@/lib/validations/property';
 import type { Filter, Sort } from 'mongodb';
 
 const SORT_MAP: Record<string, Sort> = {

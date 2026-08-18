@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+
 import { ListingCard } from '@/components/features/listing/listing-card';
 import { Link } from '@/i18n/routing';
 import type { Listing } from '@/types';

@@ -5,6 +5,7 @@ import { setRequestLocale } from 'next-intl/server';
 import { SiteFooter } from '@/app/_components/site-footer';
 import { SiteHeader } from '@/app/_components/site-header';
 import { APP_NAME } from '@/config/constants';
+import { DEFAULT_LOCALE, isLocale } from '@/config/locales';
 import { Link } from '@/i18n/routing';
 import { getArticleBySlug, getArticles } from '@/lib/db/articles';
 
@@ -15,8 +16,8 @@ type Props = {
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { slug } = await params;
-  const article = await getArticleBySlug(slug);
+  const { locale, slug } = await params;
+  const article = await getArticleBySlug(slug, isLocale(locale) ? locale : DEFAULT_LOCALE);
 
   if (!article) {
     return {
@@ -59,13 +60,14 @@ export default async function NewsDetailPage({ params }: Props) {
   const { locale, slug } = await params;
   setRequestLocale(locale);
 
-  const article = await getArticleBySlug(slug);
+  const lang = isLocale(locale) ? locale : DEFAULT_LOCALE;
+  const article = await getArticleBySlug(slug, lang);
 
   if (!article) {
     notFound();
   }
 
-  const allArticles = await getArticles();
+  const allArticles = await getArticles(lang);
   const relatedArticles = allArticles.filter((item) => item.slug !== slug).slice(0, 3);
 
   return (
@@ -147,41 +149,16 @@ export default async function NewsDetailPage({ params }: Props) {
             </p>
 
             {article.content ? (
-              <div className="text-navy/85 space-y-6 text-[16px] leading-[1.7]">
-                {article.content.split('\n\n').map((paragraph, index) => {
-                  if (paragraph.startsWith('### ')) {
-                    return (
-                      <h3 key={index} className="font-display text-navy border-line border-b mt-8 mb-4 pb-2 text-[26px] font-normal">
-                        {paragraph.replace('### ', '')}
-                      </h3>
-                    );
-                  }
-                  if (paragraph.startsWith('## ')) {
-                    return (
-                      <h2 key={index} className="font-display text-navy border-line border-b mt-10 mb-4 pb-2 text-[30px] font-normal">
-                        {paragraph.replace('## ', '')}
-                      </h2>
-                    );
-                  }
-                  if (paragraph.startsWith('* ') || paragraph.startsWith('- ')) {
-                    const items = paragraph.split('\n').map((item) => item.replace(/^[*-]\s*/, ''));
-                    return (
-                      <ul key={index} className="text-navy/80 list-disc space-y-2 pl-6">
-                        {items.map((it, i) => (
-                          <li key={i}>{it}</li>
-                        ))}
-                      </ul>
-                    );
-                  }
-                  return (
-                    <p key={index} className="text-[16px] leading-[1.75]">
-                      {paragraph}
-                    </p>
-                  );
-                })}
-              </div>
+              /* Nội dung là HTML do trình soạn thảo CMS sinh, đã sanitize ở
+                 server lúc lưu (`sanitizeArticleHtml`) và lúc AI trả về. Bọc
+                 trong `.article-body` — CHÍNH stylesheet mà CMS dùng lúc soạn,
+                 nên bài hiện ra đúng như biên tập nhìn thấy. */
+              <div
+                className="article-body"
+                dangerouslySetInnerHTML={{ __html: article.content }}
+              />
             ) : (
-              <p className="text-muted text-[16px]">Full article content is available for requested subscribers.</p>
+              <p className="text-muted text-[16px]">Nội dung bài viết đang được cập nhật.</p>
             )}
           </div>
 

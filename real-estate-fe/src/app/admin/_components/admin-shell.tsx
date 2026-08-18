@@ -72,7 +72,7 @@ export function AdminShell({ children, pendingInquiries = 0, currentUser = null 
       {navOpen ? (
         <div
           onClick={() => setNavOpen(false)}
-          className="fixed inset-0 z-40 bg-[rgb(7_29_54/0.45)] lg:hidden"
+          className="admin-fade-backdrop fixed inset-0 z-40 bg-[rgb(7_29_54/0.45)] lg:hidden"
         />
       ) : null}
 
@@ -83,16 +83,16 @@ export function AdminShell({ children, pendingInquiries = 0, currentUser = null 
         )}
       >
         <div className="flex h-14 shrink-0 items-center justify-between gap-2 border-b border-white/10 px-4">
-          <Link href="/admin" className="flex min-w-0 items-center gap-2.5">
+          <Link href="/admin" className="group/logo flex min-w-0 items-center gap-2.5">
             <Image
               src="/images/brand/logo.webp"
               alt=""
               width={72}
               height={72}
-              className="h-8 w-8 shrink-0 rounded-full object-cover"
+              className="h-8 w-8 shrink-0 rounded-full object-cover transition-transform duration-300 group-hover/logo:scale-110 group-hover/logo:rotate-3"
             />
             <span className="min-w-0 leading-none">
-              <strong className="block truncate text-[13px] font-extrabold text-white">
+              <strong className="block truncate text-[13px] font-extrabold text-white transition-colors duration-200 group-hover/logo:text-gold-soft">
                 Da Nang Homes
               </strong>
               <span className="text-gold-soft mt-1 block text-[8.5px] font-bold tracking-[0.2em] uppercase">
@@ -124,22 +124,23 @@ export function AdminShell({ children, pendingInquiries = 0, currentUser = null 
                     href={href}
                     aria-current={isActive ? 'page' : undefined}
                     className={cn(
-                      'focus-visible:outline-gold relative flex items-center gap-3 rounded-md px-3 py-2.5 text-[13px] transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2',
+                      'focus-visible:outline-gold relative flex items-center gap-3 rounded-md px-3 py-2.5 text-[13px] transition-all duration-200 focus-visible:outline-2 focus-visible:-outline-offset-2',
                       isActive
                         ? 'bg-white/8 font-bold text-white'
-                        : 'text-white/60 hover:bg-white/5 hover:text-white',
+                        : 'text-white/60 hover:bg-white/5 hover:text-white hover:pl-4',
                     )}
                   >
-                    {isActive ? (
-                      <span
-                        aria-hidden
-                        className="bg-gold absolute top-1/2 left-0 h-5 w-[3px] -translate-y-1/2 rounded-r"
-                      />
-                    ) : null}
-                    <Icon size={17} className="shrink-0" />
+                    <span
+                      aria-hidden
+                      className={cn(
+                        'bg-gold absolute top-1/2 left-0 w-[3px] -translate-y-1/2 rounded-r transition-all duration-300',
+                        isActive ? 'h-5 opacity-100' : 'h-0 opacity-0',
+                      )}
+                    />
+                    <Icon size={17} className="shrink-0 transition-transform duration-200 group-hover:translate-x-0.5" />
                     <span className="flex-1">{label}</span>
                     {badge > 0 ? (
-                      <span className="bg-gold text-navy rounded-full px-1.5 text-[10px] font-extrabold tabular-nums">
+                      <span className="admin-pulse-attention bg-gold text-navy rounded-full px-1.5 text-[10px] font-extrabold tabular-nums">
                         {badge}
                       </span>
                     ) : null}

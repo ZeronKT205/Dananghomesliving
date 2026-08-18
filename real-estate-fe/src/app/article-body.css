@@ -123,8 +123,17 @@
   margin-top: 0;
 }
 
+/*
+ * Nhãn hộp ghi nhớ.
+ *
+ * Lấy từ CSS chứ KHÔNG từ `data-label` trong HTML: nhãn được ghi vào lúc soạn
+ * bài nên bản tiếng Anh, Trung, Hàn đều hiện "Ghi nhớ / Mẹo / Lưu ý" — đã thấy
+ * đúng như vậy trên cả bốn trang. Để CSS quyết theo `lang` của trang thì mọi
+ * bài đã lưu cũng tự đúng, không phải đụng lại dữ liệu.
+ *
+ * Mặc định là tiếng Việt (giao diện CMS), các ngôn ngữ khác ghi đè bên dưới.
+ */
 .article-body .callout::before {
-  content: attr(data-label);
   display: block;
   font-size: 10.5px;
   font-weight: 700;
@@ -158,6 +167,47 @@
 }
 .article-body .callout[data-variant='warning']::before {
   color: #9b6b1f;
+}
+
+/* Nhãn theo ngôn ngữ trang. `:lang()` bắt cả `lang="en-US"`. */
+.article-body .callout[data-variant='note']::before {
+  content: 'Ghi nhớ';
+}
+.article-body .callout[data-variant='tip']::before {
+  content: 'Mẹo';
+}
+.article-body .callout[data-variant='warning']::before {
+  content: 'Lưu ý';
+}
+
+:lang(en) .article-body .callout[data-variant='note']::before {
+  content: 'Note';
+}
+:lang(en) .article-body .callout[data-variant='tip']::before {
+  content: 'Tip';
+}
+:lang(en) .article-body .callout[data-variant='warning']::before {
+  content: 'Important';
+}
+
+:lang(zh) .article-body .callout[data-variant='note']::before {
+  content: '备注';
+}
+:lang(zh) .article-body .callout[data-variant='tip']::before {
+  content: '提示';
+}
+:lang(zh) .article-body .callout[data-variant='warning']::before {
+  content: '注意';
+}
+
+:lang(ko) .article-body .callout[data-variant='note']::before {
+  content: '참고';
+}
+:lang(ko) .article-body .callout[data-variant='tip']::before {
+  content: '팁';
+}
+:lang(ko) .article-body .callout[data-variant='warning']::before {
+  content: '주의';
 }
 
 .article-body img {

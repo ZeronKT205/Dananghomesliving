@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+
 import { BrandLogo } from './brand-logo';
 
 export function InitialBrandLoader() {

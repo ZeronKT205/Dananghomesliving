@@ -1,9 +1,10 @@
 import 'server-only';
 
-import { getDb } from './client';
 
 import type { Locale } from '@/config/locales';
 import type { PublishState } from '@/lib/validations/common';
+
+import { getDb } from './client';
 
 // Re-export để nơi khác chỉ cần import từ một chỗ, khỏi phải nhớ PublishState
 // nằm ở validations còn các kiểu document nằm ở đây.

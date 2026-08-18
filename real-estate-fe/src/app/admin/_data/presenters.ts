@@ -1,6 +1,14 @@
 import 'server-only';
 
 import { pickLocale } from '@/config/locales';
+import type {
+  ArticleCategoryDoc,
+  ArticleDoc,
+  CategoryDoc,
+  InquiryDoc,
+  MediaDoc,
+  PropertyDoc,
+} from '@/lib/db/collections';
 import { getMediaByIds } from '@/lib/db/repositories/media-repo';
 import { isOverdue } from '@/server/services/inquiry-service';
 
@@ -14,14 +22,6 @@ import {
   type PropertyGroup,
 } from './view-models';
 
-import type {
-  ArticleCategoryDoc,
-  ArticleDoc,
-  CategoryDoc,
-  InquiryDoc,
-  MediaDoc,
-  PropertyDoc,
-} from '@/lib/db/collections';
 
 /**
  * Map document DB → kiểu mà component admin đang dùng.

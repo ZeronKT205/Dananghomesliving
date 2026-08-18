@@ -26,7 +26,7 @@ export function PropertyCard({
   return (
     <article
       className={cn(
-        'border-line hover:border-gold group flex flex-col overflow-hidden rounded-[10px] border bg-white transition-all hover:shadow-[0_1px_2px_rgb(7_29_54/0.06)]',
+        'admin-card-hover border-line group flex flex-col overflow-hidden rounded-[10px] border bg-white transition-all',
         property.state !== 'published' && 'opacity-[0.72]',
       )}
     >
@@ -37,7 +37,7 @@ export function PropertyCard({
           fill
           priority={priority}
           sizes="(max-width: 640px) 100vw, (max-width: 1280px) 33vw, 280px"
-          className="object-cover"
+          className="admin-img-zoom object-cover"
         />
         <span className="text-navy/95 absolute top-2 left-2 inline-flex items-center gap-1.5 rounded-full bg-[rgb(11_23_21/0.78)] px-2.5 py-1 text-[10px] font-bold text-white">
           <IcImages size={11} />

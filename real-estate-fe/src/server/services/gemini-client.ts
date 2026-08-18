@@ -12,13 +12,20 @@ import { ApiError } from '@/lib/api/http';
 const ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models';
 
 /**
- * `gemini-2.5-flash` là mặc định.
+ * `gemini-3.5-flash` là mặc định.
  *
- * KHÔNG dùng `flash-lite` dù nhanh gấp ba: đã đo thấy nó phớt lờ quy tắc tên
- * riêng — dịch "My Khe" thành 美溪 / 미케 dù prompt cấm rõ ràng — và trả 503
- * khi hệ thống đông.
+ * KHÔNG quay lại `gemini-2.5-flash`: hạn mức miễn phí của nó chỉ 20 lượt/ngày
+ * (đã đo bằng chính khoá của dự án), mà mỗi bài tốn 1–2 lượt dựng + 3 lượt
+ * dịch — tức chưa tới 4 bài là hết ngày.
+ *
+ * KHÔNG dùng bản `flash-lite` dù nhanh hơn: đã đo thấy nó phớt lờ quy tắc tên
+ * riêng — dịch "My Khe" thành 美溪 / 미케 dù prompt cấm rõ ràng.
+ *
+ * Tránh các id kết thúc bằng `-latest`: Google tự đổi model bên dưới, chất
+ * lượng đầu ra thay đổi mà không ai hay. Đặt `TRANSLATION_MODEL` trong
+ * `.env.local` để đổi có chủ đích.
  */
-export const GEMINI_MODEL = process.env.TRANSLATION_MODEL ?? 'gemini-2.5-flash';
+export const GEMINI_MODEL = process.env.TRANSLATION_MODEL ?? 'gemini-3.5-flash';
 
 export function geminiApiKey(): string {
   const key = process.env.GEMINI_API_KEY;
@@ -60,6 +67,12 @@ export interface GeminiCall {
   label: string;
   timeoutMs?: number;
   maxOutputTokens?: number;
+  /**
+   * Ngân sách token suy nghĩ. Gemini 2.5 bật thinking mặc định và với đầu ra
+   * dài nó có thể nghĩ rất lâu — đã gặp timeout 150s vì việc này. Đặt trần để
+   * thời gian phản hồi ổn định; 0 là tắt hẳn.
+   */
+  thinkingBudget?: number;
 }
 
 /**
@@ -73,6 +86,7 @@ export async function callGemini<T>({
   label,
   timeoutMs = 120_000,
   maxOutputTokens = 32_000,
+  thinkingBudget,
 }: GeminiCall): Promise<T> {
   const key = geminiApiKey();
 
@@ -92,6 +106,7 @@ export async function callGemini<T>({
           responseMimeType: 'application/json',
           responseSchema: schema,
           maxOutputTokens,
+          ...(thinkingBudget === undefined ? {} : { thinkingConfig: { thinkingBudget } }),
         },
       }),
     });
@@ -116,7 +131,10 @@ export async function callGemini<T>({
   }
 
   const json = (await res.json()) as {
-    candidates?: Array<{ content?: { parts?: Array<{ text?: string }> }; finishReason?: string }>;
+    candidates?: Array<{
+      content?: { parts?: Array<{ text?: string; thought?: boolean }> };
+      finishReason?: string;
+    }>;
     promptFeedback?: { blockReason?: string };
   };
 
@@ -124,17 +142,42 @@ export async function callGemini<T>({
     throw new Error(`Nội dung bị bộ lọc chặn khi ${label}`);
   }
 
-  const text = json.candidates?.[0]?.content?.parts?.[0]?.text;
+  const candidate = json.candidates?.[0];
+
+  /*
+   * Ghép MỌI phần text, bỏ phần `thought`.
+   *
+   * Không đọc `parts[0].text` như trước: từ Gemini 3 model trả kèm tóm tắt quá
+   * trình suy nghĩ thành một part riêng có `thought: true`, và nó đứng TRƯỚC
+   * phần JSON. Lấy part đầu là lấy trúng đoạn suy nghĩ, parse hỏng, người dùng
+   * chỉ thấy "kết quả không đúng định dạng". Đầu ra dài cũng có thể bị cắt làm
+   * nhiều part.
+   */
+  const text = (candidate?.content?.parts ?? [])
+    .filter((part) => part.thought !== true && typeof part.text === 'string')
+    .map((part) => part.text)
+    .join('')
+    .trim();
+
   if (!text) {
-    const reason = json.candidates?.[0]?.finishReason;
     throw new Error(
-      reason === 'MAX_TOKENS' ? `Nội dung quá dài để ${label} trong một lần` : `Không nhận được kết quả khi ${label}`,
+      candidate?.finishReason === 'MAX_TOKENS'
+        ? `Nội dung quá dài để ${label} trong một lần`
+        : `Không nhận được kết quả khi ${label}`,
     );
   }
 
+  // Dù đã yêu cầu responseMimeType JSON, thỉnh thoảng vẫn có rào ```json.
+  const body = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '');
+
   try {
-    return JSON.parse(text) as T;
+    return JSON.parse(body) as T;
   } catch {
-    throw new Error(`Kết quả khi ${label} không đúng định dạng`);
+    console.error('[gemini] khong parse duoc, do dai', body.length, '- doan cuoi:', body.slice(-300));
+    throw new Error(
+      candidate?.finishReason === 'MAX_TOKENS'
+        ? `Nội dung quá dài để ${label} trong một lần`
+        : `Kết quả khi ${label} không đúng định dạng`,
+    );
   }
 }

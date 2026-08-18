@@ -83,7 +83,7 @@ export function ComposePanel({
   }
 
   return (
-    <div className="border-gold/50 bg-gold/4 rounded-md border p-3.5">
+    <div className="admin-expand-down border-gold/50 bg-gold/4 rounded-md border p-3.5">
       <div className="mb-2 flex items-start justify-between gap-3">
         <div>
           <p className="text-navy text-[13px] font-bold">Dựng bài từ nội dung thô</p>
@@ -112,7 +112,7 @@ export function ComposePanel({
         placeholder={
           'Dán nội dung vào đây…\n\nVí dụ: ghi chú buổi khảo sát, thông tin dự án, bài đăng Facebook cũ, bản dịch thô…'
         }
-        className="border-line focus:border-navy focus:outline-navy w-full rounded-md border bg-white px-3 py-2 text-[13px] leading-relaxed"
+        className="admin-input-glow border-line focus:border-gold focus:outline-none w-full rounded-md border bg-white px-3 py-2 text-[13px] leading-relaxed transition-all duration-200"
       />
 
       {canTranslate ? (
@@ -141,7 +141,7 @@ export function ComposePanel({
           type="button"
           onClick={run}
           disabled={busy || chars < 80}
-          className="bg-navy hover:bg-gold h-9 rounded-md px-4 text-[12.5px] font-bold text-white transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+          className="bg-navy hover:bg-gold hover:admin-btn-glow h-9 rounded-md px-4 text-[12.5px] font-bold text-white transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {busy
             ? willTranslate

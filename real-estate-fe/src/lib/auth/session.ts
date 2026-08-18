@@ -2,6 +2,10 @@ import 'server-only';
 
 import { cookies } from 'next/headers';
 
+
+import type { AccessTokenClaims, Permission, UserRole } from '@/lib/validations/auth';
+import { hasPermission } from '@/lib/validations/auth';
+
 import {
   ACCESS_TTL_SECONDS,
   COOKIE_ACCESS,
@@ -9,9 +13,6 @@ import {
   REFRESH_TTL_SECONDS,
   verifyAccessToken,
 } from './jwt';
-
-import type { AccessTokenClaims, Permission, UserRole } from '@/lib/validations/auth';
-import { hasPermission } from '@/lib/validations/auth';
 
 /**
  * Đọc/ghi cookie phiên. Chỉ dùng ở Server Component, Server Action và Route

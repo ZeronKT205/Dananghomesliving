@@ -1,6 +1,7 @@
 import { setRequestLocale } from 'next-intl/server';
 
 import { APP_NAME } from '@/config/constants';
+import { DEFAULT_LOCALE, isLocale } from '@/config/locales';
 import { getArticles } from '@/lib/db/articles';
 
 import { QuoteRequestSection } from '../../_components/quote-request-section';
@@ -20,7 +21,7 @@ export default async function NewsPage({ params }: { params: Promise<{ locale: s
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const articles = await getArticles();
+  const articles = await getArticles(isLocale(locale) ? locale : DEFAULT_LOCALE);
 
   return (
     <>

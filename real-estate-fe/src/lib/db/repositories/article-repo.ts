@@ -2,7 +2,11 @@ import 'server-only';
 
 import { ObjectId } from 'mongodb';
 
+import type { ArticleQuery } from '@/lib/validations/article';
+import type { Paginated } from '@/lib/validations/common';
+
 import { articleCategoriesCol, articlesCol } from '../collections';
+
 import {
   alive,
   ensureUniqueSlug,
@@ -16,8 +20,6 @@ import {
 } from './base';
 
 import type { ArticleCategoryDoc, ArticleDoc } from '../collections';
-import type { ArticleQuery } from '@/lib/validations/article';
-import type { Paginated } from '@/lib/validations/common';
 import type { Filter, Sort } from 'mongodb';
 
 const SORT_MAP: Record<string, Sort> = {

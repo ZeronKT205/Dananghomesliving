@@ -7,6 +7,7 @@ import { getAllListings } from '@/lib/db/listings';
 import { PropertySearch } from '../../_components/property-search';
 import { SiteFooter } from '../../_components/site-footer';
 import { SiteHeader } from '../../_components/site-header';
+
 import { PropertiesClientView } from './_components/properties-client-view';
 import { VoucherCtaBanner } from './_components/voucher-cta-banner';
 

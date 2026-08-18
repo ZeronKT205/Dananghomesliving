@@ -1,5 +1,5 @@
-import createMiddleware from 'next-intl/middleware';
 import { NextResponse } from 'next/server';
+import createMiddleware from 'next-intl/middleware';
 
 import { COOKIE_ACCESS, COOKIE_REFRESH, verifyAccessToken } from '@/lib/auth/jwt';
 

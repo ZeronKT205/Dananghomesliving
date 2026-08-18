@@ -1,11 +1,13 @@
 import 'server-only';
 
+import type { Paginated } from '@/lib/validations/common';
+import type { InquiryQuery } from '@/lib/validations/inquiry';
+
 import { inquiriesCol } from '../collections';
+
 import { alive, insertDoc, paginate, softDelete, toObjectId, updateDoc } from './base';
 
 import type { InquiryDoc } from '../collections';
-import type { Paginated } from '@/lib/validations/common';
-import type { InquiryQuery } from '@/lib/validations/inquiry';
 import type { Filter } from 'mongodb';
 
 /**

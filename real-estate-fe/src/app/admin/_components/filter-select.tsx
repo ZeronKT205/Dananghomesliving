@@ -30,7 +30,7 @@ export function FilterSelect({
       defaultValue={defaultValue ?? normalized[0]?.value}
       // Không có nút "Lọc" riêng — đổi lựa chọn là áp dụng ngay, đỡ một cú bấm.
       onChange={submitOnChange ? (e) => e.currentTarget.form?.requestSubmit() : undefined}
-      className="border-line text-navy focus-visible:outline-gold h-9 cursor-pointer rounded-md border bg-white px-3 text-[12.5px] font-medium focus-visible:outline-2"
+      className="admin-input-glow border-line text-navy focus-visible:outline-gold focus-visible:border-gold h-9 cursor-pointer rounded-md border bg-white px-3 text-[12.5px] font-medium focus-visible:outline-2 transition-all duration-200"
     >
       {normalized.map((option) => (
         <option key={option.value} value={option.value}>

@@ -1,3 +1,4 @@
+import type { InquiryStatus } from '@/lib/db/collections';
 import { listCategories } from '@/lib/db/repositories/catalog-repo';
 import { listProperties } from '@/lib/db/repositories/property-repo';
 import { getInquiries } from '@/server/services/inquiry-service';
@@ -6,7 +7,6 @@ import { InquiryList } from '../_components/inquiry-list';
 import { PageHead, Panel, SearchInput, Tabs, Toolbar } from '../_components/ui';
 import { toAdminInquiries } from '../_data/presenters';
 
-import type { InquiryStatus } from '@/lib/db/collections';
 
 export const dynamic = 'force-dynamic';
 

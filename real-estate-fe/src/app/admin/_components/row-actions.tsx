@@ -3,10 +3,11 @@
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 
+import type { ActionResult } from '@/server/actions/admin-actions';
+
 import { IcEdit, IcTrash } from './icons';
 import { IconButton } from './ui';
 
-import type { ActionResult } from '@/server/actions/admin-actions';
 
 /**
  * Nút Sửa / Xoá dùng chung cho thẻ BĐS và thẻ bài viết.
@@ -59,7 +60,7 @@ export function RowActions({
           type="button"
           onClick={handleDelete}
           disabled={pending}
-          className="h-7 rounded-md border border-[#e5b8b8] bg-[#fdf4f4] px-2 text-[11px] font-bold text-[#a33] transition-colors hover:bg-[#f9e9e9] disabled:opacity-60"
+          className="admin-confirm-expand h-7 rounded-md border border-[#e5b8b8] bg-[#fdf4f4] px-2 text-[11px] font-bold text-[#a33] transition-colors hover:bg-[#f9e9e9] disabled:opacity-60"
         >
           {pending ? 'Đang xoá…' : 'Xác nhận xoá'}
         </button>

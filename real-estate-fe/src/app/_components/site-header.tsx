@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
+import { BrandLogo } from '@/components/ui/brand-logo';
 import { ChevronDownIcon, CloseIcon, MailIcon, MenuIcon } from '@/components/ui/icons';
 import { APP_NAME, CONTACT_EMAIL, NAV_ITEMS } from '@/config/constants';
 import { cn } from '@/lib/utils';
@@ -11,7 +12,6 @@ import { LanguageMenu } from './language-menu';
 import { PrimaryNav } from './primary-nav';
 import { QrContact } from './qr-contact';
 import { SocialLinks } from './social-links';
-import { BrandLogo } from '@/components/ui/brand-logo';
 
 /** Header 2 hàng:
  *  · Hàng trên — trái: QR gọi + email + ngôn ngữ | giữa: logo | phải: mạng xã hội

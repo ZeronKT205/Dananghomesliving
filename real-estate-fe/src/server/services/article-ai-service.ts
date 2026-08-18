@@ -1,7 +1,7 @@
 import 'server-only';
 
-import { ApiError } from '@/lib/api/http';
 import { LOCALES, type Locale } from '@/config/locales';
+import { ApiError } from '@/lib/api/http';
 import { sanitizeArticleHtml } from '@/lib/sanitize-html';
 
 import {
@@ -66,14 +66,16 @@ function systemPrompt(locale: Locale): string {
     `Write in ${lang} regardless of what language the source notes are in.`,
     '',
     '## Output shape',
-    'Return JSON only. `blocks` is an ordered array. Each block is one of:',
-    '  { "type": "paragraph", "text": "…" }',
-    '  { "type": "heading", "level": 2, "text": "…" }        // level is 2 or 3',
-    '  { "type": "list", "ordered": false, "items": ["…"] }',
-    '  { "type": "callout", "variant": "note", "paragraphs": ["…"] }   // variant: note | tip | warning',
-    '  { "type": "quote", "text": "…" }',
-    '  { "type": "divider" }',
-    'Never put HTML tags inside any text field. Formatting is expressed only with the inline markers below.',
+    'Return JSON only. `blocks` is an ordered array of 12–24 blocks.',
+    'EVERY block carries its content in `lines` — an array of strings. There is no other content field.',
+    '  { "type": "paragraph", "lines": ["one paragraph"] }',
+    '  { "type": "heading",   "level": 2, "lines": ["section title"] }     // level 2 or 3',
+    '  { "type": "list",      "ordered": false, "lines": ["item", "item", "item"] }',
+    '  { "type": "callout",   "variant": "tip", "lines": ["one or two short paragraphs"] }  // note | tip | warning',
+    '  { "type": "quote",     "lines": ["the quoted sentence"] }',
+    '  { "type": "divider",   "lines": [] }',
+    'Never put HTML tags inside `lines`. Formatting is expressed only with the inline markers below.',
+    'Never emit the same block twice in a row. Every block must say something new.',
     '',
     '## Inline markers (use them — a wall of plain text reads as unfinished)',
     '  **bold**   — every concrete figure the first time it appears: prices, areas, distances, durations, percentages, deposit terms.',
@@ -92,7 +94,8 @@ function systemPrompt(locale: Locale): string {
     '- 2 opening paragraphs of context BEFORE the first heading. Say what the piece covers and who it is for.',
     '- 3 to 5 `heading` level-2 sections. Give each a specific title, not "Overview" or "Conclusion".',
     '- Each section: 2–4 paragraphs, or paragraphs plus one list.',
-    '- Use `list` where the source has comparable items (fees, amenities, areas). Keep every item a full clause, not one word.',
+    '- At least ONE `list` block. Raw notes almost always contain a set of comparable items — amenities, fees, features, areas, steps — and those read far better as a list than buried in a paragraph.',
+    '- Keep every list item a full clause with its own detail, never a bare noun. Weak: "Pool". Right: "A **16 m** infinity pool facing east, so it catches morning sun rather than afternoon glare."',
     '- Exactly ONE or TWO `callout` blocks, placed where a reader genuinely benefits:',
     '    variant "warning" — a risk, a cost that surprises people, something to verify',
     '    variant "tip"     — practical advice on timing, negotiating, or what to ask',
@@ -129,8 +132,17 @@ async function askForBlocks(system: string, user: string): Promise<RawCompose> {
     user,
     schema: BLOCKS_SCHEMA,
     label: 'dựng bài viết',
-    // Bài 1200 từ kèm cấu trúc JSON cần nhiều token hơn mặc định.
-    maxOutputTokens: 48_000,
+    /*
+     * Trần này phải bao GỒM cả token suy nghĩ — Gemini tính chung.
+     *
+     * Đo thật một bài tiếng Việt: 3.935 token suy nghĩ + 8.049 token nội dung.
+     * Đặt 12.000 như trước là cắt ngang giữa chừng, JSON đứt đôi, người dùng
+     * chỉ thấy "kết quả không đúng định dạng". 24.000 cho đủ chỗ thở.
+     */
+    maxOutputTokens: 24_000,
+    // Chỉ là gợi ý chứ không phải trần cứng — đo thấy model 3.x vẫn nghĩ tới
+    // ~3.9k dù đặt 2.048. Vẫn giữ vì nó kéo mức suy nghĩ xuống đáng kể.
+    thinkingBudget: 2048,
     timeoutMs: 150_000,
   });
 }
@@ -184,13 +196,15 @@ export async function composeArticle(raw: string, locale: Locale): Promise<{ art
   let result = normalize(await askForBlocks(system, source));
   let report = inspectBlocks(result.blocks);
 
-  const tooThin = report.words < MIN_WORDS || report.headings < 3 || report.callouts === 0;
+  const tooThin =
+    report.words < MIN_WORDS || report.headings < 3 || report.callouts === 0 || report.lists === 0;
 
   if (tooThin) {
     const missing = [
       report.words < MIN_WORDS ? `only ${report.words} words (target ${TARGET_WORDS})` : null,
       report.headings < 3 ? `only ${report.headings} level-2 sections (need 3–5)` : null,
       report.callouts === 0 ? 'no callout block' : null,
+      report.lists === 0 ? 'no list block' : null,
     ]
       .filter(Boolean)
       .join('; ');

@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useMemo, useState, useTransition } from 'react';
 
 import { RichTextEditor } from '@/components/editor/rich-text-editor';
+import { ImageDropZone } from '@/components/ui/image-drop-zone';
 import { LOCALES } from '@/config/locales';
 import {
   actionAddMediaByUrl,
@@ -15,6 +16,7 @@ import {
 } from '@/server/actions/admin-actions';
 
 import { FormCard, LocaleTabs, SaveBar, Toggle, inputClass } from '../../../_components/form-kit';
+
 import { ComposePanel } from './compose-panel';
 
 export interface ArticleFormValue {
@@ -258,8 +260,20 @@ export function ArticleForm({
                 });
                 setDirty(true);
 
+                // Báo cả phần THẤT BẠI. Chỉ khoe số ngôn ngữ dịch được thì biên
+                // tập tưởng đủ 4 bản, lưu luôn, và bản thiếu lặng lẽ lên web.
                 const langs = Object.keys(r.translations).length;
-                setMessage(`Đã tự động tạo bài (${r.stats.words} từ) và dịch sang ${langs} ngôn ngữ!`);
+                const built = `Đã dựng bài ${r.stats.words} từ, ${r.stats.headings} mục, ${r.stats.callouts} hộp ghi nhớ`;
+                const failed = r.failedLocales.length
+                  ? ` Chưa dịch được: ${r.failedLocales
+                      .map((f) => LOCALE_LABEL[f.locale] ?? f.locale)
+                      .join(', ')} — bấm "Dịch" để thử lại.`
+                  : '';
+                setMessage(
+                  langs > 0
+                    ? `${built}, kèm ${langs} bản dịch.${failed}`
+                    : `${built}.${failed}`,
+                );
               }}
             />
           </div>
@@ -483,31 +497,48 @@ export function ArticleForm({
           </FormCard>
 
           {/* Cover Image Setting Input */}
-          <FormCard title="Ảnh bìa bài viết (URL)">
+          <FormCard title="Ảnh bìa bài viết">
             {v.coverUrl ? (
               <div className="bg-ivory border-line relative mb-3 block aspect-[16/10] overflow-hidden border">
                 <Image src={v.coverUrl} alt="" fill sizes="320px" className="object-cover" />
               </div>
-            ) : (
-              <p className="border-line text-muted mb-3 border border-dashed px-3 py-5 text-center text-[12px]">
-                Chưa chọn ảnh bìa
-              </p>
-            )}
-            <div className="flex gap-2">
-              <input
-                value={coverInput}
-                onChange={(e) => setCoverInput(e.target.value)}
-                placeholder="Dán đường dẫn ảnh HTTP..."
-                className={inputClass}
-              />
-              <button
-                type="button"
-                onClick={() => void setCover()}
-                className="bg-navy hover:bg-gold h-[38px] shrink-0 px-3.5 text-[12px] font-bold text-white transition-colors cursor-pointer"
-              >
-                Đặt
-              </button>
-            </div>
+            ) : null}
+
+            <ImageDropZone
+              compact
+              ownerType="article"
+              label={v.coverUrl ? 'Đổi ảnh bìa khác' : 'Kéo ảnh vào đây hoặc bấm để chọn'}
+              hint="Ảnh sẽ được tải lên Cloudflare R2."
+              onUploaded={(img) => {
+                setV((p) => ({ ...p, coverId: img.id, coverUrl: img.url }));
+                setDirty(true);
+                setError(null);
+              }}
+            />
+
+            {/* Dán URL vẫn giữ lại: nhiều bài lấy ảnh từ nguồn ngoài, và đây là
+                đường thoát khi R2 lỗi. Xếp xuống dưới vì tải tệp mới là việc
+                thường làm. */}
+            <details className="mt-2.5">
+              <summary className="text-muted hover:text-navy cursor-pointer text-[11.5px]">
+                Hoặc dán đường dẫn ảnh có sẵn
+              </summary>
+              <div className="mt-2 flex gap-2">
+                <input
+                  value={coverInput}
+                  onChange={(e) => setCoverInput(e.target.value)}
+                  placeholder="https://..."
+                  className={inputClass}
+                />
+                <button
+                  type="button"
+                  onClick={() => void setCover()}
+                  className="bg-navy hover:bg-gold h-[38px] shrink-0 px-3.5 text-[12px] font-bold text-white transition-colors cursor-pointer"
+                >
+                  Đặt
+                </button>
+              </div>
+            </details>
           </FormCard>
         </div>
       </div>

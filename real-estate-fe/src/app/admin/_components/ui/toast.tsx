@@ -31,7 +31,7 @@ export function ToastContainer() {
   return (
     <div className="fixed bottom-6 right-6 z-[100] flex flex-col gap-2 pointer-events-none">
       {toasts.map((t) => (
-        <div key={t.id} className="bg-navy text-white px-5 py-3 rounded shadow-lg flex items-center gap-3 animate-in slide-in-from-bottom-5 fade-in pointer-events-auto">
+        <div key={t.id} className="admin-toast-in bg-navy text-white px-5 py-3 rounded shadow-lg flex items-center gap-3 pointer-events-auto">
           {t.type === 'success' && (
             <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
           )}

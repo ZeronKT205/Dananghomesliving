@@ -2,12 +2,6 @@ import { Node, mergeAttributes } from '@tiptap/core';
 
 export type CalloutVariant = 'note' | 'tip' | 'warning';
 
-export const CALLOUT_LABEL: Record<CalloutVariant, string> = {
-  note: 'Ghi nhớ',
-  tip: 'Mẹo',
-  warning: 'Lưu ý',
-};
-
 declare module '@tiptap/core' {
   interface Commands<ReturnType> {
     callout: {
@@ -20,10 +14,11 @@ declare module '@tiptap/core' {
 /**
  * Hộp ghi nhớ — khối nội dung nổi bật giữa bài, kiểu các trang tin thường dùng.
  *
- * Render ra `<div class="callout" data-variant="..." data-label="...">`, và
- * `data-label` được CSS đọc qua `content: attr(data-label)`. Nhãn nằm ở
- * thuộc tính chứ không phải một node con: biên tập viên không xoá nhầm được
- * tiêu đề hộp, và đổi nhãn sau này không phải migrate nội dung đã lưu.
+ * Render ra `<div class="callout" data-variant="...">`. Nhãn ("Ghi nhớ", "Mẹo",
+ * "Lưu ý") do CSS sinh từ `data-variant` và ĐỔI THEO NGÔN NGỮ TRANG — không
+ * ghi vào HTML, vì nhãn ghi lúc soạn sẽ theo bản dịch sang mọi ngôn ngữ và bản
+ * tiếng Hàn lại hiện chữ Việt. Nhãn cũng không phải node con: biên tập viên
+ * không xoá nhầm được tiêu đề hộp.
  *
  * `content: 'block+'` cho phép nhiều đoạn, danh sách… bên trong hộp.
  */
@@ -38,13 +33,7 @@ export const Callout = Node.create({
       variant: {
         default: 'note' as CalloutVariant,
         parseHTML: (el) => el.getAttribute('data-variant') ?? 'note',
-        renderHTML: (attrs) => {
-          const variant = (attrs.variant as CalloutVariant) ?? 'note';
-          return {
-            'data-variant': variant,
-            'data-label': CALLOUT_LABEL[variant] ?? CALLOUT_LABEL.note,
-          };
-        },
+        renderHTML: (attrs) => ({ 'data-variant': (attrs.variant as CalloutVariant) ?? 'note' }),
       },
     };
   },

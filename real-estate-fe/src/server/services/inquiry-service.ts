@@ -2,7 +2,9 @@ import 'server-only';
 
 import { ObjectId } from 'mongodb';
 
+import { pickLocale } from '@/config/locales';
 import { ApiError } from '@/lib/api/http';
+import type { InquiryDoc } from '@/lib/db/collections';
 import {
   addInquiryNote,
   assignInquiry,
@@ -16,9 +18,6 @@ import {
   updateInquiryStatus,
 } from '@/lib/db/repositories/inquiry-repo';
 import { getPropertyById, incrementInquiryCount } from '@/lib/db/repositories/property-repo';
-import { pickLocale } from '@/config/locales';
-
-import type { InquiryDoc } from '@/lib/db/collections';
 import type { InquiryQuery, PropertyInquiryInput, QuoteFormInput } from '@/lib/validations/inquiry';
 
 /** Trần chống spam: tối đa 5 yêu cầu / 1 IP / 60 phút. */

@@ -17,7 +17,7 @@ const ALLOWED_TAGS = [
   'a', 'img', 'div', 'span',
 ];
 
-const ALLOWED_ATTR = ['href', 'target', 'rel', 'src', 'alt', 'title', 'class', 'style', 'data-variant', 'data-label'];
+const ALLOWED_ATTR = ['href', 'target', 'rel', 'src', 'alt', 'title', 'class', 'style', 'data-variant'];
 
 export function sanitizeArticleHtml(dirty: string): string {
   if (!dirty?.trim()) return '';

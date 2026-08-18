@@ -1,6 +1,7 @@
 import Link from 'next/link';
 
 import { NewsletterForm } from '@/components/features/newsletter/newsletter-form';
+import { BrandLogo } from '@/components/ui/brand-logo';
 import {
   APP_NAME,
   APP_TAGLINE,
@@ -10,7 +11,6 @@ import {
   NAV_ITEMS,
 } from '@/config/constants';
 
-import { BrandLogo } from '@/components/ui/brand-logo';
 
 // Bỏ "Home" — footer đã ở cuối trang, link về đầu trang không có giá trị ở đây.
 const EXPLORE_LINKS = NAV_ITEMS.filter((item) => item.href !== '/');

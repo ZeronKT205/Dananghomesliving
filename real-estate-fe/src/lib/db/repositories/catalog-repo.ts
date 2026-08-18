@@ -1,6 +1,7 @@
 import 'server-only';
 
 import { amenitiesCol, categoriesCol, propertiesCol } from '../collections';
+
 import {
   alive,
   ensureUniqueSlug,

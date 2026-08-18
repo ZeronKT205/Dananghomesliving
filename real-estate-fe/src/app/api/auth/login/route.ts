@@ -1,8 +1,8 @@
 import { ok, withApi } from '@/lib/api/http';
 import { getClientMeta } from '@/lib/api/request-meta';
 import { setAuthCookies } from '@/lib/auth/session';
-import { login } from '@/server/services/auth-service';
 import { zLoginInput } from '@/lib/validations/auth';
+import { login } from '@/server/services/auth-service';
 
 import type { NextRequest } from 'next/server';
 

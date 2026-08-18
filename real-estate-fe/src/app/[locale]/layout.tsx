@@ -5,10 +5,11 @@ import { notFound } from 'next/navigation';
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, setRequestLocale } from 'next-intl/server';
 
-import { APP_DESCRIPTION, APP_NAME } from '@/config/constants';
 import { InitialBrandLoader } from '@/components/ui/initial-brand-loader';
 import { NavigationProgress } from '@/components/ui/navigation-progress';
 import { ToastProvider } from '@/components/ui/toast-provider';
+import { APP_DESCRIPTION, APP_NAME } from '@/config/constants';
+import { isLocale } from '@/config/locales';
 import { routing } from '@/i18n/routing';
 
 import type { Metadata } from 'next';
@@ -98,7 +99,8 @@ export default async function RootLayout({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  if (!routing.locales.includes(locale as any)) {
+  // `isLocale` thu hẹp kiểu thật sự, thay cho `includes(locale as any)`.
+  if (!isLocale(locale)) {
     notFound();
   }
 

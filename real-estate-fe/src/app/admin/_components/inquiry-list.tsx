@@ -59,7 +59,7 @@ export function InquiryList({ inquiries }: { inquiries: AdminInquiry[] }) {
               <button
                 type="button"
                 onClick={() => setOpenId(item.id)}
-                className="hover:bg-ivory/60 focus-visible:outline-gold flex w-full cursor-pointer items-center gap-3 px-4 py-3 text-left transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2"
+                className="border-l-2 border-transparent hover:border-gold hover:bg-ivory/60 focus-visible:outline-gold flex w-full cursor-pointer items-center gap-3 px-4 py-3 text-left transition-all duration-300 hover:pl-5 focus-visible:outline-2 focus-visible:-outline-offset-2"
               >
                 <Avatar name={item.name} />
 
@@ -113,10 +113,10 @@ export function InquiryList({ inquiries }: { inquiries: AdminInquiry[] }) {
             >
               <div
                 onClick={() => setOpenId(null)}
-                className="absolute inset-0 bg-[rgb(4_14_27/0.55)]"
+                className="admin-fade-backdrop absolute inset-0 bg-[rgb(4_14_27/0.55)]"
               />
 
-              <aside className="absolute inset-y-0 right-0 flex w-[min(380px,100%)] flex-col bg-white shadow-[0_0_60px_rgb(7_29_54/0.25)]">
+              <aside className="admin-slide-in-right absolute inset-y-0 right-0 flex w-[min(380px,100%)] flex-col bg-white shadow-[0_0_60px_rgb(7_29_54/0.25)]">
                 <header className="border-line flex shrink-0 items-center justify-between gap-3 border-b px-4 py-3">
                   <div className="min-w-0">
                     <h2 className="text-navy text-[13.5px] font-extrabold">Chi tiết yêu cầu</h2>

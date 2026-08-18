@@ -2,6 +2,9 @@ import 'server-only';
 
 import { ObjectId } from 'mongodb';
 
+import { ApiError } from '@/lib/api/http';
+import { REFRESH_TTL_SECONDS, sha256Hex, signAccessToken, signRefreshToken, verifyRefreshToken } from '@/lib/auth/jwt';
+import { fakeVerifyDelay, hashPassword, verifyPassword } from '@/lib/auth/password';
 import {
   createSession,
   findActiveSession,
@@ -15,11 +18,7 @@ import {
   rotateSession,
   touchSession,
 } from '@/lib/db/repositories/user-repo';
-import { REFRESH_TTL_SECONDS, sha256Hex, signAccessToken, signRefreshToken, verifyRefreshToken } from '@/lib/auth/jwt';
-import { fakeVerifyDelay, hashPassword, verifyPassword } from '@/lib/auth/password';
-import { ApiError } from '@/lib/api/http';
 import { createUser as repoCreateUser } from '@/lib/db/repositories/user-repo';
-
 import type { LoginInput, UserCreateInput, UserRole } from '@/lib/validations/auth';
 
 export interface AuthTokens {

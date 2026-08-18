@@ -1,9 +1,9 @@
 'use client';
 
 import Image from 'next/image';
-import { Link } from '@/i18n/routing';
 import { useState } from 'react';
 
+import { Link } from '@/i18n/routing';
 import { cn } from '@/lib/utils';
 import type { Article } from '@/types';
 

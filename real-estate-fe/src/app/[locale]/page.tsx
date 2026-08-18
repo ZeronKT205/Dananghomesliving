@@ -1,5 +1,6 @@
 import { setRequestLocale } from 'next-intl/server';
 
+import { DEFAULT_LOCALE, isLocale } from '@/config/locales';
 import { getArticles } from '@/lib/db/articles';
 import { getListingsByType } from '@/lib/db/listings';
 
@@ -19,7 +20,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
   const [saleListings, rentListings, articles] = await Promise.all([
     getListingsByType('sale'),
     getListingsByType('rent'),
-    getArticles(),
+    getArticles(isLocale(locale) ? locale : DEFAULT_LOCALE),
   ]);
 
   return (

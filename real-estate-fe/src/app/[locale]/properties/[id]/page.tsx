@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
 
+import { Link } from '@/i18n/routing';
 import { MOCK_PROPERTIES } from '@/lib/mock-data';
 
 import { SiteFooter } from '../../../_components/site-footer';
@@ -34,9 +35,9 @@ export default async function PropertyDetailsPage({ params }: { params: Promise<
       <div className="border-b border-line">
         <div className="container mx-auto px-4 lg:px-8 py-4 flex items-center justify-between text-[13px]">
           <nav className="flex items-center text-muted gap-2">
-            <a href="/" className="hover:text-navy transition-colors">Home</a>
+            <Link href="/" className="hover:text-navy transition-colors">Home</Link>
             <span>›</span>
-            <a href="/properties?type=sale" className="hover:text-navy transition-colors">Properties</a>
+            <Link href="/properties?type=sale" className="hover:text-navy transition-colors">Properties</Link>
             <span>›</span>
             <span className="text-navy font-medium truncate max-w-xs sm:max-w-md">{property.title}</span>
           </nav>

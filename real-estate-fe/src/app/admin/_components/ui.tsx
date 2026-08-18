@@ -129,12 +129,12 @@ export function StatCard({
   return (
     <Link
       href={href}
-      className="border-line hover:border-gold focus-visible:outline-gold flex flex-col items-start gap-0.5 rounded-[10px] border bg-white p-4 transition-colors hover:shadow-[0_1px_2px_rgb(7_29_54/0.05)] focus-visible:outline-2 focus-visible:outline-offset-2"
+      className="admin-card-hover border-line hover:border-gold focus-visible:outline-gold flex flex-col items-start gap-0.5 rounded-[10px] border bg-white p-4 focus-visible:outline-2 focus-visible:outline-offset-2"
     >
       <span className={cn('mb-2 grid h-9 w-9 place-items-center rounded-md border', TONES[tone])}>
         {icon}
       </span>
-      <span className="text-navy text-[28px] leading-none font-extrabold tabular-nums">
+      <span className="admin-number-pop text-navy text-[28px] leading-none font-extrabold tabular-nums">
         {value}
       </span>
       <span className="text-navy mt-1.5 text-[12.5px] font-bold">{label}</span>
@@ -153,7 +153,7 @@ export function EmptyState({
   message?: string;
 }) {
   return (
-    <div className="flex flex-col items-center gap-2 px-6 py-16 text-center">
+    <div className="animate-fade-in flex flex-col items-center gap-2 px-6 py-16 text-center">
       {icon ? (
         <span className="bg-ivory text-muted mb-1 grid h-12 w-12 place-items-center rounded-full">
           {icon}
@@ -187,7 +187,7 @@ export function Tabs({
             role="tab"
             aria-selected={isActive}
             className={cn(
-              'focus-visible:outline-gold relative flex shrink-0 items-center gap-2 px-4 py-3 text-[12.5px] font-bold transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2',
+              'focus-visible:outline-gold relative flex shrink-0 items-center gap-2 px-4 py-3 text-[12.5px] font-bold transition-all duration-200 focus-visible:outline-2 focus-visible:-outline-offset-2',
               isActive ? 'text-navy' : 'text-muted hover:text-navy',
             )}
           >
@@ -204,7 +204,7 @@ export function Tabs({
               </span>
             ) : null}
             {isActive ? (
-              <span aria-hidden className="bg-gold absolute inset-x-0 bottom-0 h-[2px]" />
+              <span aria-hidden className="bg-gold absolute inset-x-0 bottom-0 h-[2px] animate-fade-in" />
             ) : null}
           </Link>
         );
@@ -234,7 +234,7 @@ export function SearchInput({
   defaultValue?: string;
 }) {
   return (
-    <div className="border-line focus-within:border-gold flex h-9 min-w-[200px] flex-1 items-center gap-2 rounded-md border px-3 transition-colors">
+    <div className="border-line focus-within:border-gold focus-within:shadow-[0_0_0_3px_rgb(201_146_46/0.1)] flex h-9 min-w-[200px] flex-1 items-center gap-2 rounded-md border px-3 transition-all duration-200">
       <IcSearch size={14} className="text-muted shrink-0" />
       <input
         type="search"
@@ -291,11 +291,11 @@ export function IconButton({
       aria-label={label}
       title={enabled ? label : `${label} — chưa được xây dựng`}
       className={cn(
-        'border-line grid h-7 w-7 place-items-center rounded-md border bg-white transition-colors',
+        'border-line grid h-7 w-7 place-items-center rounded-md border bg-white transition-all duration-200',
         enabled
           ? tone === 'danger'
-            ? 'cursor-pointer text-[#8a4038] hover:border-[#e5b8b8] hover:bg-[#fdf4f4]'
-            : 'text-navy hover:border-gold hover:text-gold cursor-pointer'
+            ? 'cursor-pointer text-[#8a4038] hover:border-[#e5b8b8] hover:bg-[#fdf4f4] hover:scale-110'
+            : 'text-navy hover:border-gold hover:text-gold cursor-pointer hover:scale-110'
           : cn('cursor-not-allowed', tone === 'danger' ? 'text-[#8a4038]/50' : 'text-muted/60'),
       )}
     >

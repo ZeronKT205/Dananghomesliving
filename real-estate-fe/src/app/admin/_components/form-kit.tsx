@@ -99,7 +99,7 @@ export function LocaleTabs({
             {filled?.[l] ? (
               <span aria-hidden className="bg-gold ml-1.5 inline-block h-1.5 w-1.5 rounded-full align-middle" />
             ) : null}
-            {active ? <span aria-hidden className="bg-gold absolute inset-x-0 bottom-0 h-[2px]" /> : null}
+            {active ? <span aria-hidden className="bg-gold absolute inset-x-0 bottom-0 h-[2px] animate-fade-in" /> : null}
           </button>
         );
       })}
@@ -136,7 +136,7 @@ export function Toggle({
       >
         <span
           className={cn(
-            'absolute top-0.5 h-3 w-3 rounded-full bg-white transition-all',
+            'absolute top-0.5 h-3 w-3 rounded-full bg-white transition-all duration-200 cubic-bezier(0.16, 1, 0.3, 1)',
             checked ? 'left-[18px]' : 'left-[2px]',
           )}
         />
@@ -190,7 +190,7 @@ export function SaveBar({
           type="button"
           onClick={onSave}
           disabled={saving}
-          className="bg-navy hover:bg-gold h-9 rounded-md px-5 text-[12.5px] font-bold text-white transition-colors disabled:cursor-not-allowed disabled:opacity-60"
+          className="bg-navy hover:bg-gold hover:admin-btn-glow h-9 rounded-md px-5 text-[12.5px] font-bold text-white transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {saving ? 'Đang lưu…' : saveLabel}
         </button>

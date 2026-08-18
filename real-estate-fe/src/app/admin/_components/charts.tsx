@@ -36,10 +36,13 @@ export function BarChart({
               <div className="flex h-full items-end pb-8">
                 <div
                   className={cn(
-                    'relative w-full rounded-t-[3px] transition-colors',
+                    'admin-bar-grow relative w-full rounded-t-[3px]',
                     isToday ? 'bg-gold' : 'bg-navy/25',
                   )}
-                  style={{ height: `${Math.max((day.count / max) * 100, day.count > 0 ? 4 : 1)}%` }}
+                  style={{
+                    height: `${Math.max((day.count / max) * 100, day.count > 0 ? 4 : 1)}%`,
+                    animationDelay: `${index * 0.08}s`,
+                  }}
                   title={`${day.count} yêu cầu ngày ${day.date}`}
                 >
                   <span className="text-navy absolute inset-x-0 -top-5 text-center text-[10.5px] font-bold tabular-nums">
@@ -104,6 +107,11 @@ export function DonutChart({
                 strokeWidth="20"
                 strokeDasharray={`${segment.dash} ${circumference - segment.dash}`}
                 strokeDashoffset={-segment.offset}
+                style={{
+                  animation: `adminBarGrow 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards`,
+                  animationDelay: `${index * 0.12}s`,
+                  opacity: 0,
+                }}
               />
             ))}
           </g>

@@ -2,8 +2,9 @@ import 'server-only';
 
 import { ObjectId } from 'mongodb';
 
-import type { BaseDoc } from '../collections';
 import type { Paginated } from '@/lib/validations/common';
+
+import type { BaseDoc } from '../collections';
 import type { Collection, Document, Filter, OptionalUnlessRequiredId, Sort } from 'mongodb';
 
 /**

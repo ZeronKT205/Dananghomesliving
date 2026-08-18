@@ -352,7 +352,10 @@ try {
           slug: a.slug,
           title: { vi: a.vi, en: a.en },
           excerpt: { vi: a.exVi, en: a.exEn },
-          content: { vi: `## ${a.vi}\n\n${a.exVi}`, en: `## ${a.en}\n\n${a.exEn}` },
+          // Nội dung là HTML — trang public render thẳng trong `.article-body`,
+          // không còn tách Markdown. Không lặp tiêu đề ở đây: trang đã render
+          // nó thành <h1> rồi.
+          content: { vi: `<p>${a.exVi}</p>`, en: `<p>${a.exEn}</p>` },
           categoryId: artCatMap.get(a.cat),
           tags: a.tags,
           coverId: r._id,
