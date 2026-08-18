@@ -1,25 +1,58 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Suspense, useState, useEffect } from 'react';
 
 import { SEARCH_AREAS, SEARCH_BUDGETS, SEARCH_PROPERTY_TYPES } from '@/config/constants';
 import { cn } from '@/lib/utils';
 import type { ListingType } from '@/types';
 
 const TABS: { value: ListingType; label: string }[] = [
-  { value: 'sale', label: 'Buy' },
-  { value: 'rent', label: 'Rent' },
+  { value: 'sale', label: 'BUY' },
+  { value: 'rent', label: 'RENT' },
 ];
 
+/**
+ * Suspense bọc ngay tại đây.
+ */
 export function PropertySearch() {
+  return (
+    <Suspense fallback={null}>
+      <PropertySearchInner />
+    </Suspense>
+  );
+}
+
+function PropertySearchInner() {
   const router = useRouter();
-  const [tab, setTab] = useState<ListingType>('sale');
-  const [selectedArea, setSelectedArea] = useState<string>(SEARCH_AREAS[0]);
-  const [selectedType, setSelectedType] = useState<string>(SEARCH_PROPERTY_TYPES[0]);
+  const searchParams = useSearchParams();
+
+  const currentType = (searchParams.get('type') as ListingType) || 'sale';
+  const currentArea = searchParams.get('area') || SEARCH_AREAS[0];
+  const currentPropType = searchParams.get('propertyType') || SEARCH_PROPERTY_TYPES[0];
+
+  const [tab, setTab] = useState<ListingType>(currentType);
+  const [selectedArea, setSelectedArea] = useState<string>(currentArea);
+  const [selectedType, setSelectedType] = useState<string>(currentPropType);
+  const [isSearching, setIsSearching] = useState(false);
+
+  useEffect(() => {
+    setTab(currentType);
+    setSelectedArea(currentArea);
+    setSelectedType(currentPropType);
+  }, [currentType, currentArea, currentPropType]);
+
+  const handleTabChange = (newTab: ListingType) => {
+    setTab(newTab);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('type', newTab);
+    router.push(`/properties?${params.toString()}`, { scroll: false });
+  };
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
+    setIsSearching(true);
+
     const params = new URLSearchParams();
     params.set('type', tab);
     if (selectedArea && selectedArea !== 'All Da Nang') {
@@ -28,110 +61,145 @@ export function PropertySearch() {
     if (selectedType && selectedType !== 'Any property') {
       params.set('propertyType', selectedType);
     }
-    router.push(`/properties?${params.toString()}`);
+
+    // Disable Next.js auto-scroll to top so it doesn't jump back up
+    router.push(`/properties?${params.toString()}`, { scroll: false });
+
+    // Smoothly scroll to results section without scrollbar glitching
+    requestAnimationFrame(() => {
+      document.getElementById('properties-results')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+
+    setTimeout(() => {
+      setIsSearching(false);
+    }, 400);
   };
 
   return (
-    <div className="relative z-8 -mt-9">
-      <div className="container-page">
-        <form
-          onSubmit={handleSubmit}
-          className="border-t-gold shadow-lift grid grid-cols-1 border-t-[3px] bg-white md:grid-cols-[auto_1fr]"
-        >
-          <div
-            role="tablist"
-            aria-label="Listing type"
-            className="border-line grid grid-cols-2 border-b md:grid-cols-1 md:grid-rows-2 md:border-r md:border-b-0"
-          >
-            {TABS.map((item) => {
-              const isActive = item.value === tab;
-              return (
-                <button
-                  key={item.value}
-                  type="button"
-                  role="tab"
-                  aria-selected={isActive}
-                  onClick={() => setTab(item.value)}
-                  className={cn(
-                    'focus-visible:outline-gold cursor-pointer px-6 py-4 text-[10.5px] font-bold tracking-[0.13em] uppercase transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 md:min-w-[118px]',
-                    isActive ? 'bg-navy text-white' : 'text-navy hover:bg-ivory bg-white',
-                  )}
-                >
-                  {item.label}
-                </button>
-              );
-            })}
-          </div>
+    <div className="w-full flex flex-col items-center">
+      {/* 1. Centered BUY & RENT 2-Button Toggle with Smooth Sliding Pill */}
+      <div 
+        role="tablist"
+        aria-label="Listing type"
+        className="relative inline-flex bg-white p-1 rounded-none border border-line shadow-sm mb-3 z-10 overflow-hidden"
+      >
+        {/* Sliding Pill Background Indicator */}
+        <div
+          className={`absolute top-1 bottom-1 w-[calc(50%-4px)] bg-navy rounded-none transition-all duration-300 ease-out shadow-xs ${
+            tab === 'sale' ? 'left-1' : 'left-[calc(50%+2px)]'
+          }`}
+        />
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1.1fr_1fr_1fr_auto]">
-            {/* Area */}
-            <div className="border-line grid content-center gap-0.5 border-b px-5 py-3.5 sm:border-b-0 lg:border-r">
-              <label
-                htmlFor="area"
-                className="text-[8.5px] font-bold tracking-[0.14em] text-[#8992a0] uppercase"
-              >
-                Area
-              </label>
-              <select
-                id="area"
-                value={selectedArea}
-                onChange={(e) => setSelectedArea(e.target.value)}
-                className="text-navy focus-visible:outline-gold w-full cursor-pointer bg-transparent py-0.5 text-[13px] font-semibold focus-visible:outline-2"
-              >
-                {SEARCH_AREAS.map((option) => (
-                  <option key={option} value={option}>{option}</option>
-                ))}
-              </select>
-            </div>
-
-            {/* Property Type */}
-            <div className="border-line grid content-center gap-0.5 border-b px-5 py-3.5 sm:border-b-0 lg:border-r">
-              <label
-                htmlFor="property-type"
-                className="text-[8.5px] font-bold tracking-[0.14em] text-[#8992a0] uppercase"
-              >
-                Property type
-              </label>
-              <select
-                id="property-type"
-                value={selectedType}
-                onChange={(e) => setSelectedType(e.target.value)}
-                className="text-navy focus-visible:outline-gold w-full cursor-pointer bg-transparent py-0.5 text-[13px] font-semibold focus-visible:outline-2"
-              >
-                {SEARCH_PROPERTY_TYPES.map((option) => (
-                  <option key={option} value={option}>{option}</option>
-                ))}
-              </select>
-            </div>
-
-            {/* Budget */}
-            <div className="border-line grid content-center gap-0.5 border-b px-5 py-3.5 sm:border-b-0 lg:border-r">
-              <label
-                htmlFor="budget"
-                className="text-[8.5px] font-bold tracking-[0.14em] text-[#8992a0] uppercase"
-              >
-                Budget
-              </label>
-              <select
-                id="budget"
-                defaultValue={SEARCH_BUDGETS[0]}
-                className="text-navy focus-visible:outline-gold w-full cursor-pointer bg-transparent py-0.5 text-[13px] font-semibold focus-visible:outline-2"
-              >
-                {SEARCH_BUDGETS.map((option) => (
-                  <option key={option} value={option}>{option}</option>
-                ))}
-              </select>
-            </div>
-
+        {TABS.map((item) => {
+          const isActive = item.value === tab;
+          return (
             <button
-              type="submit"
-              className="bg-gold text-navy hover:bg-gold-soft focus-visible:outline-navy cursor-pointer px-6 py-4 text-[10px] font-extrabold tracking-[0.13em] uppercase transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 sm:col-span-2 lg:col-span-1 lg:min-w-[140px]"
+              key={item.value}
+              type="button"
+              role="tab"
+              aria-selected={isActive}
+              onClick={() => handleTabChange(item.value)}
+              className={cn(
+                'relative z-10 px-10 py-2.5 text-[11.5px] font-bold tracking-[0.18em] uppercase transition-colors duration-200 cursor-pointer rounded-none min-w-[120px] text-center',
+                isActive 
+                  ? 'text-white font-extrabold' 
+                  : 'text-navy/75 hover:text-navy'
+              )}
             >
-              Find a home →
+              {item.label}
             </button>
-          </div>
-        </form>
+          );
+        })}
       </div>
+
+      {/* 2. Compact Filter Bar */}
+      <form
+        onSubmit={handleSubmit}
+        className="w-full bg-white border border-line shadow-lift rounded-none p-2 sm:p-3"
+      >
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_1fr_auto] gap-2 items-center">
+          {/* Area */}
+          <div className="bg-paper border border-line px-3.5 py-2 rounded-none flex flex-col justify-center">
+            <label
+              htmlFor="area"
+              className="text-[8px] font-bold tracking-[0.14em] text-muted uppercase block mb-0.5"
+            >
+              Khu vực (Area)
+            </label>
+            <select
+              id="area"
+              value={selectedArea}
+              onChange={(e) => setSelectedArea(e.target.value)}
+              className="text-navy focus:outline-none w-full cursor-pointer bg-transparent py-0 text-[12.5px] font-semibold"
+            >
+              {SEARCH_AREAS.map((option) => (
+                <option key={option} value={option}>{option}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Property Type */}
+          <div className="bg-paper border border-line px-3.5 py-2 rounded-none flex flex-col justify-center">
+            <label
+              htmlFor="property-type"
+              className="text-[8px] font-bold tracking-[0.14em] text-muted uppercase block mb-0.5"
+            >
+              Loại hình (Property Type)
+            </label>
+            <select
+              id="property-type"
+              value={selectedType}
+              onChange={(e) => setSelectedType(e.target.value)}
+              className="text-navy focus:outline-none w-full cursor-pointer bg-transparent py-0 text-[12.5px] font-semibold"
+            >
+              {SEARCH_PROPERTY_TYPES.map((option) => (
+                <option key={option} value={option}>{option}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Budget */}
+          <div className="bg-paper border border-line px-3.5 py-2 rounded-none flex flex-col justify-center">
+            <label
+              htmlFor="budget"
+              className="text-[8px] font-bold tracking-[0.14em] text-muted uppercase block mb-0.5"
+            >
+              Mức ngân sách (Budget)
+            </label>
+            <select
+              id="budget"
+              defaultValue={SEARCH_BUDGETS[0]}
+              className="text-navy focus:outline-none w-full cursor-pointer bg-transparent py-0 text-[12.5px] font-semibold"
+            >
+              {SEARCH_BUDGETS.map((option) => (
+                <option key={option} value={option}>{option}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Submit Search Button with Loading Spinner & Scroll Action */}
+          <button
+            type="submit"
+            disabled={isSearching}
+            className="w-full lg:w-auto bg-navy hover:bg-gold text-white hover:text-navy px-7 py-3.5 text-[11px] font-bold uppercase tracking-[0.16em] transition-all rounded-none cursor-pointer flex items-center justify-center gap-2 shrink-0 active:scale-97 shadow-sm disabled:opacity-75"
+          >
+            {isSearching ? (
+              <>
+                <svg className="w-4 h-4 animate-spin text-white" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                </svg>
+                Đang tìm...
+              </>
+            ) : (
+              <>
+                Tìm kiếm
+                <span className="transition-transform duration-300 group-hover:translate-x-1">→</span>
+              </>
+            )}
+          </button>
+        </div>
+      </form>
     </div>
   );
 }

@@ -1,0 +1,225 @@
+/* ============================================================
+   .article-body — style DUY NHẤT cho nội dung bài viết.
+
+   Dùng ở HAI nơi:
+     1. Trình soạn thảo trong CMS (ProseMirror)
+     2. Trang bài viết ngoài website
+
+   Đó là lý do file này tồn tại riêng: WYSIWYG chỉ đúng khi hai
+   nơi dùng CHUNG một bộ style. Copy style sang hai chỗ thì sớm
+   muộn cũng lệch, và biên tập viên soạn xong ra ngoài thấy khác.
+   ============================================================ */
+
+.article-body {
+  color: var(--color-ink, #1a2233);
+  font-size: 16px;
+  line-height: 1.75;
+}
+
+.article-body > * + * {
+  margin-top: 1.15em;
+}
+
+.article-body h2 {
+  font-family: var(--font-display), Georgia, serif;
+  color: var(--color-navy);
+  font-size: 26px;
+  line-height: 1.3;
+  font-weight: 400;
+  margin-top: 1.9em;
+}
+
+.article-body h3 {
+  font-family: var(--font-display), Georgia, serif;
+  color: var(--color-navy);
+  font-size: 20px;
+  line-height: 1.35;
+  font-weight: 400;
+  margin-top: 1.6em;
+}
+
+.article-body p {
+  margin-top: 1.15em;
+}
+
+.article-body strong {
+  color: var(--color-navy);
+  font-weight: 700;
+}
+
+.article-body em {
+  font-style: italic;
+}
+
+.article-body u {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.article-body a {
+  color: var(--color-gold);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.article-body a:hover {
+  color: var(--color-navy);
+}
+
+.article-body ul,
+.article-body ol {
+  padding-left: 1.4em;
+}
+
+.article-body ul {
+  list-style: disc;
+}
+
+.article-body ol {
+  list-style: decimal;
+}
+
+.article-body li + li {
+  margin-top: 0.4em;
+}
+
+.article-body li::marker {
+  color: var(--color-gold);
+}
+
+/* Trích dẫn */
+.article-body blockquote {
+  border-left: 3px solid var(--color-gold);
+  padding: 0.2em 0 0.2em 1.2em;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 19px;
+  line-height: 1.55;
+  color: var(--color-navy);
+}
+
+.article-body blockquote p {
+  margin-top: 0.5em;
+}
+
+.article-body blockquote p:first-child {
+  margin-top: 0;
+}
+
+/* Hộp ghi nhớ — node tuỳ biến `callout`. Ba sắc thái. */
+.article-body .callout {
+  border: 1px solid var(--color-line, #e5e1d8);
+  border-left-width: 3px;
+  border-radius: 4px;
+  padding: 1em 1.15em;
+  font-size: 14.5px;
+  line-height: 1.65;
+}
+
+.article-body .callout p {
+  margin-top: 0.6em;
+}
+
+.article-body .callout p:first-child {
+  margin-top: 0;
+}
+
+.article-body .callout::before {
+  content: attr(data-label);
+  display: block;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  margin-bottom: 0.5em;
+}
+
+.article-body .callout[data-variant='note'] {
+  background: #fbf9f4;
+  border-color: #e8e0cd;
+  border-left-color: var(--color-gold);
+}
+.article-body .callout[data-variant='note']::before {
+  color: #8f6614;
+}
+
+.article-body .callout[data-variant='tip'] {
+  background: #f2f7ee;
+  border-color: #d6e5c9;
+  border-left-color: #5c8f3f;
+}
+.article-body .callout[data-variant='tip']::before {
+  color: #3f7d1f;
+}
+
+.article-body .callout[data-variant='warning'] {
+  background: #fdf6ec;
+  border-color: #f0dcbc;
+  border-left-color: #c98a24;
+}
+.article-body .callout[data-variant='warning']::before {
+  color: #9b6b1f;
+}
+
+.article-body img {
+  width: 100%;
+  height: auto;
+  border-radius: 4px;
+}
+
+.article-body hr {
+  border: 0;
+  border-top: 1px solid var(--color-line, #e5e1d8);
+  margin: 2.2em 0;
+}
+
+.article-body code {
+  background: #f4f2ec;
+  border-radius: 3px;
+  padding: 0.12em 0.4em;
+  font-size: 0.9em;
+}
+
+.article-body pre {
+  background: var(--color-navy);
+  color: #e8e5dd;
+  border-radius: 6px;
+  padding: 1em 1.15em;
+  overflow-x: auto;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.article-body pre code {
+  background: none;
+  padding: 0;
+  color: inherit;
+}
+
+.article-body [style*='text-align: center'] {
+  text-align: center;
+}
+.article-body [style*='text-align: right'] {
+  text-align: right;
+}
+
+/* ── Chỉ áp dụng khi đang soạn trong CMS ─────────────────── */
+
+.article-body.ProseMirror {
+  outline: none;
+  min-height: 420px;
+}
+
+/* Gợi ý khi trống — không hiện ngoài web vì web không có class này. */
+.article-body.ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+  color: var(--color-muted, #7a8395);
+}
+
+/* Ảnh đang chọn: viền vàng để biết đang thao tác lên ảnh nào. */
+.article-body.ProseMirror img.ProseMirror-selectednode {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 2px;
+}

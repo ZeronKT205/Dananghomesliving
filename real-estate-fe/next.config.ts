@@ -17,6 +17,13 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'images.unsplash.com',
       },
+      // Ảnh upload lên Cloudflare R2. `pub-*.r2.dev` là host mặc định khi bật
+      // Public Access; gắn custom domain rồi thì thêm host đó vào đây, nếu
+      // không <Image> sẽ chặn với lỗi "hostname is not configured".
+      {
+        protocol: 'https',
+        hostname: '**.r2.dev',
+      },
     ],
   },
   eslint: {

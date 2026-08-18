@@ -1,4 +1,5 @@
 @import 'tailwindcss';
+@import './article-body.css';
 
 /* ──────────────────────────────────────────────────────────────
    Design tokens — Tailwind v4 khai báo theme bằng CSS, không có
@@ -31,10 +32,9 @@
 /* `inline` để utility trỏ thẳng vào biến của next/font thay vì inline
    giá trị lúc build (font nạp runtime qua layout.tsx). */
 @theme inline {
-  --font-display: var(--font-instrument);
-  --font-sans: var(--font-dm-sans);
-  /* Trang quản trị dùng riêng Manrope — cùng font với CMS mẫu Đức Giáp. */
-  --font-admin: var(--font-manrope);
+  --font-display: var(--font-playfair);
+  --font-sans: var(--font-montserrat);
+  --font-admin: var(--font-montserrat);
 }
 
 @layer base {
@@ -50,6 +50,7 @@
   }
 
   body {
+    font-family: var(--font-montserrat), -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     font-size: 14px;
     line-height: 1.65;
   }
@@ -138,7 +139,7 @@
   }
 }
 
-/* ── WOW Smooth Animation System ── */
+/* ── WOW Smooth Animation & UX Interaction System ── */
 @keyframes fadeInUp {
   from {
     opacity: 0;
@@ -156,6 +157,19 @@
   }
   to {
     opacity: 1;
+  }
+}
+
+@keyframes pageEnter {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.996);
+    filter: blur(3px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
   }
 }
 
@@ -195,12 +209,48 @@
   }
 }
 
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(201, 146, 46, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(201, 146, 46, 0);
+  }
+}
+
+@keyframes toastSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes heartBurst {
+  0% { transform: scale(1); }
+  35% { transform: scale(1.45) rotate(-8deg); }
+  70% { transform: scale(0.9) rotate(4deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
 .animate-fade-in-up {
   animation: fadeInUp 0.65s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .animate-fade-in {
   animation: fadeIn 0.4s ease-out forwards;
+}
+
+.animate-page-transition {
+  animation: pageEnter 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .animate-pop-in {
@@ -215,7 +265,55 @@
   animation: checkmarkPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
 }
 
-.stagger-1 { animation-delay: 0.1s; }
-.stagger-2 { animation-delay: 0.2s; }
-.stagger-3 { animation-delay: 0.3s; }
-.stagger-4 { animation-delay: 0.4s; }
+.animate-pulse-glow {
+  animation: pulseGlow 2s infinite;
+}
+
+.animate-toast-in {
+  animation: toastSlideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-heart-burst {
+  animation: heartBurst 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(90deg, rgba(232, 220, 197, 0.3) 25%, rgba(247, 242, 231, 0.8) 50%, rgba(232, 220, 197, 0.3) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.6s infinite linear;
+}
+
+.stagger-1 { animation-delay: 0.08s; }
+.stagger-2 { animation-delay: 0.16s; }
+.stagger-3 { animation-delay: 0.24s; }
+.stagger-4 { animation-delay: 0.32s; }
+
+/* ── Universal Interactive Micro-UX Feedback ── */
+button,
+a,
+[role="button"],
+[role="tab"],
+select,
+input[type="submit"] {
+  transition:
+    transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+    background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+    color 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+}
+
+button:active,
+a:active,
+[role="button"]:active,
+[role="tab"]:active {
+  transform: scale(0.97) translateY(1px);
+}
+
+.ux-tap-active {
+  transform: scale(0.95) !important;
+  transition: transform 0.12s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+

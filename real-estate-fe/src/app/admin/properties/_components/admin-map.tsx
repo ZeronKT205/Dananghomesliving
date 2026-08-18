@@ -2,17 +2,15 @@
 
 import React, { useState, useEffect, useMemo, useRef } from "react";
 
-import geoData from "@/assets/danang-wards.json";
 import "leaflet/dist/leaflet.css";
 
+// Ranh giới phường nằm ở public/geo/, KHÔNG import tĩnh. Import tĩnh sẽ nhét
+// nguyên file JSON vào bundle client — trước đây là chunk 7.4 MB khiến
+// /admin và /admin/properties có First Load JS 1.79 MB. Fetch lúc chạy thì
+// trình duyệt cache được và phần còn lại của trang admin tương tác được ngay.
+const WARDS_GEOJSON_URL = "/geo/danang-wards.json";
+
 // Basic SVG Icons
-const MapIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21" />
-    <line x1="9" y1="3" x2="9" y2="18" />
-    <line x1="15" y1="6" x2="15" y2="21" />
-  </svg>
-);
 const LayersIcon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <polygon points="12 2 2 7 12 12 22 7 12 2" />
@@ -48,30 +46,31 @@ export function AdminMap({ properties }: AdminMapProps) {
 
   const [showSurge, setShowSurge] = useState(true);
   const [isLegendOpen, setIsLegendOpen] = useState(true);
-  const [mapLayerType, setMapLayerType] = useState<"osm" | "satellite">("satellite");
-  const [isLayersOpen, setIsLayersOpen] = useState(false);
+  // Bỏ state chọn lớp bản đồ: TileLayer đang hardcode ảnh vệ tinh và dropdown
+  // chọn lớp đã gỡ, nên hai state này chỉ còn là code chết.
   
   const [activeWard, setActiveWard] = useState<{name: string, center: [number, number]} | null>(null);
   
-  const dropdownRef = useRef<HTMLDivElement>(null);
   const geoJsonRef = useRef<any>(null);
 
+  const [geoData, setGeoData] = useState<any>(null);
+
   useEffect(() => {
-    const handleOutsideClick = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setIsLayersOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleOutsideClick);
-    return () => {
-      document.removeEventListener("mousedown", handleOutsideClick);
-    };
+    const controller = new AbortController();
+    fetch(WARDS_GEOJSON_URL, { signal: controller.signal })
+      .then((res) => (res.ok ? res.json() : Promise.reject(new Error(String(res.status)))))
+      .then(setGeoData)
+      .catch((err) => {
+        // Huỷ khi unmount là bình thường, không phải lỗi thật.
+        if (err?.name !== "AbortError") setGeoData({ type: "FeatureCollection", features: [] });
+      });
+    return () => controller.abort();
   }, []);
 
   // Pre-calculate properties per ward
   const wardData = useMemo(() => {
     const dataMap = new Map<string, PropertyLocation[]>();
-    const features = (geoData as any).features;
+    const features = geoData?.features ?? [];
 
     features.forEach((feature: any) => {
       const wardName = feature.properties?.ten_xa || "";
@@ -88,7 +87,7 @@ export function AdminMap({ properties }: AdminMapProps) {
       dataMap.set(wardName, items);
     });
     return dataMap;
-  }, [properties]);
+  }, [properties, geoData]);
 
   const [leaflet, setLeaflet] = useState<{
     MapContainer: any;
@@ -277,10 +276,13 @@ export function AdminMap({ properties }: AdminMapProps) {
           url={"https://mt1.google.com/vt/lyrs=y&hl=vi&gl=VN&x={x}&y={y}&z={z}"}
         />
 
-        {showSurge && (
+        {showSurge && geoData && (
           <GeoJSON
+            // react-leaflet không cập nhật lại lớp GeoJSON khi prop `data` đổi,
+            // nên cần key để nó dựng lại khi dữ liệu về / khi wardData đổi màu.
+            key={`wards-${geoData.features?.length ?? 0}`}
             ref={geoJsonRef}
-            data={geoData as any}
+            data={geoData}
             style={styleFeature}
             onEachFeature={onEachFeature}
           />

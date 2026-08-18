@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 
 import { IcArrowRight, IcSearch } from './icons';
 
-import type { Tone } from '../_data/mock';
+import type { Tone } from '../_data/view-models';
 import type { ReactNode } from 'react';
 
 /* ============================================================
@@ -222,12 +222,24 @@ export function Toolbar({ children }: { children: ReactNode }) {
   );
 }
 
-export function SearchInput({ placeholder }: { placeholder: string }) {
+/** Ô tìm kiếm. Nhận `name`/`defaultValue` để submit được trong <form method="get">
+ *  — bản trước không có nên gõ vào rồi Enter cũng chẳng lọc được gì. */
+export function SearchInput({
+  placeholder,
+  name,
+  defaultValue,
+}: {
+  placeholder: string;
+  name?: string;
+  defaultValue?: string;
+}) {
   return (
     <div className="border-line focus-within:border-gold flex h-9 min-w-[200px] flex-1 items-center gap-2 rounded-md border px-3 transition-colors">
       <IcSearch size={14} className="text-muted shrink-0" />
       <input
         type="search"
+        name={name}
+        defaultValue={defaultValue}
         placeholder={placeholder}
         aria-label={placeholder}
         className="text-navy placeholder:text-muted min-w-0 flex-1 bg-transparent text-[12.5px] focus:outline-none"
@@ -236,19 +248,9 @@ export function SearchInput({ placeholder }: { placeholder: string }) {
   );
 }
 
-export function SelectInput({ label, options }: { label: string; options: readonly string[] }) {
-  return (
-    <select
-      aria-label={label}
-      defaultValue={options[0]}
-      className="border-line text-navy focus-visible:outline-gold h-9 cursor-pointer rounded-md border bg-white px-3 text-[12.5px] font-medium focus-visible:outline-2"
-    >
-      {options.map((option) => (
-        <option key={option}>{option}</option>
-      ))}
-    </select>
-  );
-}
+/** Select lọc — định nghĩa ở `filter-select.tsx` (cần 'use client' vì có
+ *  onChange). Re-export ở đây để các trang vẫn import từ một chỗ. */
+export { FilterSelect as SelectInput } from './filter-select';
 
 /** Nút của chức năng chưa dựng — viền đứt để nhìn là biết chưa dùng được. */
 export function PendingButton({ icon, children }: { icon?: ReactNode; children: ReactNode }) {
@@ -266,24 +268,35 @@ export function PendingButton({ icon, children }: { icon?: ReactNode; children: 
 }
 
 /** Nút icon vuông dùng trong chân thẻ. */
+/** Nút icon. Có `onClick` thì hoạt động thật; không có thì vẫn hiện mờ như cũ
+ *  để chỗ nào chưa nối vẫn nhìn ra ngay. */
 export function IconButton({
   label,
   tone,
+  onClick,
   children,
 }: {
   label: string;
   tone?: 'danger';
+  onClick?: () => void;
   children: ReactNode;
 }) {
+  const enabled = typeof onClick === 'function';
+
   return (
     <button
       type="button"
-      disabled
+      disabled={!enabled}
+      onClick={onClick}
       aria-label={label}
-      title={`${label} — chưa được xây dựng`}
+      title={enabled ? label : `${label} — chưa được xây dựng`}
       className={cn(
-        'border-line grid h-7 w-7 cursor-not-allowed place-items-center rounded-md border bg-white transition-colors',
-        tone === 'danger' ? 'text-[#8a4038]/50' : 'text-muted/60',
+        'border-line grid h-7 w-7 place-items-center rounded-md border bg-white transition-colors',
+        enabled
+          ? tone === 'danger'
+            ? 'cursor-pointer text-[#8a4038] hover:border-[#e5b8b8] hover:bg-[#fdf4f4]'
+            : 'text-navy hover:border-gold hover:text-gold cursor-pointer'
+          : cn('cursor-not-allowed', tone === 'danger' ? 'text-[#8a4038]/50' : 'text-muted/60'),
       )}
     >
       {children}

@@ -11,11 +11,13 @@ export function PropertyTabs() {
       const scrollPosition = window.scrollY + 120; // Offset for header
 
       for (let i = sections.length - 1; i >= 0; i--) {
-        const section = document.getElementById(sections[i]);
+        const secId = sections[i];
+        if (!secId) continue;
+        const section = document.getElementById(secId);
         if (section) {
           const sectionTop = section.offsetTop;
           if (scrollPosition >= sectionTop) {
-            setActiveTab(sections[i]);
+            setActiveTab(secId);
             break;
           }
         }
@@ -36,25 +38,37 @@ export function PropertyTabs() {
   };
 
   return (
-    <div className="sticky top-[76px] bg-white/80 backdrop-blur-md z-20 py-4 -mx-4 px-4 sm:mx-0 sm:px-0 border-b border-line sm:border-none">
-      <div className="flex gap-2 p-1 bg-gray-100/80 rounded-full w-fit border border-line/50">
+    <div className="sticky top-[76px] bg-white/90 backdrop-blur-md z-20 py-3 border-b border-line">
+      <div className="flex gap-0 border border-line bg-paper rounded-none w-fit">
         <button 
           onClick={() => scrollToSection('overview')}
-          className={`px-5 py-2 text-[13px] font-bold rounded-full transition-all duration-300 ${activeTab === 'overview' ? 'bg-white text-navy shadow-sm border border-line/50' : 'text-muted hover:text-navy'}`}
+          className={`px-5 py-2.5 text-[12px] font-bold uppercase tracking-wider rounded-none transition-all ${
+            activeTab === 'overview' 
+              ? 'bg-navy text-white shadow-xs' 
+              : 'text-muted hover:text-navy hover:bg-white'
+          }`}
         >
           Tổng quan
         </button>
         <button 
           onClick={() => scrollToSection('features')}
-          className={`px-5 py-2 text-[13px] font-bold rounded-full transition-all duration-300 ${activeTab === 'features' ? 'bg-white text-navy shadow-sm border border-line/50' : 'text-muted hover:text-navy'}`}
+          className={`px-5 py-2.5 text-[12px] font-bold uppercase tracking-wider rounded-none transition-all border-l border-line ${
+            activeTab === 'features' 
+              ? 'bg-navy text-white shadow-xs' 
+              : 'text-muted hover:text-navy hover:bg-white'
+          }`}
         >
-          Tiện ích
+          Tiện ích &amp; Đặc điểm
         </button>
         <button 
           onClick={() => scrollToSection('location')}
-          className={`px-5 py-2 text-[13px] font-bold rounded-full transition-all duration-300 ${activeTab === 'location' ? 'bg-white text-navy shadow-sm border border-line/50' : 'text-muted hover:text-navy'}`}
+          className={`px-5 py-2.5 text-[12px] font-bold uppercase tracking-wider rounded-none transition-all border-l border-line ${
+            activeTab === 'location' 
+              ? 'bg-navy text-white shadow-xs' 
+              : 'text-muted hover:text-navy hover:bg-white'
+          }`}
         >
-          Vị trí
+          Vị trí &amp; Bản đồ
         </button>
       </div>
     </div>

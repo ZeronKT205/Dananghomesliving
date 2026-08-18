@@ -1,8 +1,14 @@
-import { InquiryList } from '../_components/inquiry-list';
-import { PageHead, Panel, SearchInput, SelectInput, Tabs, Toolbar } from '../_components/ui';
-import { INQUIRIES } from '../_data/mock';
+import { listCategories } from '@/lib/db/repositories/catalog-repo';
+import { listProperties } from '@/lib/db/repositories/property-repo';
+import { getInquiries } from '@/server/services/inquiry-service';
 
-import type { InquiryStatus } from '../_data/mock';
+import { InquiryList } from '../_components/inquiry-list';
+import { PageHead, Panel, SearchInput, Tabs, Toolbar } from '../_components/ui';
+import { toAdminInquiries } from '../_data/presenters';
+
+import type { InquiryStatus } from '@/lib/db/collections';
+
+export const dynamic = 'force-dynamic';
 
 const TABS = [
   { value: 'all', label: 'Tất cả' },
@@ -12,38 +18,50 @@ const TABS = [
   { value: 'cancelled', label: 'Đã huỷ' },
 ] as const;
 
-const SERVICE_OPTIONS = [
-  'Mọi nhu cầu',
-  'Mua bất động sản',
-  'Thuê dài hạn',
-  'Tư vấn đầu tư',
-  'Định giá',
-] as const;
-
 export default async function AdminInquiriesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ tab?: string }>;
+  searchParams: Promise<{ tab?: string; q?: string; page?: string }>;
 }) {
-  const { tab = 'all' } = await searchParams;
+  const { tab = 'all', q, page } = await searchParams;
   const current = TABS.some((item) => item.value === tab) ? tab : 'all';
+  const status = current === 'all' ? undefined : (current as InquiryStatus);
 
-  const rows = current === 'all' ? INQUIRIES : INQUIRIES.filter((item) => item.status === current);
-  const overdue = INQUIRIES.filter((item) => item.overdue).length;
+  const [result, allProps, categories, counts] = await Promise.all([
+    getInquiries({
+      page: Number(page) || 1,
+      limit: 50,
+      status,
+      q: q || undefined,
+      sort: 'newest',
+    }),
+    listProperties({ page: 1, limit: 200, includeUnpublished: true, sort: 'newest' }),
+    listCategories(),
+    // Đếm cho từng tab. Chạy song song vì mỗi cái là một countDocuments riêng.
+    Promise.all(
+      TABS.map(async (t) => {
+        const r = await getInquiries({
+          page: 1,
+          limit: 1,
+          status: t.value === 'all' ? undefined : (t.value as InquiryStatus),
+          sort: 'newest',
+        });
+        return [t.value, r.total] as const;
+      }),
+    ),
+  ]);
 
-  const tabsWithCount = TABS.map((item) => ({
-    ...item,
-    count:
-      item.value === 'all'
-        ? INQUIRIES.length
-        : INQUIRIES.filter((i) => i.status === (item.value as InquiryStatus)).length,
-  }));
+  const countByTab = new Map(counts);
+  const rows = await toAdminInquiries(result.items, allProps.items, categories);
+  const overdue = rows.filter((r) => r.overdue).length;
+
+  const tabsWithCount = TABS.map((item) => ({ ...item, count: countByTab.get(item.value) ?? 0 }));
 
   return (
     <>
       <PageHead
         title="Form tư vấn"
-        desc="Yêu cầu khách gửi từ website. Bấm vào một dòng để xem chi tiết."
+        desc="Yêu cầu khách gửi từ website. Bấm vào một dòng để xem chi tiết và đổi trạng thái."
       />
 
       <Panel noPad>
@@ -51,23 +69,28 @@ export default async function AdminInquiriesPage({
       </Panel>
 
       <Toolbar>
-        <SearchInput placeholder="Tìm theo tên, số điện thoại, mã yêu cầu…" />
-        <SelectInput label="Lọc theo nhu cầu" options={SERVICE_OPTIONS} />
+        {/* Ô tìm kiếm nay gửi form thật lên server thay vì chỉ là ô trang trí. */}
+        <form method="get" className="flex min-w-0 flex-1 items-center gap-2">
+          <input type="hidden" name="tab" value={current} />
+          <SearchInput
+            name="q"
+            defaultValue={q ?? ''}
+            placeholder="Tìm theo tên, email, số điện thoại, mã yêu cầu…"
+          />
+        </form>
       </Toolbar>
 
       <p className="text-muted text-[12px]">
-        <b className="text-navy">{rows.length}</b> yêu cầu
+        <b className="text-navy">{result.total}</b> yêu cầu
         {overdue > 0 ? (
           <>
             {' · '}
-            <b className="text-[#8a4038]">{overdue}</b> đã chờ quá 24 giờ
+            <b className="text-[#a33]">{overdue}</b> quá hạn 24 giờ
           </>
         ) : null}
       </p>
 
-      <Panel noPad>
-        <InquiryList inquiries={rows} />
-      </Panel>
+      <InquiryList inquiries={rows} />
     </>
   );
 }

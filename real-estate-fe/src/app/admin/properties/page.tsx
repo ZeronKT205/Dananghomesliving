@@ -1,53 +1,130 @@
 import Link from 'next/link';
 
+import { listCategories } from '@/lib/db/repositories/catalog-repo';
+import { listProperties } from '@/lib/db/repositories/property-repo';
+
 import { IcBuilding, IcLayers, IcPlus } from '../_components/icons';
 import { PropertyCard } from '../_components/property-card';
 import {
   EmptyState,
   PageHead,
   Panel,
-  PendingButton,
-  Pill,
   SearchInput,
   SelectInput,
   Tabs,
   Toolbar,
 } from '../_components/ui';
-import { GROUPS, PROPERTIES } from '../_data/mock';
+import { toAdminProperties } from '../_data/presenters';
 
 import { AdminMapWrapper } from './_components/admin-map-wrapper';
+import { CategoryManager } from './_components/category-manager';
+
+import type { PublishState } from '@/lib/db/collections';
+
+export const dynamic = 'force-dynamic';
+
+const EMPTY_PAGE = {
+  items: [],
+  total: 0,
+  page: 1,
+  limit: 0,
+  totalPages: 1,
+  hasNext: false,
+  hasPrev: false,
+};
 
 const TABS = [
   { value: 'sale', label: 'Mua', icon: <IcBuilding size={14} /> },
   { value: 'rent', label: 'Thuê', icon: <IcBuilding size={14} /> },
   { value: 'groups', label: 'Nhóm bất động sản', icon: <IcLayers size={14} /> },
-  { value: 'map', label: 'Bản đồ', icon: <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" /></svg> },
+  {
+    value: 'map',
+    label: 'Bản đồ',
+    icon: (
+      <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
+        />
+      </svg>
+    ),
+  },
 ] as const;
 
-const STATE_OPTIONS = ['Mọi trạng thái', 'Đang hiển thị', 'Bản nháp', 'Đã ẩn'] as const;
+const STATE_OPTIONS = [
+  { value: 'all', label: 'Mọi trạng thái' },
+  { value: 'published', label: 'Đang hiển thị' },
+  { value: 'draft', label: 'Bản nháp' },
+  { value: 'archived', label: 'Đã ẩn' },
+];
 
 export default async function AdminPropertiesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ tab?: string }>;
+  searchParams: Promise<{ tab?: string; q?: string; cat?: string; state?: string }>;
 }) {
-  const { tab } = await searchParams;
+  const { tab, q, cat, state } = await searchParams;
   const current = TABS.some((item) => item.value === tab) ? (tab as string) : 'sale';
+  const isList = current === 'sale' || current === 'rent';
 
-  const rows = PROPERTIES.filter((item) => item.deal === current);
+  const [categories, result, saleCount, rentCount, allForMap] = await Promise.all([
+    listCategories(),
+    isList
+      ? listProperties({
+          page: 1,
+          limit: 60,
+          deal: current as 'sale' | 'rent',
+          includeUnpublished: true,
+          publishState: state && state !== 'all' ? (state as PublishState) : undefined,
+          categorySlug: cat && cat !== 'all' ? cat : undefined,
+          q: q || undefined,
+          sort: 'newest',
+        })
+      : Promise.resolve(EMPTY_PAGE),
+    listProperties({ page: 1, limit: 1, deal: 'sale', includeUnpublished: true, sort: 'newest' }),
+    listProperties({ page: 1, limit: 1, deal: 'rent', includeUnpublished: true, sort: 'newest' }),
+    current === 'map'
+      ? listProperties({ page: 1, limit: 200, includeUnpublished: true, sort: 'newest' })
+      : Promise.resolve(EMPTY_PAGE),
+  ]);
+
+  const [rows, mapRows] = await Promise.all([
+    toAdminProperties(result.items),
+    toAdminProperties(allForMap.items),
+  ]);
+
   const imageCount = rows.reduce((sum, item) => sum + item.imageCount, 0);
+  const hasFilter = Boolean(q) || (cat && cat !== 'all') || (state && state !== 'all');
 
   const tabsWithCount = TABS.map((item) => ({
     ...item,
     count:
-      item.value === 'groups'
-        ? GROUPS.length
-        : item.value === 'map'
-        ? PROPERTIES.length
-        : PROPERTIES.filter((p) => p.deal === item.value).length,
+      item.value === 'sale'
+        ? saleCount.total
+        : item.value === 'rent'
+          ? rentCount.total
+          : item.value === 'groups'
+            ? categories.length
+            : saleCount.total + rentCount.total,
   }));
 
-  const groupOptions = ['Mọi nhóm', ...GROUPS.map((group) => group.name)];
+  const categoryOptions = [
+    { value: 'all', label: 'Mọi nhóm' },
+    ...categories.map((c) => ({ value: c.slug, label: c.name.vi ?? c.name.en ?? c.slug })),
+  ];
+
+  const groups = categories.map((c) => ({
+    id: c._id.toHexString(),
+    slug: c.slug,
+    name: c.name.vi ?? c.name.en ?? c.slug,
+    nameEn: c.name.en ?? c.slug,
+    onHome: c.showOnHome,
+    order: c.order,
+    count: c.propertyCount,
+  }));
+  const groupById = new Map(groups.map((g) => [g.id, g]));
 
   return (
     <>
@@ -61,59 +138,39 @@ export default async function AdminPropertiesPage({
       </Panel>
 
       {current === 'map' ? (
-        <AdminMapWrapper properties={PROPERTIES} />
+        <AdminMapWrapper properties={mapRows} />
       ) : current === 'groups' ? (
-        <>
-          <Toolbar>
-            <SearchInput placeholder="Tìm nhóm…" />
-            <PendingButton icon={<IcPlus size={14} />}>Thêm nhóm</PendingButton>
-          </Toolbar>
-
-          <p className="text-muted text-[12px]">
-            <b className="text-navy">{GROUPS.length}</b> nhóm ·{' '}
-            <b className="text-navy">{GROUPS.filter((g) => g.onHome).length}</b> nhóm hiển thị ở
-            trang chủ
-          </p>
-
-          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-            {GROUPS.map((group) => {
-              const count = PROPERTIES.filter((item) => item.groupId === group.id).length;
-              return (
-                <article
-                  key={group.id}
-                  className="border-line hover:border-gold flex flex-col gap-2 rounded-[10px] border bg-white p-4 transition-colors"
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <span className="bg-navy/6 text-navy grid h-9 w-9 shrink-0 place-items-center rounded-md">
-                      <IcLayers size={16} />
-                    </span>
-                    {group.onHome ? <Pill tone="ok">Trang chủ</Pill> : <Pill>Không</Pill>}
-                  </div>
-                  <h3 className="text-navy mt-1 text-[14px] font-extrabold">{group.name}</h3>
-                  <p className="text-muted text-[11.5px]">{group.nameEn}</p>
-                  <p className="border-line-soft text-muted mt-auto border-t pt-2.5 text-[11.5px]">
-                    <b className="text-navy tabular-nums">{count}</b> bất động sản · thứ tự{' '}
-                    <b className="text-navy tabular-nums">{group.order}</b>
-                  </p>
-                </article>
-              );
-            })}
-          </div>
-        </>
+        <CategoryManager groups={groups} />
       ) : (
         <>
           <Toolbar>
-            <SearchInput placeholder="Tìm bất động sản…" />
-            <SelectInput label="Lọc theo nhóm" options={groupOptions} />
-            <SelectInput label="Lọc theo trạng thái" options={STATE_OPTIONS} />
-            <Link href="/admin/properties/new" className="bg-navy text-white hover:bg-gold inline-flex h-9 shrink-0 items-center gap-2 rounded-md px-4 text-[12.5px] font-bold transition-colors">
+            <form method="get" className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
+              <input type="hidden" name="tab" value={current} />
+              <SearchInput name="q" defaultValue={q ?? ''} placeholder="Tìm bất động sản…" />
+              <SelectInput
+                label="Lọc theo nhóm"
+                name="cat"
+                defaultValue={cat ?? 'all'}
+                options={categoryOptions}
+              />
+              <SelectInput
+                label="Lọc theo trạng thái"
+                name="state"
+                defaultValue={state ?? 'all'}
+                options={STATE_OPTIONS}
+              />
+            </form>
+            <Link
+              href="/admin/properties/new"
+              className="bg-navy text-white hover:bg-gold inline-flex h-9 shrink-0 items-center gap-2 rounded-md px-4 text-[12.5px] font-bold transition-colors"
+            >
               <IcPlus size={14} />
               Thêm bất động sản
             </Link>
           </Toolbar>
 
           <p className="text-muted text-[12px]">
-            <b className="text-navy">{rows.length}</b> bất động sản ·{' '}
+            <b className="text-navy">{result.total}</b> bất động sản ·{' '}
             <b className="text-navy">{imageCount}</b> hình ảnh
           </p>
 
@@ -121,8 +178,12 @@ export default async function AdminPropertiesPage({
             <Panel>
               <EmptyState
                 icon={<IcBuilding size={22} />}
-                title="Chưa có bất động sản nào"
-                message="Thêm bất động sản đầu tiên để nó hiển thị ngoài website."
+                title={hasFilter ? 'Không có kết quả phù hợp' : 'Chưa có bất động sản nào'}
+                message={
+                  hasFilter
+                    ? 'Thử bỏ bớt bộ lọc hoặc đổi từ khoá tìm kiếm.'
+                    : 'Thêm bất động sản đầu tiên để nó hiển thị ngoài website.'
+                }
               />
             </Panel>
           ) : (
@@ -131,7 +192,7 @@ export default async function AdminPropertiesPage({
                 <PropertyCard
                   key={property.id}
                   property={property}
-                  group={GROUPS.find((group) => group.id === property.groupId)}
+                  group={groupById.get(property.groupId)}
                   priority={index < 4}
                 />
               ))}

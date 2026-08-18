@@ -17,7 +17,7 @@ export function BarChart({
       <div className="absolute inset-x-0 top-1 bottom-8 left-7">
         {ticks.map((tick, index) => (
           <span
-            key={tick}
+            key={`tick-${index}-${tick}`}
             className="border-line absolute inset-x-0 border-t border-dashed"
             style={{ bottom: `${(1 - index / (ticks.length - 1)) * 100}%` }}
           >

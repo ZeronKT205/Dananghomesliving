@@ -7,6 +7,8 @@ import { SectionKicker } from '@/components/ui/section-heading';
 import { QUOTE_SERVICE_OPTIONS } from '@/config/constants';
 import { cn } from '@/lib/utils';
 
+import { useToast } from '@/components/ui/toast-provider';
+
 /* ── Cam kết hiển thị cạnh form ──────────────────────────── */
 const COMMITMENTS = [
   { title: 'Prompt response', desc: 'We reply within one working day' },
@@ -23,7 +25,6 @@ function triggerConfetti(canvas: HTMLCanvasElement) {
   const width = (canvas.width = canvas.offsetWidth);
   const height = (canvas.height = canvas.offsetHeight);
 
-  // Brand palette: navy, gold, ivory accents
   const colors = ['#071d36', '#102b4d', '#c9922e', '#e0b75f', '#e8dcc5'];
 
   const particles = Array.from({ length: 50 }, () => ({
@@ -78,15 +79,24 @@ function triggerConfetti(canvas: HTMLCanvasElement) {
 }
 
 export function QuoteRequestSection() {
+  const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [countdown, setCountdown] = useState(6);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const { showToast } = useToast();
 
   const handleSubmit = useCallback((e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
-    setCountdown(6);
-  }, []);
+    setLoading(true);
+    
+    // Simulate brief API request delay for smooth UX loading feel
+    setTimeout(() => {
+      setLoading(false);
+      setSubmitted(true);
+      setCountdown(6);
+      showToast('Enquiry sent! We will contact you shortly.', 'success');
+    }, 600);
+  }, [showToast]);
 
   /* Confetti + countdown timer sau khi gửi */
   useEffect(() => {
@@ -137,14 +147,14 @@ export function QuoteRequestSection() {
         </div>
 
         {/* ── Right — Light Bright Luxury Form Card ────────────────────────────── */}
-        <div className="border border-line bg-white shadow-lift relative overflow-hidden p-7 sm:p-9 text-navy">
+        <div className="border border-line bg-white shadow-lift relative overflow-hidden p-7 sm:p-9 text-navy rounded-sm">
           {submitted ? (
             <div className="flex min-h-[380px] flex-col items-center justify-center text-center animate-fade-in">
               <canvas
                 ref={canvasRef}
                 className="pointer-events-none absolute inset-0 h-full w-full"
               />
-              <div className="bg-gold mb-5 grid h-16 w-16 place-items-center text-[28px] font-bold text-navy animate-checkmark rounded-full">
+              <div className="bg-gold mb-5 grid h-16 w-16 place-items-center text-[28px] font-bold text-navy animate-checkmark rounded-full shadow-lg shadow-gold/20">
                 ✓
               </div>
               <h3 className="font-display text-navy text-[24px] leading-tight font-normal">
@@ -256,8 +266,20 @@ export function QuoteRequestSection() {
                   </div>
                 </div>
 
-                <Button type="submit" variant="gold" className="mt-6 w-full sm:w-auto">
-                  Send enquiry <span aria-hidden>→</span>
+                <Button type="submit" variant="gold" disabled={loading} className="mt-6 w-full sm:w-auto">
+                  {loading ? (
+                    <span className="flex items-center gap-2">
+                      <svg className="animate-spin h-4 w-4 text-navy" viewBox="0 0 24 24" fill="none">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                      </svg>
+                      Sending...
+                    </span>
+                  ) : (
+                    <>
+                      Send enquiry <span aria-hidden>→</span>
+                    </>
+                  )}
                 </Button>
               </form>
             </>
@@ -270,4 +292,4 @@ export function QuoteRequestSection() {
 
 /* ── Light Bright Shared Input Styling ─────────────────────────── */
 const inputClass =
-  'w-full border border-line bg-paper px-4 py-3 text-[14px] text-navy placeholder:text-muted/60 transition-colors focus:border-gold focus:bg-white focus:outline-none';
+  'w-full border border-line bg-paper px-4 py-3 text-[14px] text-navy placeholder:text-muted/60 transition-all focus:border-gold focus:ring-2 focus:ring-gold/30 focus:bg-white focus:outline-none rounded-sm';

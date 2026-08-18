@@ -7,6 +7,7 @@ export interface MapPickerProps {
   onChangeLocation?: (lat: number, lng: number) => void;
   className?: string;
   readOnly?: boolean;
+  zoom?: number;
 }
 
 const MapPickerClient = dynamic(() => import('./map-picker-client'), {

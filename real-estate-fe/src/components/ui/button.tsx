@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import { Link } from '@/i18n/routing';
 
 import { cn } from '@/lib/utils';
 
@@ -40,7 +40,7 @@ export function Button({ variant = 'navy', className, children, ...props }: Butt
   );
 }
 
-type ButtonLinkProps = AnchorHTMLAttributes<HTMLAnchorElement> & {
+type ButtonLinkProps = Omit<AnchorHTMLAttributes<HTMLAnchorElement>, 'popover'> & {
   href: string;
   variant?: Variant;
   children: ReactNode;
@@ -54,7 +54,7 @@ export function ButtonLink({
   ...props
 }: ButtonLinkProps) {
   return (
-    <Link href={href} className={cn(BASE, VARIANTS[variant], className)} {...props}>
+    <Link href={href} className={cn(BASE, VARIANTS[variant], className)} {...(props as any)}>
       {children}
     </Link>
   );

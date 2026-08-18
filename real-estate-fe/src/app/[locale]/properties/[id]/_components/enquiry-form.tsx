@@ -1,89 +1,135 @@
 'use client';
 
 import { useState } from 'react';
+import { useToast } from '@/components/ui/toast-provider';
 
 export function EnquiryForm() {
   const [status, setStatus] = useState<'idle' | 'submitting' | 'success'>('idle');
+  const { showToast } = useToast();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setStatus('submitting');
     setTimeout(() => {
       setStatus('success');
-    }, 1500);
+      showToast('Yêu cầu lịch xem nhà đã được gửi thành công!', 'success');
+    }, 1200);
   };
 
   return (
-    <div id="enquiry-form" className="bg-white border border-line rounded-lg p-6 shadow-sm">
-      <h3 className="text-[15px] text-navy font-extrabold leading-tight mb-4">Yêu cầu thông tin về BĐS này</h3>
+    <div id="enquiry-form" className="bg-white border border-line p-6 rounded-none shadow-lift">
+      <div className="border-b border-line pb-4 mb-5">
+        <span className="text-gold text-[10px] font-bold tracking-[0.2em] uppercase block mb-1">
+          Lịch trình riêng tư
+        </span>
+        <h3 className="text-[17px] text-navy font-display font-semibold leading-tight">
+          Đăng ký xem biệt thự trực tiếp
+        </h3>
+      </div>
       
       {status === 'success' ? (
-        <div className="bg-[#f0f9f4] border border-[#d2efe1] text-[#2e8257] p-4 rounded text-center">
-          <svg className="w-8 h-8 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-          <p className="font-bold mb-1">Đã gửi yêu cầu thành công!</p>
-          <p className="text-[13px]">Chúng tôi sẽ liên hệ lại với bạn trong thời gian sớm nhất.</p>
+        <div className="bg-ivory border border-gold/40 text-navy p-6 rounded-none text-center animate-fade-in space-y-3">
+          <div className="w-12 h-12 bg-gold text-navy rounded-none flex items-center justify-center mx-auto text-xl font-bold">
+            ✓
+          </div>
+          <h4 className="font-display text-[18px] font-normal text-navy">
+            Yêu cầu đã được xác nhận
+          </h4>
+          <p className="text-[13px] text-muted leading-relaxed">
+            Cảm ơn bạn. Chuyên gia Trần Đức Giáp sẽ liên hệ lại trực tiếp qua số điện thoại để sắp xếp xe đón &amp; thời gian xem nhà phù hợp.
+          </p>
           <button 
+            type="button"
             onClick={() => setStatus('idle')}
-            className="mt-4 text-[#2e8257] underline text-[13px] font-medium"
+            className="mt-2 text-gold hover:underline text-[12px] font-bold tracking-wider uppercase block mx-auto"
           >
-            Gửi yêu cầu khác
+            ← Đăng ký lịch xem khác
           </button>
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-[11px] font-bold text-navy uppercase tracking-wider mb-1.5">Họ và tên</label>
-              <input type="text" required placeholder="Tên của bạn" className="w-full px-3 py-2.5 border border-line rounded text-[13px] focus:outline-navy focus:border-navy transition-colors" />
-            </div>
-            <div>
-              <label className="block text-[11px] font-bold text-navy uppercase tracking-wider mb-1.5">Email</label>
-              <input type="email" required placeholder="Email của bạn" className="w-full px-3 py-2.5 border border-line rounded text-[13px] focus:outline-navy focus:border-navy transition-colors" />
-            </div>
+          <div>
+            <label className="block text-[10.5px] font-bold text-navy uppercase tracking-wider mb-1.5">
+              Họ và tên *
+            </label>
+            <input 
+              type="text" 
+              required 
+              placeholder="Nguyễn Văn A" 
+              className="w-full px-3.5 py-2.5 border border-line bg-paper text-navy rounded-none text-[13px] focus:border-gold focus:ring-2 focus:ring-gold/20 focus:outline-none transition-all" 
+            />
           </div>
           
-          <div>
-            <label className="block text-[11px] font-bold text-navy uppercase tracking-wider mb-1.5">Số điện thoại</label>
-            <input type="tel" required placeholder="Số điện thoại của bạn" className="w-full px-3 py-2.5 border border-line rounded text-[13px] focus:outline-navy focus:border-navy transition-colors" />
-          </div>
-
-          <div>
-            <label className="block text-[11px] font-bold text-navy uppercase tracking-wider mb-1.5">Ngày hẹn xem mong muốn</label>
-            <div className="relative">
-              <input type="date" className="w-full px-3 py-2.5 border border-line rounded text-[13px] text-navy focus:outline-navy focus:border-navy" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-[10.5px] font-bold text-navy uppercase tracking-wider mb-1.5">
+                Số điện thoại *
+              </label>
+              <input 
+                type="tel" 
+                required 
+                placeholder="0909 123 456" 
+                className="w-full px-3.5 py-2.5 border border-line bg-paper text-navy rounded-none text-[13px] focus:border-gold focus:ring-2 focus:ring-gold/20 focus:outline-none transition-all" 
+              />
+            </div>
+            <div>
+              <label className="block text-[10.5px] font-bold text-navy uppercase tracking-wider mb-1.5">
+                Email *
+              </label>
+              <input 
+                type="email" 
+                required 
+                placeholder="name@example.com" 
+                className="w-full px-3.5 py-2.5 border border-line bg-paper text-navy rounded-none text-[13px] focus:border-gold focus:ring-2 focus:ring-gold/20 focus:outline-none transition-all" 
+              />
             </div>
           </div>
 
           <div>
-            <label className="block text-[11px] font-bold text-navy uppercase tracking-wider mb-1.5">Tin nhắn (tùy chọn)</label>
+            <label className="block text-[10.5px] font-bold text-navy uppercase tracking-wider mb-1.5">
+              Ngày xem mong muốn
+            </label>
+            <input 
+              type="date" 
+              className="w-full px-3.5 py-2.5 border border-line bg-paper text-navy rounded-none text-[13px] focus:border-gold focus:ring-2 focus:ring-gold/20 focus:outline-none transition-all" 
+            />
+          </div>
+
+          <div>
+            <label className="block text-[10.5px] font-bold text-navy uppercase tracking-wider mb-1.5">
+              Ghi chú thêm
+            </label>
             <textarea 
               rows={3} 
-              placeholder="Cho chúng tôi biết thêm về yêu cầu của bạn..." 
-              className="w-full px-3 py-2.5 border border-line rounded text-[13px] focus:outline-navy focus:border-navy resize-none transition-colors"
+              placeholder="Yêu cầu cụ thể về giờ đón, số lượng người xem..." 
+              className="w-full px-3.5 py-2.5 border border-line bg-paper text-navy rounded-none text-[13px] focus:border-gold focus:ring-2 focus:ring-gold/20 focus:outline-none resize-none transition-all"
             ></textarea>
           </div>
 
           <button 
             type="submit" 
             disabled={status === 'submitting'}
-            className="w-full bg-[#C99224] hover:bg-[#b07f1d] text-white py-3.5 rounded text-[13px] font-bold uppercase tracking-wider transition-colors mt-2 flex justify-center items-center gap-2 disabled:opacity-70"
+            className="w-full bg-gold hover:bg-gold-soft text-navy py-3.5 rounded-none text-[12px] font-bold uppercase tracking-[0.15em] transition-all shadow-md flex justify-center items-center gap-2 disabled:opacity-70 active:scale-98 cursor-pointer"
           >
             {status === 'submitting' ? (
-              <svg className="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
+              <span className="flex items-center gap-2">
+                <svg className="animate-spin h-4 w-4 text-navy" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                </svg>
+                Đang xác nhận...
+              </span>
             ) : (
               <>
-                Gửi yêu cầu
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+                Xác nhận đặt lịch xem
+                <span aria-hidden>→</span>
               </>
             )}
           </button>
           
-          <p className="text-[10px] text-muted text-center mt-4 flex items-center justify-center gap-1.5">
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
-            Thông tin của bạn được bảo mật và chỉ dùng để liên hệ về BĐS này.
+          <p className="text-[10.5px] text-muted text-center mt-3 flex items-center justify-center gap-1.5">
+            <svg className="w-3.5 h-3.5 text-gold shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+            Bảo mật thông tin 100% theo tiêu chuẩn riêng tư.
           </p>
         </form>
       )}

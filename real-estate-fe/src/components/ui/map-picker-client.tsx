@@ -8,7 +8,7 @@ import 'leaflet/dist/leaflet.css';
 import { type MapPickerProps } from './map-picker';
 
 const DEFAULT_CENTER: [number, number] = [16.0544, 108.2022]; // Đà Nẵng
-const CURRENT_LOCATION_ZOOM = 16;
+const DEFAULT_MAP_ZOOM = 11.5;
 
 // Icon ghim vị trí (giống dự án cũ)
 const customIcon = L.divIcon({
@@ -45,12 +45,12 @@ const customIcon = L.divIcon({
 });
 
 // Component cập nhật trung tâm bản đồ
-function MapViewUpdaterInner({ center, useMap }: { center: [number, number], useMap: any }) {
+function MapViewUpdaterInner({ center, zoom = DEFAULT_MAP_ZOOM, useMap }: { center: [number, number]; zoom?: number; useMap: any }) {
   const map = useMap();
   useEffect(() => {
     window.setTimeout(() => map.invalidateSize(), 0);
-    map.flyTo(center, CURRENT_LOCATION_ZOOM, { animate: true, duration: 0.8 });
-  }, [center, map]);
+    map.flyTo(center, zoom, { animate: true, duration: 0.8 });
+  }, [center, zoom, map]);
   return null;
 }
 
@@ -64,7 +64,7 @@ function MapEventsHandler({ onChangeLocation, useMapEvents }: { onChangeLocation
   return null;
 }
 
-export default function MapPickerClient({ latitude, longitude, onChangeLocation, className = '', readOnly = false }: MapPickerProps) {
+export default function MapPickerClient({ latitude, longitude, onChangeLocation, className = '', readOnly = false, zoom = DEFAULT_MAP_ZOOM }: MapPickerProps) {
   const [mapLayerType, setMapLayerType] = useState<"osm" | "satellite">("osm");
   const [isLayersOpen, setIsLayersOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -145,7 +145,7 @@ export default function MapPickerClient({ latitude, longitude, onChangeLocation,
 
       <MapContainer
         center={centerPosition}
-        zoom={13}
+        zoom={zoom}
         className="w-full h-full z-0"
         scrollWheelZoom={true}
         dragging={true}
@@ -163,7 +163,7 @@ export default function MapPickerClient({ latitude, longitude, onChangeLocation,
           }
         />
         
-        <MapViewUpdaterInner center={centerPosition} useMap={useMap} />
+        <MapViewUpdaterInner center={centerPosition} zoom={zoom} useMap={useMap} />
         {!readOnly && <MapEventsHandler onChangeLocation={onChangeLocation} useMapEvents={useMapEvents} />}
         
         {latitude !== null && longitude !== null && (

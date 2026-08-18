@@ -2,12 +2,12 @@ import Image from 'next/image';
 
 import { cn } from '@/lib/utils';
 
-import { DEAL_TYPE, formatUsd, PUBLISH_STATE } from '../_data/mock';
+import { DEAL_TYPE, formatUsd, PUBLISH_STATE } from '../_data/view-models';
 
 import { IcBed, IcEdit, IcEye, IcImages, IcPin, IcTrash } from './icons';
 import { IconButton, Pill } from './ui';
 
-import type { AdminProperty, PropertyGroup } from '../_data/mock';
+import type { AdminProperty, PropertyGroup } from '../_data/view-models';
 
 /** Thẻ bất động sản trong lưới. Cùng khung với thẻ bài đăng của CMS mẫu:
  *  ảnh bìa 16/10 · badge số ảnh trái · trạng thái phải · nhóm · tiêu đề 2 dòng

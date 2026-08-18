@@ -17,20 +17,28 @@ import {
   IcNews,
   IcSettings,
 } from './icons';
+import { UserMenu } from './user-menu';
 
 import type { ReactNode } from 'react';
 
 /** Đúng 5 mục. Mọi thứ khác gom thành tab bên trong trang tương ứng —
  *  menu dài là nguyên nhân chính khiến bản trước khó dùng. */
 const NAV = [
-  { href: '/admin', label: 'Tổng quan', Icon: IcDashboard, badge: 0 },
-  { href: '/admin/inquiries', label: 'Form tư vấn', Icon: IcInbox, badge: 3 },
-  { href: '/admin/properties', label: 'Bất động sản', Icon: IcBuilding, badge: 0 },
-  { href: '/admin/news', label: 'Tin tức', Icon: IcNews, badge: 0 },
-  { href: '/admin/settings', label: 'Cài đặt', Icon: IcSettings, badge: 0 },
+  { href: '/admin', label: 'Tổng quan', Icon: IcDashboard },
+  { href: '/admin/inquiries', label: 'Form tư vấn', Icon: IcInbox },
+  { href: '/admin/properties', label: 'Bất động sản', Icon: IcBuilding },
+  { href: '/admin/news', label: 'Tin tức', Icon: IcNews },
+  { href: '/admin/settings', label: 'Cài đặt', Icon: IcSettings },
 ] as const;
 
-export function AdminShell({ children }: { children: ReactNode }) {
+export interface AdminShellProps {
+  children: ReactNode;
+  /** Số yêu cầu chưa xử lý — badge cạnh menu. Trước đây hardcode 3. */
+  pendingInquiries?: number;
+  currentUser?: { name: string; email: string; role: string } | null;
+}
+
+export function AdminShell({ children, pendingInquiries = 0, currentUser = null }: AdminShellProps) {
   const pathname = usePathname();
   const [navOpen, setNavOpen] = useState(false);
 
@@ -48,6 +56,16 @@ export function AdminShell({ children }: { children: ReactNode }) {
   const current = NAV.find((item) =>
     item.href === '/admin' ? pathname === '/admin' : pathname?.startsWith(item.href),
   );
+
+  // Trang đăng nhập nằm dưới /admin nên bị layout này bọc, nhưng nó không được
+  // có sidebar/header — người chưa đăng nhập thì chẳng có gì để điều hướng.
+  //
+  // Return sớm PHẢI nằm sau toàn bộ hook. Đặt trước `useEffect` thì lúc ở
+  // /admin/login hai effect không chạy, rời trang đó lại chạy — số hook thay
+  // đổi giữa các lần render và React ném "change in the order of Hooks".
+  if (pathname?.startsWith('/admin/login')) {
+    return <div className="font-admin text-ink">{children}</div>;
+  }
 
   return (
     <div className="font-admin bg-ivory/50 text-ink flex min-h-screen text-[13.5px] leading-[1.55]">
@@ -97,8 +115,9 @@ export function AdminShell({ children }: { children: ReactNode }) {
             Menu
           </p>
           <ul className="grid gap-0.5">
-            {NAV.map(({ href, label, Icon, badge }) => {
+            {NAV.map(({ href, label, Icon }) => {
               const isActive = current?.href === href;
+              const badge = href === '/admin/inquiries' ? pendingInquiries : 0;
               return (
                 <li key={href}>
                   <Link
@@ -162,15 +181,18 @@ export function AdminShell({ children }: { children: ReactNode }) {
             </p>
           </div>
 
-          <a
-            href="/"
-            target="_blank"
-            rel="noreferrer noopener"
-            className="border-line text-navy hover:border-gold hover:text-gold focus-visible:outline-gold inline-flex h-9 shrink-0 items-center gap-2 rounded-md border px-3 text-[12px] font-bold transition-colors focus-visible:outline-2"
-          >
-            <IcExternal size={13} />
-            <span className="hidden sm:inline">Xem website</span>
-          </a>
+          <div className="flex shrink-0 items-center gap-2">
+            <a
+              href="/"
+              target="_blank"
+              rel="noreferrer noopener"
+              className="border-line text-navy hover:border-gold hover:text-gold focus-visible:outline-gold inline-flex h-9 shrink-0 items-center gap-2 rounded-md border px-3 text-[12px] font-bold transition-colors focus-visible:outline-2"
+            >
+              <IcExternal size={13} />
+              <span className="hidden sm:inline">Xem website</span>
+            </a>
+            <UserMenu user={currentUser} />
+          </div>
         </header>
 
         {/* Không giới hạn bề ngang — nội dung giãn hết màn hình như CMS mẫu. */}

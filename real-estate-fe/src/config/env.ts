@@ -1,15 +1,22 @@
 import { z } from 'zod';
 
-// Validate biến môi trường MỘT LẦN. Thiếu/ sai kiểu → app fail ngay lúc khởi động,
-// không phải lúc runtime giữa production.
-const EnvSchema = z.object({
-  NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
-
-  // Public — lộ ra client (phải có tiền tố NEXT_PUBLIC_)
+// Biến CÔNG KHAI — an toàn để import ở Client Component.
+// Secret phía server nằm ở `env.server.ts` (có `server-only`), TUYỆT ĐỐI không
+// khai ở đây: mọi thứ trong file này đều bị nhúng vào bundle gửi ra trình duyệt.
+const PublicEnvSchema = z.object({
   NEXT_PUBLIC_SITE_URL: z.string().url().default('http://localhost:3000'),
 
-  // Server-side secret — thêm tại đây, ví dụ:
-  // DATABASE_URL: z.string().url(),
+  // Host công khai của bucket R2 (r2.dev hoặc custom domain) để <Image> trỏ tới.
+  // Chưa cấu hình xong thì để trống, code phải chịu được `undefined`.
+  NEXT_PUBLIC_R2_PUBLIC_URL: z.string().url().optional(),
 });
 
-export const env = EnvSchema.parse(process.env);
+// Phải liệt kê TỪNG biến một. Next chỉ thay thế các tham chiếu tĩnh dạng
+// `process.env.NEXT_PUBLIC_X` lúc build — truyền cả object `process.env` vào
+// thì phía client sẽ nhận object rỗng và schema âm thầm rơi về default.
+export const env = PublicEnvSchema.parse({
+  NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
+  NEXT_PUBLIC_R2_PUBLIC_URL: process.env.NEXT_PUBLIC_R2_PUBLIC_URL,
+});
+
+export type PublicEnv = z.infer<typeof PublicEnvSchema>;

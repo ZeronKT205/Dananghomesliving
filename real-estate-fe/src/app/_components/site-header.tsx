@@ -1,17 +1,17 @@
 'use client';
 
-import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
-import { CloseIcon, MailIcon, MenuIcon } from '@/components/ui/icons';
-import { APP_NAME, APP_TAGLINE, CONTACT_EMAIL, NAV_ITEMS } from '@/config/constants';
+import { ChevronDownIcon, CloseIcon, MailIcon, MenuIcon } from '@/components/ui/icons';
+import { APP_NAME, CONTACT_EMAIL, NAV_ITEMS } from '@/config/constants';
 import { cn } from '@/lib/utils';
 
 import { LanguageMenu } from './language-menu';
 import { PrimaryNav } from './primary-nav';
 import { QrContact } from './qr-contact';
 import { SocialLinks } from './social-links';
+import { BrandLogo } from '@/components/ui/brand-logo';
 
 /** Header 2 hàng:
  *  · Hàng trên — trái: QR gọi + email + ngôn ngữ | giữa: logo | phải: mạng xã hội
@@ -20,9 +20,18 @@ import { SocialLinks } from './social-links';
  *  Cần client vì 3 thứ chỉ có ở trình duyệt: bóng đổ theo scroll, panel menu
  *  mobile, và mục tab đang xem. */
 export function SiteHeader() {
+  // Primary header component with responsive desktop & mobile navigation
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [activeHref, setActiveHref] = useState('');
+  const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
+
+  const toggleSubmenu = (label: string) => {
+    setExpandedItems((prev) => ({
+      ...prev,
+      [label]: !prev[label],
+    }));
+  };
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -103,24 +112,9 @@ export function SiteHeader() {
             <Link
               href="/"
               aria-label={`${APP_NAME} home`}
-              className="flex items-center gap-3 justify-self-center"
+              className="flex items-center justify-self-center hover:opacity-95 transition-opacity"
             >
-              <Image
-                src="/images/brand/logo.webp"
-                alt=""
-                width={112}
-                height={112}
-                priority
-                className="ring-gold/50 h-12 w-12 rounded-full object-cover ring-1 lg:h-16 lg:w-16"
-              />
-              <span className="grid leading-none">
-                <strong className="font-display text-navy text-[17px] font-normal tracking-[0.02em] whitespace-nowrap sm:text-[19px] lg:text-[23px]">
-                  {APP_NAME}
-                </strong>
-                <span className="text-gold mt-1.5 hidden text-[8px] font-bold tracking-[0.22em] uppercase sm:block lg:text-[9.5px]">
-                  {APP_TAGLINE}
-                </span>
-              </span>
+              <BrandLogo />
             </Link>
 
             <div className="flex items-center gap-2 justify-self-end">
@@ -146,10 +140,11 @@ export function SiteHeader() {
         </div>
       </header>
 
+      {/* ── Mobile Sidebar Backdrop & Drawer ── */}
       <div
         onClick={() => setMenuOpen(false)}
         className={cn(
-          'fixed inset-0 z-90 bg-[rgb(7_29_54/0.42)] transition-opacity duration-300 lg:hidden',
+          'fixed inset-0 z-90 bg-black/60 backdrop-blur-sm transition-opacity duration-300 lg:hidden',
           menuOpen ? 'opacity-100' : 'pointer-events-none opacity-0',
         )}
       />
@@ -157,84 +152,132 @@ export function SiteHeader() {
       <aside
         aria-hidden={!menuOpen}
         className={cn(
-          'bg-paper fixed inset-y-0 right-0 z-100 flex w-[min(360px,100%)] flex-col overflow-y-auto px-7 pt-20 pb-8 transition-transform duration-300 lg:hidden',
+          'fixed inset-y-0 right-0 z-100 flex w-[min(340px,85vw)] flex-col bg-[#071d36] text-white shadow-2xl transition-transform duration-300 ease-out lg:hidden',
           menuOpen ? 'translate-x-0' : 'translate-x-full',
         )}
       >
-        <button
-          type="button"
-          onClick={() => setMenuOpen(false)}
-          aria-label="Close menu"
-          className="border-line focus-visible:outline-gold absolute top-5 right-7 grid h-9 w-9 cursor-pointer place-items-center border focus-visible:outline-2"
-        >
-          <CloseIcon className="h-4 w-4" />
-        </button>
-
-        <nav aria-label="Mobile">
-          <ul className="grid">
-            {NAV_ITEMS.map((item) => {
-              const children = 'children' in item ? item.children : undefined;
-              const locations = 'locations' in item ? item.locations : undefined;
-              return (
-                <li key={item.label} className="border-line border-b py-2.5">
-                  <Link
-                    href={item.href}
-                    onClick={() => setMenuOpen(false)}
-                    className="font-display text-navy hover:text-gold block text-[24px] transition-colors"
-                  >
-                    {item.label}
-                  </Link>
-                  {children ? (
-                    <ul className="mt-1 grid gap-1 pl-3">
-                      {children.map((child) => (
-                        <li key={child.label}>
-                          <Link
-                            href={child.href}
-                            onClick={() => setMenuOpen(false)}
-                            className="text-muted hover:text-gold block text-[13px] transition-colors"
-                          >
-                            {child.label}
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : null}
-                  {locations ? (
-                    <div className="mt-2 pl-3">
-                      <span className="text-gold text-[10px] font-bold tracking-wider uppercase">
-                        Locations
-                      </span>
-                      <ul className="border-gold/30 mt-1 grid gap-1 border-l pl-2">
-                        {locations.map((loc) => (
-                          <li key={loc.label}>
-                            <Link
-                              href={loc.href}
-                              onClick={() => setMenuOpen(false)}
-                              className="text-muted hover:text-gold block text-[12px] transition-colors"
-                            >
-                              {loc.label}
-                            </Link>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  ) : null}
-                </li>
-              );
-            })}
-          </ul>
-        </nav>
-
-        <div className="mt-8">
-          <LanguageMenu />
+        {/* Drawer Top Bar */}
+        <div className="flex items-center justify-between border-b border-white/10 px-6 py-4">
+          <Link
+            href="/"
+            onClick={() => setMenuOpen(false)}
+            className="flex items-center gap-3"
+          >
+            <BrandLogo light={true} className="scale-90 origin-left" />
+          </Link>
+          <button
+            type="button"
+            onClick={() => setMenuOpen(false)}
+            aria-label="Close menu"
+            className="grid h-9 w-9 cursor-pointer place-items-center rounded-md border border-white/15 text-white/80 transition-colors hover:border-gold hover:text-gold"
+          >
+            <CloseIcon className="h-4 w-4" />
+          </button>
         </div>
 
-        <div className="mt-auto pt-8">
-          <SocialLinks />
+        {/* Scrollable Accordion Menu */}
+        <div className="flex-1 overflow-y-auto px-5 py-4">
+          <nav aria-label="Mobile Navigation">
+            <ul className="flex flex-col gap-1">
+              {NAV_ITEMS.map((item) => {
+                const children = 'children' in item ? item.children : undefined;
+                const locations = 'locations' in item ? item.locations : undefined;
+                const hasSub = Boolean((children && children.length > 0) || (locations && locations.length > 0));
+                const isExpanded = Boolean(expandedItems[item.label]);
+
+                return (
+                  <li key={item.label} className="border-b border-white/5 pb-1">
+                    {hasSub ? (
+                      <div>
+                        {/* Parent item header with toggle */}
+                        <div className="flex items-center justify-between rounded-md px-3 py-3 transition-colors hover:bg-white/5">
+                          <Link
+                            href={item.href}
+                            onClick={() => setMenuOpen(false)}
+                            className="font-medium text-[15px] tracking-wide text-white/90 transition-colors hover:text-gold"
+                          >
+                            {item.label}
+                          </Link>
+                          <button
+                            type="button"
+                            onClick={() => toggleSubmenu(item.label)}
+                            aria-label={`Toggle ${item.label} menu`}
+                            aria-expanded={isExpanded}
+                            className="p-1.5 text-white/60 transition-colors hover:text-gold"
+                          >
+                            <ChevronDownIcon
+                              className={cn(
+                                'h-4 w-4 transition-transform duration-200',
+                                isExpanded && 'rotate-180 text-gold',
+                              )}
+                            />
+                          </button>
+                        </div>
+
+                        {/* Collapsible Dropdown Content */}
+                        {isExpanded ? (
+                          <div className="border-gold/30 ml-3 my-1 flex flex-col gap-0.5 border-l-2 pl-3 py-1">
+                            {children?.map((child) => (
+                              <Link
+                                key={child.label}
+                                href={child.href}
+                                onClick={() => setMenuOpen(false)}
+                                className="block rounded py-2 px-2 text-[13.5px] text-white/75 transition-colors hover:bg-white/5 hover:text-gold"
+                              >
+                                {child.label}
+                              </Link>
+                            ))}
+
+                            {locations && locations.length > 0 ? (
+                              <div className="mt-2 pt-2 border-t border-white/10">
+                                <span className="text-gold block px-2 text-[10px] font-bold tracking-[0.2em] uppercase mb-1">
+                                  Locations
+                                </span>
+                                <div className="flex flex-col gap-0.5">
+                                  {locations.map((loc) => (
+                                    <Link
+                                      key={loc.label}
+                                      href={loc.href}
+                                      onClick={() => setMenuOpen(false)}
+                                      className="block rounded py-1.5 px-2 text-[12.5px] text-white/65 transition-colors hover:bg-white/5 hover:text-gold"
+                                    >
+                                      {loc.label}
+                                    </Link>
+                                  ))}
+                                </div>
+                              </div>
+                            ) : null}
+                          </div>
+                        ) : null}
+                      </div>
+                    ) : (
+                      /* Direct Item without Submenu */
+                      <Link
+                        href={item.href}
+                        onClick={() => setMenuOpen(false)}
+                        className="block rounded-md px-3 py-3 font-medium text-[15px] tracking-wide text-white/90 transition-colors hover:bg-white/5 hover:text-gold"
+                      >
+                        {item.label}
+                      </Link>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          </nav>
+        </div>
+
+        {/* Drawer Footer */}
+        <div className="border-t border-white/10 bg-[#051529] px-6 py-5">
+          <div className="flex items-center justify-between gap-2 mb-4">
+            <LanguageMenu className="text-white/80" />
+            <SocialLinks className="text-white/80" />
+          </div>
           <a
             href={`mailto:${CONTACT_EMAIL}`}
-            className="text-muted hover:text-gold mt-4 block text-[13px] transition-colors"
+            className="flex items-center gap-2 text-[12.5px] text-white/60 transition-colors hover:text-gold"
           >
+            <MailIcon className="h-3.5 w-3.5 text-gold" />
             {CONTACT_EMAIL}
           </a>
         </div>

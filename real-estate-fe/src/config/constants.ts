@@ -75,7 +75,7 @@ export const NAV_ITEMS = [
       label: loc.label,
     })),
   },
-  { href: '/tips', label: 'Tips' },
+  { href: '/news', label: 'Tips' },
   { href: '/about', label: 'About us' },
 ] as const;
 

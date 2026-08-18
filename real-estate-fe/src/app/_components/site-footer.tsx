@@ -1,4 +1,3 @@
-import Image from 'next/image';
 import Link from 'next/link';
 
 import { NewsletterForm } from '@/components/features/newsletter/newsletter-form';
@@ -11,6 +10,8 @@ import {
   NAV_ITEMS,
 } from '@/config/constants';
 
+import { BrandLogo } from '@/components/ui/brand-logo';
+
 // Bỏ "Home" — footer đã ở cuối trang, link về đầu trang không có giá trị ở đây.
 const EXPLORE_LINKS = NAV_ITEMS.filter((item) => item.href !== '/');
 
@@ -20,24 +21,8 @@ export function SiteFooter() {
       <div className="container-page">
         <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-[1.2fr_0.7fr_0.7fr_1fr] lg:gap-12">
           <div className="md:col-span-2 lg:col-span-1">
-            <div className="flex items-center gap-4">
-              <Image
-                src="/images/brand/logo.webp"
-                alt=""
-                width={144}
-                height={144}
-                className="h-16 w-16 rounded-full object-cover"
-              />
-              <p>
-                <strong className="font-display block text-[20px] leading-none font-normal">
-                  Da Nang Homes
-                  <br />
-                  &amp; Living
-                </strong>
-                <span className="text-gold-soft mt-2 block text-[8.5px] tracking-[0.18em] uppercase">
-                  Real Estate
-                </span>
-              </p>
+            <div className="flex items-center">
+              <BrandLogo light={true} />
             </div>
             <p className="mt-5 max-w-[340px] text-[13px] text-white/63">
               Premium property curation and local advisory for buying, renting and living well in Da

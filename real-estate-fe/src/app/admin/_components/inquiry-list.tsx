@@ -4,12 +4,12 @@ import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 
-import { formatUsd, GROUPS, INQUIRY_STATUS, LOCALE_LABEL, PROPERTIES } from '../_data/mock';
+import { formatUsd, INQUIRY_STATUS, LOCALE_LABEL } from '../_data/view-models';
 
 import { IcAlert, IcClock, IcClose, IcGlobe, IcInbox, IcPhone, IcTag } from './icons';
 import { Avatar, EmptyState, Pill } from './ui';
 
-import type { AdminInquiry } from '../_data/mock';
+import type { AdminInquiry } from '../_data/view-models';
 
 /** Danh sách yêu cầu tư vấn — bấm vào một dòng mở ngăn chi tiết bên phải.
  *  Chỉ phần này cần client vì phải giữ dòng đang mở. */
@@ -21,11 +21,9 @@ export function InquiryList({ inquiries }: { inquiries: AdminInquiry[] }) {
 
   const selected = inquiries.find((item) => item.id === openId) ?? null;
 
-  // Dữ liệu mẫu nên tra cứu tại chỗ. Khi có API thật, BĐS sẽ được join sẵn vào
-  // yêu cầu và chỗ này bỏ đi.
-  const property = selected?.propertyId
-    ? PROPERTIES.find((item) => item.id === selected.propertyId)
-    : undefined;
+  // BĐS đã được join sẵn ở tầng server (presenters.ts) — client không truy DB
+  // được, và tra cứu trong mảng như bản mock thì không còn mảng nào để tra.
+  const property = selected?.property;
 
   useEffect(() => {
     if (!selected) return;
@@ -193,8 +191,7 @@ export function InquiryList({ inquiries }: { inquiries: AdminInquiry[] }) {
                             {property.title}
                           </span>
                           <span className="text-muted truncate text-[11px]">
-                            {property.district} ·{' '}
-                            {GROUPS.find((group) => group.id === property.groupId)?.name}
+                            {property.district} · {property.groupName}
                           </span>
                           <span className="text-[11.5px] font-extrabold text-[#8f6614]">
                             {formatUsd(property.priceUsd)}

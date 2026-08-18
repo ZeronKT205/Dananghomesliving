@@ -1,58 +1,90 @@
 'use client';
 
-import { useState } from 'react';
-
 interface PropertyHeaderProps {
   title: string;
   location: string;
-  price: { usd: string; vnd: string };
+  price: { usd: string; vnd?: string };
   stats: { bedrooms: number; bathrooms: number; internalArea: number; landArea: number };
 }
 
 export function PropertyHeader({ title, location, price, stats }: PropertyHeaderProps) {
-  const [isSaved, setIsSaved] = useState(false);
+  const displayPrice = price.usd.startsWith('$') ? price.usd : `$${price.usd}`;
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-start gap-2 text-muted text-[11px] font-bold uppercase tracking-wider mb-2">
-        <svg className="w-4 h-4 shrink-0 text-[#C99224]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-        {location}
+    <div className="space-y-6">
+      {/* Location Tag */}
+      <div className="flex items-center gap-2 text-gold text-[11px] font-bold uppercase tracking-[0.18em]">
+        <svg className="w-4 h-4 shrink-0 text-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+        </svg>
+        <span>{location}</span>
       </div>
       
-      <div className="flex items-start justify-between">
-        <h1 className="text-[32px] text-navy font-extrabold leading-tight m-0 p-0">
-          {title}
-        </h1>
-        <button 
-          onClick={() => setIsSaved(!isSaved)}
-          className={`flex items-center gap-1.5 text-[13px] font-medium border px-3 py-1.5 rounded transition-colors shrink-0 mt-1 ${isSaved ? 'bg-navy text-white border-navy' : 'text-navy border-line hover:bg-gray-50'}`}
-        >
-          <svg className="w-4 h-4" fill={isSaved ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
-          {isSaved ? 'Đã lưu' : 'Lưu'}
-        </button>
+      {/* Elegant Luxury Title (Playfair Display) */}
+      <h1 className="font-display text-navy text-[32px] sm:text-[42px] font-normal leading-[1.08] tracking-tight text-balance">
+        {title}
+      </h1>
+
+      {/* Clean USD Pricing Block (Montserrat) */}
+      <div className="bg-paper border border-line px-6 py-4 rounded-none flex items-center justify-between">
+        <div>
+          <span className="text-muted text-[10px] font-bold uppercase tracking-[0.2em] block mb-0.5">
+            Giá niêm yết
+          </span>
+          <p className="font-sans text-[26px] sm:text-[30px] text-gold font-semibold leading-none tracking-tight">
+            {displayPrice}
+          </p>
+        </div>
+        <span className="text-navy text-[10.5px] font-bold tracking-widest uppercase bg-gold/15 px-3 py-1.5 border border-gold/30">
+          Chính chủ
+        </span>
       </div>
 
-      <div className="pt-2">
-        <p className="text-[28px] text-[#C99224] font-bold leading-none mb-1">${price.usd}</p>
-        <p className="text-[13px] text-muted font-medium">≈ {price.vnd} VNĐ</p>
-      </div>
+      {/* Subtle & Refined Specification Grid (Montserrat) */}
+      <div className="border border-line bg-white p-4 rounded-none">
+        <div className="flex flex-wrap items-center justify-around gap-4 text-center divide-x divide-line/60">
+          {/* Bedrooms */}
+          <div className="flex-1 min-w-[70px] px-2">
+            <div className="flex items-center justify-center gap-1.5 text-navy mb-1">
+              <svg className="w-4 h-4 text-gold shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+              </svg>
+              <span className="font-sans text-[17px] font-bold leading-none">{stats.bedrooms}</span>
+            </div>
+            <span className="text-[10px] uppercase tracking-[0.14em] text-muted font-bold block">Phòng ngủ</span>
+          </div>
 
-      <div className="flex divide-x divide-line py-6 my-6 border-y border-line">
-        <div className="flex-1 text-center px-2">
-          <p className="text-[18px] text-navy font-bold">{stats.bedrooms}</p>
-          <p className="text-[10px] uppercase tracking-wider text-muted font-bold mt-1">Phòng ngủ</p>
-        </div>
-        <div className="flex-1 text-center px-2">
-          <p className="text-[18px] text-navy font-bold">{stats.bathrooms}</p>
-          <p className="text-[10px] uppercase tracking-wider text-muted font-bold mt-1">Phòng tắm</p>
-        </div>
-        <div className="flex-1 text-center px-2">
-          <p className="text-[18px] text-navy font-bold">{stats.internalArea} m²</p>
-          <p className="text-[10px] uppercase tracking-wider text-muted font-bold mt-1">Diện tích trong</p>
-        </div>
-        <div className="flex-1 text-center px-2">
-          <p className="text-[18px] text-navy font-bold">{stats.landArea} m²</p>
-          <p className="text-[10px] uppercase tracking-wider text-muted font-bold mt-1">Diện tích đất</p>
+          {/* Bathrooms */}
+          <div className="flex-1 min-w-[70px] px-2 pl-4">
+            <div className="flex items-center justify-center gap-1.5 text-navy mb-1">
+              <svg className="w-4 h-4 text-gold shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" />
+              </svg>
+              <span className="font-sans text-[17px] font-bold leading-none">{stats.bathrooms}</span>
+            </div>
+            <span className="text-[10px] uppercase tracking-[0.14em] text-muted font-bold block">Phòng tắm</span>
+          </div>
+
+          {/* Internal Area */}
+          <div className="flex-1 min-w-[80px] px-2 pl-4">
+            <div className="flex items-center justify-center gap-1 text-navy mb-1">
+              <span className="font-sans text-[17px] font-bold leading-none">{stats.internalArea}</span>
+              <span className="text-[11px] font-sans font-semibold text-muted">m²</span>
+            </div>
+            <span className="text-[10px] uppercase tracking-[0.14em] text-muted font-bold block">Diện tích sử dụng</span>
+          </div>
+
+          {/* Land Area - Only rendered if landArea > 0 */}
+          {stats.landArea > 0 && (
+            <div className="flex-1 min-w-[80px] px-2 pl-4">
+              <div className="flex items-center justify-center gap-1 text-navy mb-1">
+                <span className="font-sans text-[17px] font-bold leading-none">{stats.landArea}</span>
+                <span className="text-[11px] font-sans font-semibold text-muted">m²</span>
+              </div>
+              <span className="text-[10px] uppercase tracking-[0.14em] text-muted font-bold block">Diện tích đất</span>
+            </div>
+          )}
         </div>
       </div>
     </div>
