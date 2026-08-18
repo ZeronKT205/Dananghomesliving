@@ -6,7 +6,6 @@ import { getListingsByType } from '@/lib/db/listings';
 import { HeroSection } from '../_components/hero-section';
 import { JournalSection } from '../_components/journal-section';
 import { ListingsSection } from '../_components/listings-section';
-import { PropertySearch } from '../_components/property-search';
 import { QuoteRequestSection } from '../_components/quote-request-section';
 import { SiteFooter } from '../_components/site-footer';
 import { SiteHeader } from '../_components/site-header';
@@ -32,9 +31,6 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
           <HeroSection />
         </div>
         <div className="animate-fade-in-up stagger-1">
-          <PropertySearch />
-        </div>
-        <div className="animate-fade-in-up stagger-2">
           <StorySection />
         </div>
 
@@ -68,4 +64,5 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
     </>
   );
 }
+
 

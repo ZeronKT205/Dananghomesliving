@@ -41,7 +41,6 @@ function PropertySearchInner({ redirectOnlyOnSubmit }: { redirectOnlyOnSubmit: b
 
   const handleTabChange = (newTab: ListingType) => {
     setTab(newTab);
-    // Chỉ chuyển hướng ngay nếu KHÔNG PHẢI trang Home (khi redirectOnlyOnSubmit = false)
     if (!redirectOnlyOnSubmit) {
       const params = new URLSearchParams(searchParams.toString());
       params.set('type', newTab);
@@ -62,7 +61,6 @@ function PropertySearchInner({ redirectOnlyOnSubmit }: { redirectOnlyOnSubmit: b
       params.set('propertyType', selectedType);
     }
 
-    // Chuyển hướng sang trang danh sách bất động sản với các tham số tìm kiếm
     router.push(`/properties?${params.toString()}`, { scroll: false });
 
     if (!redirectOnlyOnSubmit) {
@@ -77,50 +75,50 @@ function PropertySearchInner({ redirectOnlyOnSubmit }: { redirectOnlyOnSubmit: b
   };
 
   return (
-    <div className="w-full flex flex-col items-center">
-      {/* 1. Centered BUY & RENT 2-Button Toggle with Smooth Sliding Pill */}
-      <div
-        role="tablist"
-        aria-label="Listing type"
-        className="relative inline-flex bg-white p-1 rounded-none border border-line shadow-sm mb-3 z-10 overflow-hidden"
-      >
-        {/* Sliding Pill Background Indicator */}
-        <div
-          className={cn(
-            'absolute top-1 bottom-1 w-[calc(50%-4px)] bg-navy rounded-none transition-all duration-300 ease-out shadow-xs',
-            tab === 'sale' ? 'left-1' : 'left-[calc(50%+2px)]'
-          )}
-        />
-
-        {TABS.map((item) => {
-          const isActive = item.value === tab;
-          return (
-            <button
-              key={item.value}
-              type="button"
-              role="tab"
-              aria-selected={isActive}
-              onClick={() => handleTabChange(item.value)}
-              className={cn(
-                'relative z-10 px-10 py-2.5 text-[11.5px] font-bold tracking-[0.18em] uppercase transition-colors duration-200 cursor-pointer rounded-none min-w-[120px] text-center',
-                isActive
-                  ? 'text-white font-extrabold'
-                  : 'text-navy/75 hover:text-navy'
-              )}
-            >
-              {item.label}
-            </button>
-          );
-        })}
-      </div>
-
-      {/* 2. Compact Filter Bar */}
+    <div className="w-full max-w-5xl mx-auto">
+      {/* Compact Filter Bar with BUY/RENT buttons on the same row on the left */}
       <form
         onSubmit={handleSubmit}
-        className="w-full bg-white border border-line shadow-lift rounded-none p-2 sm:p-3"
+        className="w-full bg-white border border-line shadow-lift rounded-none p-2 sm:p-2.5"
       >
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_1fr_auto] gap-2 items-center">
-          {/* Area */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[auto_1fr_1fr_1fr_auto] gap-2 items-stretch">
+          {/* BUY & RENT Toggle Group on the left side of the same row */}
+          <div
+            role="tablist"
+            aria-label="Listing type"
+            className="relative inline-flex bg-paper p-1 rounded-none border border-line shadow-xs overflow-hidden items-center self-stretch justify-center"
+          >
+            {/* Sliding Pill Background Indicator */}
+            <div
+              className={cn(
+                'absolute top-1 bottom-1 w-[calc(50%-4px)] bg-navy rounded-none transition-all duration-300 ease-out shadow-xs',
+                tab === 'sale' ? 'left-1' : 'left-[calc(50%+2px)]'
+              )}
+            />
+
+            {TABS.map((item) => {
+              const isActive = item.value === tab;
+              return (
+                <button
+                  key={item.value}
+                  type="button"
+                  role="tab"
+                  aria-selected={isActive}
+                  onClick={() => handleTabChange(item.value)}
+                  className={cn(
+                    'relative z-10 px-5 py-2.5 text-[11.5px] font-bold tracking-[0.18em] uppercase transition-colors duration-200 cursor-pointer rounded-none min-w-[75px] text-center',
+                    isActive
+                      ? 'text-white font-extrabold'
+                      : 'text-navy/75 hover:text-navy'
+                  )}
+                >
+                  {item.label}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Area Select */}
           <div className="bg-paper border border-line px-3.5 py-2 rounded-none flex flex-col justify-center">
             <label
               htmlFor="area"
@@ -140,7 +138,7 @@ function PropertySearchInner({ redirectOnlyOnSubmit }: { redirectOnlyOnSubmit: b
             </select>
           </div>
 
-          {/* Property Type */}
+          {/* Property Type Select */}
           <div className="bg-paper border border-line px-3.5 py-2 rounded-none flex flex-col justify-center">
             <label
               htmlFor="property-type"
@@ -160,7 +158,7 @@ function PropertySearchInner({ redirectOnlyOnSubmit }: { redirectOnlyOnSubmit: b
             </select>
           </div>
 
-          {/* Budget */}
+          {/* Budget Select */}
           <div className="bg-paper border border-line px-3.5 py-2 rounded-none flex flex-col justify-center">
             <label
               htmlFor="budget"
@@ -179,7 +177,7 @@ function PropertySearchInner({ redirectOnlyOnSubmit }: { redirectOnlyOnSubmit: b
             </select>
           </div>
 
-          {/* Submit Search Button with Loading Spinner & Scroll Action */}
+          {/* Submit Search Button */}
           <button
             type="submit"
             disabled={isSearching}
@@ -205,3 +203,4 @@ function PropertySearchInner({ redirectOnlyOnSubmit }: { redirectOnlyOnSubmit: b
     </div>
   );
 }
+
