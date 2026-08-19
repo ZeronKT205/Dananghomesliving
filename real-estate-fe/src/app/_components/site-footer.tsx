@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { getTranslations } from 'next-intl/server';
 
 import { NewsletterForm } from '@/components/features/newsletter/newsletter-form';
 import { BrandLogo } from '@/components/ui/brand-logo';
@@ -12,7 +13,12 @@ const EXPLORE_LINKS = NAV_ITEMS.filter((item) => item.href !== '/');
 // Server Component nên đọc thẳng cài đặt; `getSiteSettings` đã được cache
 // trong phạm vi một request nên header và footer không gọi DB hai lần.
 export async function SiteFooter() {
-  const { brand, contact } = await getSiteSettings();
+  // Server Component: `getTranslations` thay cho hook `useTranslations`.
+  const [{ brand, contact }, tNav, t] = await Promise.all([
+    getSiteSettings(),
+    getTranslations('Nav'),
+    getTranslations('Footer'),
+  ]);
 
   return (
     <footer className="bg-navy pt-16 pb-6 text-white">
@@ -30,13 +36,13 @@ export async function SiteFooter() {
 
           <div>
             <h2 className="text-gold-soft mb-4 text-[9.5px] font-bold tracking-[0.16em] uppercase">
-              Explore
+              {t('explore')}
             </h2>
             <ul className="grid gap-2.5 text-[13px] text-white/68">
               {EXPLORE_LINKS.map((item) => (
                 <li key={item.href}>
                   <Link href={item.href} className="transition-colors hover:text-white">
-                    {item.label}
+                    {tNav(item.labelKey)}
                   </Link>
                 </li>
               ))}
@@ -45,7 +51,7 @@ export async function SiteFooter() {
 
           <div>
             <h2 className="text-gold-soft mb-4 text-[9.5px] font-bold tracking-[0.16em] uppercase">
-              Contact
+              {t('contact')}
             </h2>
             <ul className="grid gap-2.5 text-[13px] text-white/68">
               <li>{contact.address || contact.city}</li>
@@ -60,25 +66,27 @@ export async function SiteFooter() {
                 </a>
               </li>
               <li>{contact.hours}</li>
-              <li>Viewings by appointment</li>
+              <li>{t('byAppointment')}</li>
             </ul>
           </div>
 
           <div className="md:col-span-2 lg:col-span-1 lg:max-w-[320px]">
             <h2 className="text-gold-soft mb-4 text-[9.5px] font-bold tracking-[0.16em] uppercase">
-              Da Nang property notes
+              {t('newsletterTitle')}
             </h2>
             <p className="mb-3 text-[13px] text-white/62">
-              Occasional market insights, selected listings and neighbourhood guides.
+              {t('newsletterBody')}
             </p>
             <NewsletterForm />
           </div>
         </div>
 
         <div className="mt-12 flex flex-col gap-2 border-t border-white/13 pt-6 text-[10.5px] text-white/45 sm:flex-row sm:justify-between">
-          <span>© {new Date().getFullYear()} {brand.name}. All rights reserved.</span>
+          <span>© {new Date().getFullYear()} {brand.name}. {t('rights')}</span>
           <span>{brand.tagline}</span>
-          <span>Privacy · Terms</span>
+          <span>
+            {t('privacy')} · {t('terms')}
+          </span>
         </div>
       </div>
     </footer>

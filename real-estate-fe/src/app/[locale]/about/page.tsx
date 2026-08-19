@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { getTranslations } from 'next-intl/server';
 
 import { APP_NAME } from '@/config/constants';
 
@@ -12,7 +13,9 @@ export const metadata: Metadata = {
   description: 'Trang thông tin giới thiệu về Da Nang Homes & Living.',
 };
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  const t = await getTranslations('About');
+
   return (
     <>
       <SiteHeader />
@@ -37,12 +40,12 @@ export default function AboutPage() {
 
             {/* Status Badge */}
             <span className="inline-block bg-gold/10 text-gold border border-gold/30 px-4 py-1 text-[10px] font-bold tracking-[0.2em] uppercase mb-4">
-              Under Update • Đang Cập Nhật
+              {t('badge')}
             </span>
 
             {/* Main Heading */}
             <h1 className="font-display text-navy text-[30px] sm:text-[40px] leading-tight font-normal mb-4">
-              Chúng tôi đang tiến hành cập nhật thông tin
+              {t('updating')}
             </h1>
 
             {/* Subtitle */}
@@ -56,13 +59,13 @@ export default function AboutPage() {
                 href="/"
                 className="bg-navy hover:bg-gold text-white font-bold text-[12px] uppercase tracking-wider px-6 py-3.5 transition-colors w-full sm:w-auto"
               >
-                ← Về Trang Chủ
+                ← {t('backHome')}
               </Link>
               <Link
                 href="/tips"
                 className="border border-line text-navy hover:border-gold hover:text-gold font-bold text-[12px] uppercase tracking-wider px-6 py-3.5 transition-colors w-full sm:w-auto"
               >
-                Xem Tips BĐS →
+                {t('viewTips')} →
               </Link>
             </div>
           </div>

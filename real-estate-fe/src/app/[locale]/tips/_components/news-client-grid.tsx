@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 import { Link } from '@/i18n/routing';
@@ -10,6 +11,7 @@ import type { Article } from '@/types';
 const CATEGORIES = ['All', 'Buying guide', 'Design', 'Neighbourhoods', 'Market Report', 'Architecture'] as const;
 
 export function NewsClientGrid({ articles }: { articles: Article[] }) {
+  const t = useTranslations('News');
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState<string>('');
 
@@ -59,7 +61,7 @@ export function NewsClientGrid({ articles }: { articles: Article[] }) {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Tìm kiếm bài viết, chủ đề..."
+            placeholder={t('searchPlaceholderFull')}
             className="border-line text-navy placeholder:text-muted focus:border-navy focus:ring-navy/20 w-full border bg-paper py-2.5 pl-10 pr-4 text-[14px] transition-all focus:outline-none focus:ring-1 rounded-none font-medium"
           />
           <svg
@@ -80,7 +82,7 @@ export function NewsClientGrid({ articles }: { articles: Article[] }) {
 
       {/* Hero Featured Article (Shown when no active search/category filter or when featured matches) */}
       {selectedCategory === 'All' && !searchQuery && featuredArticle && (
-        <section aria-label="Featured Story" className="mb-16">
+        <section aria-label="{t('featuredStory')}" className="mb-16">
           <div className="border-line bg-white hover:shadow-lift group relative grid overflow-hidden border transition-all duration-500 lg:grid-cols-12 rounded-none">
             <div className="relative min-h-[300px] sm:min-h-[400px] lg:col-span-7 lg:min-h-[480px]">
               <Image
@@ -93,7 +95,7 @@ export function NewsClientGrid({ articles }: { articles: Article[] }) {
               />
               <div className="absolute top-4 left-4 z-10">
                 <span className="bg-gold text-navy px-3.5 py-1.5 text-[11px] font-bold tracking-[0.14em] uppercase shadow-md rounded-none">
-                  BÀI VIẾT NỔI BẬT
+                  {t('featured')}
                 </span>
               </div>
             </div>
@@ -141,7 +143,7 @@ export function NewsClientGrid({ articles }: { articles: Article[] }) {
                   href={`/news/${featuredArticle.slug}`}
                   className="bg-navy hover:bg-gold text-white hover:text-navy inline-flex items-center gap-2 px-6 py-3 text-[12.5px] font-bold tracking-wider uppercase transition-all rounded-none shadow-xs"
                 >
-                  Đọc tiếp
+                  {t('readNext')}
                   <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
                   </svg>
@@ -155,8 +157,8 @@ export function NewsClientGrid({ articles }: { articles: Article[] }) {
       {/* Main Articles Grid */}
       {regularArticles.length === 0 ? (
         <div className="border-line bg-white border p-12 text-center rounded-none">
-          <p className="font-display text-navy text-[24px]">Không tìm thấy bài viết phù hợp</p>
-          <p className="text-muted mt-2 text-[15px]">Thử thay đổi từ khóa tìm kiếm hoặc chọn danh mục khác.</p>
+          <p className="font-display text-navy text-[24px]">{t('emptyTitle')}</p>
+          <p className="text-muted mt-2 text-[15px]">{t('emptyBody')}</p>
           <button
             type="button"
             onClick={() => {
@@ -165,7 +167,7 @@ export function NewsClientGrid({ articles }: { articles: Article[] }) {
             }}
             className="text-gold hover:underline mt-4 inline-block text-[13px] font-bold uppercase tracking-wider cursor-pointer"
           >
-            Đặt lại bộ lọc
+            {t('resetFilters')}
           </button>
         </div>
       ) : (
@@ -201,7 +203,7 @@ export function NewsClientGrid({ articles }: { articles: Article[] }) {
                       href={`/news/${article.slug}`}
                       className="text-gold hover:text-white flex items-center gap-1.5 text-[12.5px] font-bold uppercase tracking-wider transition-colors"
                     >
-                      Đọc chi tiết →
+                      {t('readDetail')} →
                     </Link>
                   </div>
                 </article>
@@ -274,7 +276,7 @@ export function NewsClientGrid({ articles }: { articles: Article[] }) {
                       href={`/news/${article.slug}`}
                       className="text-navy hover:text-gold text-[12.5px] font-bold uppercase tracking-wider transition-colors"
                     >
-                      Đọc chi tiết →
+                      {t('readDetail')} →
                     </Link>
                   </div>
                 </div>

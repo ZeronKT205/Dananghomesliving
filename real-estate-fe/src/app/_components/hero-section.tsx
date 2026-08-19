@@ -33,16 +33,15 @@ export function HeroSection() {
             </h1>
 
             <p className="mt-6 max-w-[520px] text-[15px] text-[#5f6b78]">
-              A carefully curated collection of premium apartments, beachfront residences and private
-              villas for international buyers, long-stay residents and investors.
+              {t('lead')}
             </p>
 
             <div className="mt-7 flex flex-wrap gap-3">
               <ButtonLink href="#rent" variant="gold">
-                View long-term rentals <span aria-hidden>→</span>
+                {t('ctaRent')} <span aria-hidden>→</span>
               </ButtonLink>
               <ButtonLink href="#buy" variant="outline" className="text-navy">
-                Explore homes to buy
+                {t('ctaBuy')}
               </ButtonLink>
             </div>
 

@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
+
 import { PhoneIcon } from '@/components/ui/icons';
 
 interface MobileStickyCTAProps {
@@ -8,6 +10,8 @@ interface MobileStickyCTAProps {
 }
 
 export function MobileStickyCTA({ price }: MobileStickyCTAProps) {
+  const t = useTranslations('Property');
+
   const displayPrice = typeof price === 'string' ? price : price?.usd || '';
   const formattedPrice = displayPrice.startsWith('$') ? displayPrice : `$${displayPrice}`;
 
@@ -23,7 +27,7 @@ export function MobileStickyCTA({ price }: MobileStickyCTAProps) {
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0 flex-1">
           <span className="block text-[9px] font-bold tracking-[0.2em] text-gold uppercase">
-            Giá niêm yết
+            {t('listedPrice')}
           </span>
           <p className="font-sans text-[16px] font-semibold leading-none text-white truncate">
             {formattedPrice}
@@ -33,7 +37,7 @@ export function MobileStickyCTA({ price }: MobileStickyCTAProps) {
         <div className="flex items-center gap-2">
           <a
             href="tel:+842363888888"
-            aria-label="Gọi điện trực tiếp"
+            aria-label="{t('callDirect')}"
             className="grid h-11 w-11 cursor-pointer place-items-center rounded-none border border-gold/40 bg-navy-2 text-gold transition-colors hover:bg-gold hover:text-navy active:scale-95"
           >
             <PhoneIcon className="h-5 w-5" />
@@ -44,7 +48,7 @@ export function MobileStickyCTA({ price }: MobileStickyCTAProps) {
             onClick={scrollToForm}
             className="flex items-center justify-center rounded-none bg-gold px-5 py-3 text-[12px] font-bold uppercase tracking-[0.14em] text-navy shadow-md transition-all hover:bg-gold-soft active:scale-95 whitespace-nowrap"
           >
-            Đặt lịch xem nhà
+            {t('bookViewing')}
           </button>
         </div>
       </div>

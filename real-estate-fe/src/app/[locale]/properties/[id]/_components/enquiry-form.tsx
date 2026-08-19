@@ -1,6 +1,6 @@
 'use client';
 
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { useState, useTransition } from 'react';
 
 import { useToast } from '@/components/ui/toast-provider';
@@ -25,6 +25,7 @@ const EMPTY = { name: '', phone: '', email: '', date: '', message: '' };
 
 export function EnquiryForm({ propertySlug, propertyTitle }: { propertySlug: string; propertyTitle: string }) {
   const locale = useLocale();
+  const t = useTranslations('Enquiry');
   const { showToast } = useToast();
 
   const [form, setForm] = useState(EMPTY);
@@ -66,7 +67,7 @@ export function EnquiryForm({ propertySlug, propertyTitle }: { propertySlug: str
 
       setDone({ code: res.code });
       setForm(EMPTY);
-      showToast('Yêu cầu lịch xem nhà đã được gửi thành công!', 'success');
+      showToast(t('successTitle'), 'success');
     });
   }
 
@@ -76,10 +77,10 @@ export function EnquiryForm({ propertySlug, propertyTitle }: { propertySlug: str
     <div id="enquiry-form" className="bg-white border border-line p-6 rounded-none shadow-lift">
       <div className="border-b border-line pb-4 mb-5">
         <span className="text-gold text-[10px] font-bold tracking-[0.2em] uppercase block mb-1">
-          Lịch trình riêng tư
+          {t('eyebrow')}
         </span>
         <h3 className="text-[17px] text-navy font-display font-semibold leading-tight">
-          Đăng ký xem nhà trực tiếp
+          {t('title')}
         </h3>
       </div>
 
@@ -88,32 +89,32 @@ export function EnquiryForm({ propertySlug, propertyTitle }: { propertySlug: str
           <div className="w-12 h-12 bg-gold text-navy rounded-none flex items-center justify-center mx-auto text-xl font-bold">
             ✓
           </div>
-          <h4 className="font-display text-[18px] font-normal text-navy">Yêu cầu đã được ghi nhận</h4>
+          <h4 className="font-display text-[18px] font-normal text-navy">{t('successTitle')}</h4>
           <p className="text-[13px] text-muted leading-relaxed">
-            Mã yêu cầu của bạn là{' '}
-            <strong className="text-navy font-mono">{done.code}</strong>. Chuyên viên sẽ liên hệ lại qua số điện
-            thoại bạn để lại để sắp xếp thời gian xem nhà.
+            {t.rich('successBody', {
+              code: () => <strong className="text-navy font-mono">{done.code}</strong>,
+            })}
           </p>
           <button
             type="button"
             onClick={() => setDone(null)}
             className="mt-2 text-gold hover:underline text-[12px] font-bold tracking-wider uppercase block mx-auto cursor-pointer"
           >
-            ← Đăng ký lịch xem khác
+            ← {t('successAgain')}
           </button>
         </div>
       ) : (
         <form onSubmit={submit} className="space-y-4" noValidate>
           <div>
             <label className={LABEL} htmlFor="enq-name">
-              Họ và tên *
+              {t('name')} *
             </label>
             <input
               id="enq-name"
               value={form.name}
               onChange={(e) => set('name', e.target.value)}
               required
-              placeholder="Nguyễn Văn A"
+              placeholder={t('namePlaceholder')}
               className={INPUT}
             />
             {err('name') ? <p className="mt-1 text-[11px] text-[#a33]">{err('name')}</p> : null}
@@ -122,7 +123,7 @@ export function EnquiryForm({ propertySlug, propertyTitle }: { propertySlug: str
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className={LABEL} htmlFor="enq-phone">
-                Số điện thoại *
+                {t('phone')} *
               </label>
               <input
                 id="enq-phone"
@@ -130,14 +131,14 @@ export function EnquiryForm({ propertySlug, propertyTitle }: { propertySlug: str
                 value={form.phone}
                 onChange={(e) => set('phone', e.target.value)}
                 required
-                placeholder="0909 123 456"
+                placeholder={t('phonePlaceholder')}
                 className={INPUT}
               />
               {err('phone') ? <p className="mt-1 text-[11px] text-[#a33]">{err('phone')}</p> : null}
             </div>
             <div>
               <label className={LABEL} htmlFor="enq-email">
-                Email *
+                {t('email')} *
               </label>
               <input
                 id="enq-email"
@@ -145,7 +146,7 @@ export function EnquiryForm({ propertySlug, propertyTitle }: { propertySlug: str
                 value={form.email}
                 onChange={(e) => set('email', e.target.value)}
                 required
-                placeholder="name@example.com"
+                placeholder={t('emailPlaceholder')}
                 className={INPUT}
               />
               {err('email') ? <p className="mt-1 text-[11px] text-[#a33]">{err('email')}</p> : null}
@@ -154,7 +155,7 @@ export function EnquiryForm({ propertySlug, propertyTitle }: { propertySlug: str
 
           <div>
             <label className={LABEL} htmlFor="enq-date">
-              Ngày xem mong muốn
+              {t('date')}
             </label>
             <input
               id="enq-date"
@@ -167,14 +168,14 @@ export function EnquiryForm({ propertySlug, propertyTitle }: { propertySlug: str
 
           <div>
             <label className={LABEL} htmlFor="enq-message">
-              Ghi chú thêm
+              {t('note')}
             </label>
             <textarea
               id="enq-message"
               rows={3}
               value={form.message}
               onChange={(e) => set('message', e.target.value)}
-              placeholder="Yêu cầu cụ thể về giờ đón, số lượng người xem..."
+              placeholder={t('notePlaceholder')}
               className={`${INPUT} resize-none`}
             />
             {err('message') ? <p className="mt-1 text-[11px] text-[#a33]">{err('message')}</p> : null}
@@ -208,11 +209,11 @@ export function EnquiryForm({ propertySlug, propertyTitle }: { propertySlug: str
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                 </svg>
-                Đang gửi…
+                {t('sending')}
               </span>
             ) : (
               <>
-                Xác nhận đặt lịch xem
+                {t('submit')}
                 <span aria-hidden>→</span>
               </>
             )}
@@ -227,7 +228,7 @@ export function EnquiryForm({ propertySlug, propertyTitle }: { propertySlug: str
                 d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
               />
             </svg>
-            Thông tin của bạn chỉ dùng để liên hệ tư vấn.
+            {t('privacy')}
           </p>
         </form>
       )}

@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
-import { setRequestLocale } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { SiteFooter } from '@/app/_components/site-footer';
 import { SiteHeader } from '@/app/_components/site-header';
@@ -60,6 +60,9 @@ export default async function NewsDetailPage({ params }: Props) {
   const { locale, slug } = await params;
   setRequestLocale(locale);
 
+  const t = await getTranslations('News');
+  const tp = await getTranslations('Property');
+
   const lang = isLocale(locale) ? locale : DEFAULT_LOCALE;
   const article = await getArticleBySlug(slug, lang);
 
@@ -79,7 +82,7 @@ export default async function NewsDetailPage({ params }: Props) {
           {/* Breadcrumbs & Category Header */}
           <div className="mb-6 flex items-center gap-2 text-[12px]">
             <Link href="/" className="text-muted hover:text-navy transition-colors">
-              Home
+              {tp('breadcrumbHome')}
             </Link>
             <span className="text-muted">/</span>
             <Link href="/news" className="text-muted hover:text-navy transition-colors">
@@ -125,7 +128,7 @@ export default async function NewsDetailPage({ params }: Props) {
                 href="/news"
                 className="border-line text-navy hover:border-gold hover:text-gold hidden items-center gap-2 border px-4 py-2 text-[11px] font-bold tracking-wider uppercase transition-colors sm:inline-flex"
               >
-                ← Back to News
+                ← {t('backToNews')}
               </Link>
             </div>
           )}
@@ -158,14 +161,14 @@ export default async function NewsDetailPage({ params }: Props) {
                 dangerouslySetInnerHTML={{ __html: article.content }}
               />
             ) : (
-              <p className="text-muted text-[16px]">Nội dung bài viết đang được cập nhật.</p>
+              <p className="text-muted text-[16px]">{t('contentPending')}</p>
             )}
           </div>
 
           {/* Tags */}
           {article.tags && article.tags.length > 0 && (
             <div className="border-line border-t mt-12 pt-6">
-              <span className="text-muted block mb-3 text-[11px] font-bold tracking-wider uppercase">Topic Tags</span>
+              <span className="text-muted block mb-3 text-[11px] font-bold tracking-wider uppercase">{t('topicTags')}</span>
               <div className="flex flex-wrap gap-2">
                 {article.tags.map((tag) => (
                   <span key={tag} className="bg-paper border-line text-navy border px-3 py-1 text-[11px] font-medium">

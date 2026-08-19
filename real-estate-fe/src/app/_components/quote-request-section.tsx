@@ -1,6 +1,6 @@
 'use client';
 
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { useCallback, useEffect, useRef, useState, useTransition } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -83,6 +83,7 @@ function triggerConfetti(canvas: HTMLCanvasElement) {
 const EMPTY_QUOTE = { name: '', email: '', phone: '', service: '', message: '' };
 
 export function QuoteRequestSection() {
+  const t = useTranslations('Quote');
   const locale = useLocale();
   const [loading, startSending] = useTransition();
   const [submitted, setSubmitted] = useState(false);
@@ -163,9 +164,9 @@ export function QuoteRequestSection() {
       <div className="container-page grid items-start gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16">
         {/* ── Left — copy + commitment points ─────────────── */}
         <div>
-          <SectionKicker>Start your journey</SectionKicker>
+          <SectionKicker>{t('kicker')}</SectionKicker>
           <h2 className="font-display text-navy mt-2 text-[32px] leading-tight font-normal sm:text-[40px]">
-            A great home begins with the right conversation.
+            {t('title')}
           </h2>
           <p className="text-muted mt-5 max-w-[520px] text-[15px] leading-relaxed">
             Share your requirements — preferred area, budget and move-in timeline. We will respond
@@ -194,7 +195,7 @@ export function QuoteRequestSection() {
                 ✓
               </div>
               <h3 className="font-display text-navy text-[24px] leading-tight font-normal">
-                Enquiry sent successfully
+                {t('sentTitle')}
               </h3>
               <p className="text-muted mx-auto mt-3 max-w-[320px] text-[14px]">
                 Thank you for reaching out. Our team will contact you within 24 hours with a
@@ -207,10 +208,10 @@ export function QuoteRequestSection() {
           ) : (
             <>
               <h3 className="font-display text-navy text-[24px] leading-tight font-normal">
-                Request a consultation
+                {t('formTitle')}
               </h3>
               <p className="text-muted mt-1 text-[13px]">
-                Fill in a few details and we will be in touch.
+                {t('formSubtitle')}
               </p>
 
               <form onSubmit={handleSubmit} className="mt-6">
@@ -221,7 +222,7 @@ export function QuoteRequestSection() {
                       htmlFor="q-name"
                       className="text-navy text-[11px] font-bold tracking-[0.08em] uppercase"
                     >
-                      Full name *
+                      {t('name')} *
                     </label>
                     <input
                       id="q-name"
@@ -229,7 +230,7 @@ export function QuoteRequestSection() {
                       required
                       value={form.name}
                       onChange={(e) => set('name', e.target.value)}
-                      placeholder="e.g. Nguyen Van A"
+                      placeholder={t('namePlaceholder')}
                       className={cn(inputClass)}
                     />
                   </div>
@@ -240,7 +241,7 @@ export function QuoteRequestSection() {
                       htmlFor="q-email"
                       className="text-navy text-[11px] font-bold tracking-[0.08em] uppercase"
                     >
-                      Email *
+                      {t('email')} *
                     </label>
                     <input
                       id="q-email"
@@ -248,7 +249,7 @@ export function QuoteRequestSection() {
                       required
                       value={form.email}
                       onChange={(e) => set('email', e.target.value)}
-                      placeholder="name@example.com"
+                      placeholder={t('emailPlaceholder')}
                       className={cn(inputClass)}
                     />
                   </div>
@@ -259,14 +260,14 @@ export function QuoteRequestSection() {
                       htmlFor="q-phone"
                       className="text-navy text-[11px] font-bold tracking-[0.08em] uppercase"
                     >
-                      Phone
+                      {t('phone')}
                     </label>
                     <input
                       id="q-phone"
                       type="tel"
                       value={form.phone}
                       onChange={(e) => set('phone', e.target.value)}
-                      placeholder="+84 909 123 456"
+                      placeholder={t('phonePlaceholder')}
                       className={cn(inputClass)}
                     />
                   </div>
@@ -277,7 +278,7 @@ export function QuoteRequestSection() {
                       htmlFor="q-interest"
                       className="text-navy text-[11px] font-bold tracking-[0.08em] uppercase"
                     >
-                      Interest *
+                      {t('interest')} *
                     </label>
                     <select
                       id="q-interest"
@@ -287,7 +288,7 @@ export function QuoteRequestSection() {
                       className={cn(inputClass)}
                     >
                       <option value="" className="text-navy bg-white">
-                        — Select —
+                        {t('interestPlaceholder')}
                       </option>
                       {QUOTE_SERVICE_OPTIONS.map((opt) => (
                         <option key={opt.value} value={opt.value} className="text-navy bg-white">
@@ -303,7 +304,7 @@ export function QuoteRequestSection() {
                       htmlFor="q-message"
                       className="text-navy text-[11px] font-bold tracking-[0.08em] uppercase"
                     >
-                      Tell us about your ideal home
+                      {t('message')}
                     </label>
                     <textarea
                       id="q-message"
@@ -311,7 +312,7 @@ export function QuoteRequestSection() {
                       required
                       value={form.message}
                       onChange={(e) => set('message', e.target.value)}
-                      placeholder="Preferred area, number of bedrooms, budget range, move-in date…"
+                      placeholder={t('messagePlaceholder')}
                       className={cn(inputClass, 'resize-y')}
                     />
                   </div>
@@ -344,7 +345,7 @@ export function QuoteRequestSection() {
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                       </svg>
-                      Sending...
+                      {t('sending')}
                     </span>
                   ) : (
                     <>

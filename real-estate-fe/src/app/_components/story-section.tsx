@@ -1,4 +1,7 @@
+'use client';
+
 import Image from 'next/image';
+import { useTranslations } from 'next-intl';
 
 import { SectionKicker, SectionLead, SectionTitle } from '@/components/ui/section-heading';
 
@@ -9,6 +12,8 @@ const VALUES = [
 ] as const;
 
 export function StorySection() {
+  const t = useTranslations('Story');
+
   return (
     <section id="story" className="bg-navy relative overflow-hidden py-20 text-white lg:py-24">
       {/* Chữ nền khổng lồ, gần như chìm hẳn — chi tiết trang trí của bản thiết kế. */}
@@ -24,7 +29,7 @@ export function StorySection() {
           <div className="relative h-[88%] w-[78%]">
             <Image
               src="/images/story/interior.webp"
-              alt="Contemporary Da Nang residence interior"
+              alt={t('altInterior')}
               fill
               sizes="(max-width: 1024px) 78vw, 40vw"
               className="object-cover"
@@ -33,23 +38,23 @@ export function StorySection() {
           <div className="border-navy absolute right-0 bottom-0 h-[49%] w-[45%] border-8">
             <Image
               src="/images/story/detail.webp"
-              alt="Premium bathroom detail"
+              alt={t('altBathroom')}
               fill
               sizes="(max-width: 1024px) 45vw, 22vw"
               className="object-cover"
             />
           </div>
           <p className="bg-gold text-navy absolute top-[4%] right-[3%] grid h-24 w-24 rotate-[8deg] place-items-center rounded-full px-2 text-center text-[8px] font-extrabold tracking-[0.14em] uppercase shadow-[0_14px_30px_rgb(0_0_0/0.18)]">
-            Local insight
+            {t('badgeLocal')}
             <br />
-            Global standard
+            {t('badgeGlobal')}
           </p>
         </div>
 
         <div className="order-1 lg:order-2">
-          <SectionKicker>The Da Nang Homes &amp; Living story</SectionKicker>
+          <SectionKicker>{t('kicker')}</SectionKicker>
           <SectionTitle className="text-white">
-            A trusted local partner for a more considered way of living.
+            {t('title')}
           </SectionTitle>
           <SectionLead className="text-white/67">
             The brand reads{' '}
@@ -57,7 +62,7 @@ export function StorySection() {
               “DA NANG HOMES &amp; LIVING — REAL ESTATE”
             </strong>
             , guided by the promise{' '}
-            <strong className="font-semibold text-white">Trust · Quality · Dedication</strong>.
+            <strong className="font-semibold text-white">{t('promise')}</strong>.
           </SectionLead>
           <p className="mt-4 max-w-[560px] text-white/70">
             We combine on-the-ground knowledge with the clarity and service standards expected by
@@ -80,7 +85,7 @@ export function StorySection() {
 
           <p className="mt-7 flex items-center gap-4 text-[13px] text-white/76">
             <span aria-hidden className="bg-gold h-px w-10 shrink-0" />
-            Independent guidance for buyers, tenants and owners.
+            {t('footnote')}
           </p>
         </div>
       </div>

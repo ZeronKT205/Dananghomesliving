@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
 interface PropertyGalleryProps {
@@ -9,6 +10,8 @@ interface PropertyGalleryProps {
 }
 
 export function PropertyGallery({ images, badges }: PropertyGalleryProps) {
+  const t = useTranslations('Property');
+
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
 
@@ -47,7 +50,7 @@ export function PropertyGallery({ images, badges }: PropertyGalleryProps) {
         {mainImage && (
           <Image
             src={mainImage}
-            alt="Property Gallery View"
+            alt={t('galleryView')}
             fill
             sizes="(min-width: 1024px) 880px, 100vw"
             priority
@@ -68,7 +71,7 @@ export function PropertyGallery({ images, badges }: PropertyGalleryProps) {
         <button 
           type="button"
           onClick={handlePrev}
-          aria-label="Previous photo"
+          aria-label={t('prevPhoto')}
           className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/95 text-navy rounded-none flex items-center justify-center opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all hover:bg-gold hover:text-navy shadow-md z-10 active:scale-95 border border-line"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
@@ -76,7 +79,7 @@ export function PropertyGallery({ images, badges }: PropertyGalleryProps) {
         <button 
           type="button"
           onClick={handleNext}
-          aria-label="Next photo"
+          aria-label={t('nextPhoto')}
           className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/95 text-navy rounded-none flex items-center justify-center opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all hover:bg-gold hover:text-navy shadow-md z-10 active:scale-95 border border-line"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
@@ -88,7 +91,7 @@ export function PropertyGallery({ images, badges }: PropertyGalleryProps) {
             {currentIndex + 1} / {images.length}
           </span>
           <span className="bg-gold text-navy text-[10px] font-bold tracking-widest px-2.5 py-1 rounded-none uppercase hidden sm:inline-block">
-            🔍 Xem toàn màn hình
+            🔍 {t('fullscreen')}
           </span>
         </div>
       </div>
@@ -101,7 +104,7 @@ export function PropertyGallery({ images, badges }: PropertyGalleryProps) {
             onClick={() => setCurrentIndex(i)}
             className="relative w-24 sm:w-auto shrink-0 aspect-[4/3] rounded-none overflow-hidden cursor-pointer bg-sand border border-line snap-center"
           >
-            <Image src={src} alt="Thumbnail" fill sizes="(min-width: 640px) 180px, 96px" className={`object-cover hover:scale-105 transition-transform duration-300 ${currentIndex !== i && 'opacity-60 hover:opacity-100'}`} />
+            <Image src={src} alt={t('galleryThumb')} fill sizes="(min-width: 640px) 180px, 96px" className={`object-cover hover:scale-105 transition-transform duration-300 ${currentIndex !== i && 'opacity-60 hover:opacity-100'}`} />
             {currentIndex === i && <div className="absolute inset-0 border-2 border-gold rounded-none pointer-events-none z-10"></div>}
           </div>
         ))}
@@ -128,7 +131,7 @@ export function PropertyGallery({ images, badges }: PropertyGalleryProps) {
               onClick={() => setIsLightboxOpen(false)}
               className="px-4 py-2 bg-white/10 hover:bg-gold hover:text-navy text-white rounded-none text-xs font-bold tracking-widest uppercase transition-colors border border-white/20"
             >
-              ✕ Đóng (Esc)
+              ✕ {t('closeEsc')}
             </button>
           </div>
 
@@ -137,7 +140,7 @@ export function PropertyGallery({ images, badges }: PropertyGalleryProps) {
             {mainImage && (
               <Image
                 src={mainImage}
-                alt="Full View"
+                alt={t('galleryFull')}
                 fill
                 sizes="100vw"
                 className="object-contain animate-image-swap"

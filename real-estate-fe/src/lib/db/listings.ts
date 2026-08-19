@@ -1,5 +1,7 @@
 import 'server-only';
 
+import { getTranslations } from 'next-intl/server';
+
 import { DEFAULT_LOCALE, pickLocale, type Locale } from '@/config/locales';
 import type { Listing } from '@/types';
 
@@ -51,16 +53,22 @@ function formatArea(doc: PropertyDoc): string {
  * Luôn phải có nhãn: thẻ tin trong thiết kế chừa sẵn chỗ cho nó, để trống là
  * lưới bị hụt một khoảng trông như lỗi.
  */
-function badgeOf(doc: PropertyDoc, locale: Locale): { badge: string; badgeTone: 'gold' | 'navy' } {
+function badgeOf(
+  doc: PropertyDoc,
+  locale: Locale,
+  t: Awaited<ReturnType<typeof getTranslations>>,
+): { badge: string; badgeTone: 'gold' | 'navy' } {
   const custom = doc.badges.map((b) => pickLocale(b, locale, '')).find(Boolean);
   if (custom) return { badge: custom, badgeTone: doc.isFeatured ? 'gold' : 'navy' };
 
-  if (doc.isFeatured) return { badge: 'Nổi bật', badgeTone: 'gold' };
-  if (doc.status === 'sold') return { badge: 'Đã bán', badgeTone: 'navy' };
-  if (doc.status === 'rented') return { badge: 'Đã cho thuê', badgeTone: 'navy' };
-  if (doc.status === 'pending') return { badge: 'Đang thương lượng', badgeTone: 'navy' };
+  // Nhãn suy ra từ trạng thái phải qua file dịch — trước đây cứng tiếng Việt
+  // nên trang tiếng Hàn vẫn hiện "Đang bán" giữa toàn chữ Hangul.
+  if (doc.isFeatured) return { badge: t('badgeFeatured'), badgeTone: 'gold' };
+  if (doc.status === 'sold') return { badge: t('badgeSold'), badgeTone: 'navy' };
+  if (doc.status === 'rented') return { badge: t('badgeRented'), badgeTone: 'navy' };
+  if (doc.status === 'pending') return { badge: t('badgePending'), badgeTone: 'navy' };
 
-  return { badge: doc.deal === 'rent' ? 'Cho thuê' : 'Đang bán', badgeTone: 'navy' };
+  return { badge: doc.deal === 'rent' ? t('badgeForRent') : t('badgeForSale'), badgeTone: 'navy' };
 }
 
 /* ── Nạp phụ trợ ───────────────────────────────────────── */
@@ -94,10 +102,15 @@ async function buildLookup(docs: readonly PropertyDoc[]): Promise<Lookup> {
   };
 }
 
-function toListing(doc: PropertyDoc, locale: Locale, lookup: Lookup): Listing {
+function toListing(
+  doc: PropertyDoc,
+  locale: Locale,
+  lookup: Lookup,
+  t: Awaited<ReturnType<typeof getTranslations>>,
+): Listing {
   const title = pickLocale(doc.title, locale, doc.slug);
   const { price, priceNote } = formatPrice(doc);
-  const { badge, badgeTone } = badgeOf(doc, locale);
+  const { badge, badgeTone } = badgeOf(doc, locale, t);
 
   const gallery: string[] = [];
   const seenUrls = new Set<string>();
@@ -133,8 +146,11 @@ function toListing(doc: PropertyDoc, locale: Locale, lookup: Lookup): Listing {
 
 async function hydrate(docs: readonly PropertyDoc[], locale: Locale): Promise<Listing[]> {
   if (!docs.length) return [];
-  const lookup = await buildLookup(docs);
-  return docs.map((d) => toListing(d, locale, lookup));
+  const [lookup, t] = await Promise.all([
+    buildLookup(docs),
+    getTranslations({ locale, namespace: 'Listings' }),
+  ]);
+  return docs.map((d) => toListing(d, locale, lookup, t));
 }
 
 /* ── API cho trang public ──────────────────────────────── */
@@ -225,7 +241,7 @@ export async function getPropertyDetail(
   }
 
   const { price, priceNote } = formatPrice(doc);
-  const { badge } = badgeOf(doc, locale);
+  const { badge } = badgeOf(doc, locale, await getTranslations({ locale, namespace: 'Listings' }));
   const customBadges = doc.badges.map((b) => pickLocale(b, locale, '')).filter(Boolean);
 
   return {

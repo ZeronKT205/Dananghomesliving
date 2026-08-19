@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 
 import { PhoneIcon } from '@/components/ui/icons';
@@ -10,6 +11,8 @@ import { cn } from '@/lib/utils';
 /** Icon điện thoại → bung khung mã QR để khách quét gọi ngay.
  *  Dùng nút bấm (không phải hover) để trên mobile cũng mở được. */
 export function QrContact({ className }: { className?: string }) {
+  const t = useTranslations('Office');
+
   const [open, setOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
@@ -61,7 +64,7 @@ export function QrContact({ className }: { className?: string }) {
           >
             {CONTACT_PHONE}
           </a>
-          <p className="text-muted mt-0.5 text-[9px] tracking-[0.1em] uppercase">Scan to call</p>
+          <p className="text-muted mt-0.5 text-[9px] tracking-[0.1em] uppercase">{t('scanToCallShort')}</p>
         </div>
       ) : null}
     </div>

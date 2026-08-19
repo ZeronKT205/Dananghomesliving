@@ -1,4 +1,4 @@
-import { setRequestLocale } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { APP_NAME } from '@/config/constants';
 import { DEFAULT_LOCALE, isLocale } from '@/config/locales';
@@ -15,28 +15,28 @@ import { VoucherCtaBanner } from './_components/voucher-cta-banner';
 import type { Metadata } from 'next';
 
 export async function generateMetadata({
+  params,
   searchParams,
 }: {
+  params: Promise<{ locale: string }>;
   searchParams: Promise<{ type?: string; area?: string; propertyType?: string }>;
 }): Promise<Metadata> {
-  const { type, propertyType } = await searchParams;
-  const typeLabel = type === 'rent' ? 'cho Thuê' : type === 'sale' ? 'Bán' : 'Bất động sản';
-  const subLabel = propertyType ? ` (${propertyType})` : '';
+  const [{ locale }, { type, propertyType }] = await Promise.all([params, searchParams]);
+
+  // Tiêu đề tab và thẻ mô tả cũng phải theo ngôn ngữ — đây là thứ hiện trên
+  // kết quả tìm kiếm và khi chia sẻ link, không chỉ trong tab trình duyệt.
+  const t = await getTranslations({ locale, namespace: 'Properties' });
+
+  const heading = type === 'rent' ? t('headingRent') : type === 'sale' ? t('headingSale') : t('headingAll');
+  const description = type === 'rent' ? t('subRent') : type === 'sale' ? t('subSale') : t('subAll');
+  const suffix = propertyType ? ` (${propertyType})` : '';
 
   return {
-    title: `Danh sách Bất Động Sản ${typeLabel}${subLabel} | ${APP_NAME}`,
-    description: `Khám phá bộ sưu tập bất động sản hạng sang ${typeLabel.toLowerCase()} tại Đà Nẵng. Biệt thự ven biển, penthouse và căn hộ cao cấp.`,
+    title: `${heading}${suffix} | ${APP_NAME}`,
+    description,
   };
 }
 
-/*
- * ISR 60 giây.
- *
- * Trang này đọc DB nhưng được dựng sẵn lúc build, nên nếu không có dòng này thì
- * tin đăng mới KHÔNG bao giờ hiện ra cho tới lần build kế tiếp. Server Action
- * trong CMS đã gọi `revalidatePath` để cập nhật ngay; con số 60 giây là lưới
- * an toàn cho những thay đổi không đi qua CMS.
- */
 /*
  * Trang này lọc theo `searchParams` (loại giao dịch, khu vực, tầm giá) nên kết
  * quả khác nhau theo từng lượt truy cập — không có bản dựng sẵn nào đúng cho
@@ -56,6 +56,9 @@ export default async function PropertiesPage({
   const { type, area, propertyType } = await searchParams;
 
   setRequestLocale(locale);
+
+  const tp = await getTranslations('Property');
+  const t = await getTranslations('Properties');
 
   let listings = await getAllListings(isLocale(locale) ? locale : DEFAULT_LOCALE);
 
@@ -80,18 +83,10 @@ export default async function PropertiesPage({
   }
 
   const pageTitle =
-    type === 'rent'
-      ? 'Bất động sản Cho Thuê'
-      : type === 'sale'
-        ? 'Bất động sản Bán'
-        : 'Tất cả Bất động sản Cao cấp';
+    type === 'rent' ? t('headingRent') : type === 'sale' ? t('headingSale') : t('headingAll');
 
   const subtitle =
-    type === 'rent'
-      ? 'Khám phá bộ sưu tập căn hộ & biệt thự cho thuê dài hạn cao cấp tại Đà Nẵng.'
-      : type === 'sale'
-        ? 'Tuyển tập các biệt thự biển, penthouse và căn hộ hạng sang chào bán.'
-        : 'Khám phá toàn bộ danh mục sản phẩm biệt thự, penthouse và căn hộ cao cấp tại Đà Nẵng.';
+    type === 'rent' ? t('subRent') : type === 'sale' ? t('subSale') : t('subAll');
 
   return (
     <>
@@ -108,7 +103,7 @@ export default async function PropertiesPage({
                 Trang chủ
               </Link>
               <span>/</span>
-              <span className="text-gold font-semibold">Bất động sản</span>
+              <span className="text-gold font-semibold">{tp('breadcrumbProperties')}</span>
               {type ? (
                 <>
                   <span>/</span>

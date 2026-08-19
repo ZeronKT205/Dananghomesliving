@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
+
 interface PropertyHeaderProps {
   title: string;
   location: string;
@@ -8,6 +10,8 @@ interface PropertyHeaderProps {
 }
 
 export function PropertyHeader({ title, location, price, stats }: PropertyHeaderProps) {
+  const t = useTranslations('Property');
+
   const displayPrice = price.usd.startsWith('$') ? price.usd : `$${price.usd}`;
 
   return (
@@ -30,14 +34,14 @@ export function PropertyHeader({ title, location, price, stats }: PropertyHeader
       <div className="bg-paper border border-line px-6 py-4 rounded-none flex items-center justify-between">
         <div>
           <span className="text-muted text-[10px] font-bold uppercase tracking-[0.2em] block mb-0.5">
-            Giá niêm yết
+            {t('listedPrice')}
           </span>
           <p className="font-sans text-[26px] sm:text-[30px] text-gold font-semibold leading-none tracking-tight">
             {displayPrice}
           </p>
         </div>
         <span className="text-navy text-[10.5px] font-bold tracking-widest uppercase bg-gold/15 px-3 py-1.5 border border-gold/30">
-          Chính chủ
+          {t('verifiedOwner')}
         </span>
       </div>
 
@@ -52,7 +56,7 @@ export function PropertyHeader({ title, location, price, stats }: PropertyHeader
               </svg>
               <span className="font-sans text-[17px] font-bold leading-none">{stats.bedrooms}</span>
             </div>
-            <span className="text-[10px] uppercase tracking-[0.14em] text-muted font-bold block">Phòng ngủ</span>
+            <span className="text-[10px] uppercase tracking-[0.14em] text-muted font-bold block">{t('beds')}</span>
           </div>
 
           {/* Bathrooms */}
@@ -63,7 +67,7 @@ export function PropertyHeader({ title, location, price, stats }: PropertyHeader
               </svg>
               <span className="font-sans text-[17px] font-bold leading-none">{stats.bathrooms}</span>
             </div>
-            <span className="text-[10px] uppercase tracking-[0.14em] text-muted font-bold block">Phòng tắm</span>
+            <span className="text-[10px] uppercase tracking-[0.14em] text-muted font-bold block">{t('baths')}</span>
           </div>
 
           {/* Internal Area */}
@@ -72,7 +76,7 @@ export function PropertyHeader({ title, location, price, stats }: PropertyHeader
               <span className="font-sans text-[17px] font-bold leading-none">{stats.internalArea}</span>
               <span className="text-[11px] font-sans font-semibold text-muted">m²</span>
             </div>
-            <span className="text-[10px] uppercase tracking-[0.14em] text-muted font-bold block">Diện tích sử dụng</span>
+            <span className="text-[10px] uppercase tracking-[0.14em] text-muted font-bold block">{t('internalArea')}</span>
           </div>
 
           {/* Land Area - Only rendered if landArea > 0 */}
@@ -82,7 +86,7 @@ export function PropertyHeader({ title, location, price, stats }: PropertyHeader
                 <span className="font-sans text-[17px] font-bold leading-none">{stats.landArea}</span>
                 <span className="text-[11px] font-sans font-semibold text-muted">m²</span>
               </div>
-              <span className="text-[10px] uppercase tracking-[0.14em] text-muted font-bold block">Diện tích đất</span>
+              <span className="text-[10px] uppercase tracking-[0.14em] text-muted font-bold block">{t('landArea')}</span>
             </div>
           )}
         </div>

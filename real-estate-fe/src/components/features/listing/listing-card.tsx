@@ -1,4 +1,8 @@
+'use client';
+
 import Image from 'next/image';
+import { useTranslations } from 'next-intl';
+
 
 import { Link } from '@/i18n/routing';
 import { cn } from '@/lib/utils';
@@ -25,6 +29,8 @@ export function ListingCard({
   priority = false,
   viewMode = 'grid',
 }: ListingCardProps) {
+  const t = useTranslations('Listings');
+
   // 🟢 List / Row View (Hiển thị dạng từng hàng ngang)
   if (viewMode === 'list') {
     return (
@@ -56,7 +62,7 @@ export function ListingCard({
               listing.listingType === 'sale' ? 'bg-navy text-white' : 'bg-gold text-navy',
             )}
           >
-            {listing.listingType === 'sale' ? 'FOR SALE' : 'FOR RENT'}
+            {listing.listingType === 'sale' ? t('forSale') : t('forRent')}
           </span>
         </Link>
 
@@ -78,9 +84,9 @@ export function ListingCard({
             </h3>
 
             <ul className="border-line text-muted mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 border-y py-2.5 text-[12px] font-medium">
-              <li><strong className="text-navy font-bold">{listing.beds}</strong> Phòng ngủ</li>
+              <li><strong className="text-navy font-bold">{listing.beds}</strong> {t('bedsLabel')}</li>
               <li aria-hidden className="text-line">·</li>
-              <li><strong className="text-navy font-bold">{listing.baths}</strong> Phòng tắm</li>
+              <li><strong className="text-navy font-bold">{listing.baths}</strong> {t('bathsLabel')}</li>
               <li aria-hidden className="text-line">·</li>
               <li><strong className="text-navy font-bold">{listing.area}</strong></li>
             </ul>
@@ -89,12 +95,12 @@ export function ListingCard({
           <div className="mt-4 flex items-end justify-between gap-4 pt-3 border-t border-line/50">
             <div>
               <span className="text-muted block text-[9px] tracking-[0.12em] uppercase font-semibold mb-0.5">
-                {listing.listingType === 'sale' ? 'Giá chào bán' : 'Giá thuê dài hạn'}
+                {listing.listingType === 'sale' ? t('priceSale') : t('priceRent')}
               </span>
               <span className="font-sans text-gold text-[22px] font-semibold leading-none">
                 {listing.price}
                 {listing.priceNote ? (
-                  <span className="text-muted ml-1 font-sans text-[11px] font-normal">{listing.priceNote}</span>
+                  <span className="text-muted ml-1 font-sans text-[11px] font-normal">{t('perMonth')}</span>
                 ) : null}
               </span>
             </div>
@@ -139,7 +145,7 @@ export function ListingCard({
               : 'bg-gold text-navy',
           )}
         >
-          {listing.listingType === 'sale' ? 'FOR SALE' : 'FOR RENT'}
+          {listing.listingType === 'sale' ? t('forSale') : t('forRent')}
         </span>
       </Link>
       
@@ -159,9 +165,9 @@ export function ListingCard({
         </h3>
 
         <ul className="border-line text-muted mt-4 flex flex-wrap gap-x-4 gap-y-2 border-y py-3 text-[11.5px]">
-          <li><strong className="text-navy font-bold">{listing.beds}</strong> bed</li>
+          <li><strong className="text-navy font-bold">{listing.beds}</strong> {t('bedShort')}</li>
           <li aria-hidden className="text-line">·</li>
-          <li><strong className="text-navy font-bold">{listing.baths}</strong> bath</li>
+          <li><strong className="text-navy font-bold">{listing.baths}</strong> {t('bathShort')}</li>
           <li aria-hidden className="text-line">·</li>
           <li><strong className="text-navy font-bold">{listing.area}</strong></li>
         </ul>
@@ -169,12 +175,12 @@ export function ListingCard({
         <div className="mt-auto flex items-end justify-between gap-4 pt-4">
           <p className="leading-tight">
             <span className="text-muted block text-[9px] tracking-[0.12em] uppercase font-semibold mb-0.5">
-              {listing.listingType === 'sale' ? 'Giá chào bán' : 'Giá thuê dài hạn'}
+              {listing.listingType === 'sale' ? t('priceSale') : t('priceRent')}
             </span>
             <span className="font-sans text-gold text-[20px] font-semibold">
               {listing.price}
               {listing.priceNote ? (
-                <span className="text-muted ml-1 font-sans text-[11px] font-normal">{listing.priceNote}</span>
+                <span className="text-muted ml-1 font-sans text-[11px] font-normal">{t('perMonth')}</span>
               ) : null}
             </span>
           </p>
@@ -182,7 +188,7 @@ export function ListingCard({
             href={`/properties/${listing.slug}`}
             className="text-navy group-hover:text-gold font-bold text-[10.5px] tracking-[0.12em] uppercase border-b-2 border-gold pb-0.5 transition-colors inline-flex items-center gap-1"
           >
-            Xem BĐS <span className="transition-transform duration-300 group-hover:translate-x-1">→</span>
+            {t('viewProperty')} <span className="transition-transform duration-300 group-hover:translate-x-1">→</span>
           </Link>
         </div>
       </div>

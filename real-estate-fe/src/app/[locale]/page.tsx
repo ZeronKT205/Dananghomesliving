@@ -1,4 +1,4 @@
-import { setRequestLocale } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { DEFAULT_LOCALE, isLocale } from '@/config/locales';
 import { getArticles } from '@/lib/db/articles';
@@ -26,6 +26,8 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
   const { locale } = await params;
   setRequestLocale(locale);
 
+  const t = await getTranslations('Listings');
+
   // Server Component fetch thẳng, song song — không useEffect, không client waterfall.
   const [saleListings, rentListings, articles] = await Promise.all([
     getListingsByType('sale', isLocale(locale) ? locale : DEFAULT_LOCALE),
@@ -47,9 +49,9 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
 
         <ListingsSection
           id="rent"
-          kicker="Homes to rent"
-          title="Arrive, settle in and feel at home."
-          lead="Six fully furnished residences selected for comfort, location and dependable long-term living."
+          kicker={t('rentKicker')}
+          title={t('rentTitle')}
+          lead={t('rentLead')}
           listings={rentListings}
           ctaLabel="Tell us your rental brief"
           layout="standard"
@@ -58,9 +60,9 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
 
         <ListingsSection
           id="buy"
-          kicker="Homes to buy"
-          title="Own a distinctive address in Da Nang."
-          lead="Five selected residences across the city's most desirable coastal and urban neighbourhoods."
+          kicker={t('saleKicker')}
+          title={t('saleTitle')}
+          lead={t('saleLead')}
           listings={saleListings}
           ctaLabel="Request the full buyer collection"
           layout="featured"

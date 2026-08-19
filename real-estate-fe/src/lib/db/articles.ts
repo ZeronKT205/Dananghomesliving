@@ -1,5 +1,7 @@
 import 'server-only';
 
+import { getTranslations } from 'next-intl/server';
+
 import { DEFAULT_LOCALE, pickLocale, type Locale } from '@/config/locales';
 import type { Article } from '@/types';
 
@@ -33,6 +35,7 @@ async function toArticle(
   locale: Locale,
   categoryName: string,
   author: Article['author'],
+  readingTime: string,
   coverUrl?: string,
 ): Promise<Article> {
   const title = pickLocale(doc.title, locale, doc.slug);
@@ -40,7 +43,7 @@ async function toArticle(
   return {
     slug: doc.slug,
     category: categoryName,
-    readingTime: `${doc.readingMinutes} phút đọc`,
+    readingTime,
     title,
     excerpt: pickLocale(doc.excerpt, locale, ''),
     image: coverUrl ?? PLACEHOLDER_IMAGE,
@@ -62,6 +65,10 @@ async function hydrate(docs: readonly ArticleDoc[], locale: Locale): Promise<Art
     getMediaByIds(docs.map((d) => d.coverId).filter((c): c is NonNullable<typeof c> => c !== null)),
     getSiteSettings(),
   ]);
+
+  // Số phút đọc cũng phải dịch — trước đây cứng "phút đọc" nên thẻ bài trên
+  // trang tiếng Hàn hiện "5 phút đọc".
+  const tNews = await getTranslations({ locale, namespace: 'News' });
 
   /*
    * Tác giả lấy từ Cài đặt chứ không từ trường `author` lưu trong bài.
@@ -87,6 +94,7 @@ async function hydrate(docs: readonly ArticleDoc[], locale: Locale): Promise<Art
         locale,
         catName.get(d.categoryId?.toHexString() ?? '') ?? '',
         author,
+        tNews('readingMinutes', { minutes: d.readingMinutes }),
         d.coverId ? coverUrl.get(d.coverId.toHexString()) : undefined,
       ),
     ),

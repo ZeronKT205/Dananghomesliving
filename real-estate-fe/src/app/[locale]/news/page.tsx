@@ -1,4 +1,4 @@
-import { setRequestLocale } from 'next-intl/server';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { APP_NAME } from '@/config/constants';
 import { DEFAULT_LOCALE, isLocale } from '@/config/locales';
@@ -31,6 +31,8 @@ export default async function NewsPage({ params }: { params: Promise<{ locale: s
   const { locale } = await params;
   setRequestLocale(locale);
 
+  const t = await getTranslations('News');
+
   const articles = await getArticles(isLocale(locale) ? locale : DEFAULT_LOCALE);
 
   return (
@@ -44,15 +46,15 @@ export default async function NewsPage({ params }: { params: Promise<{ locale: s
             <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
               <div className="max-w-2xl">
                 <span className="text-gold text-[11px] sm:text-[12px] font-bold tracking-[0.22em] uppercase block mb-1">
-                  EDITORIAL &amp; MARKET INSIGHTS
+                  {t('pageKicker')}
                 </span>
                 <h1 className="font-display text-navy text-[32px] font-normal leading-[1.12] sm:text-[42px] lg:text-[48px]">
-                  Kinh Nghiệm &amp; Tin Tức Bất Động Sản Đà Nẵng
+                  {t('pageTitle')}
                 </h1>
               </div>
 
               <p className="text-muted max-w-xl text-[15px] sm:text-[16px] leading-relaxed font-sans">
-                Góc nhìn chuyên sâu từ chuyên gia về xu hướng thị trường coastal, tư vấn pháp lý sở hữu BĐS, phân tích khu vực và phong cách sống thượng lưu tại Đà Nẵng.
+                {t('pageLead')}
               </p>
             </div>
           </div>

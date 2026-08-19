@@ -1,15 +1,17 @@
 'use client';
 
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { Suspense, useState, useEffect } from 'react';
 
 import { SEARCH_AREAS, SEARCH_BUDGETS, SEARCH_PROPERTY_TYPES } from '@/config/constants';
 import { cn } from '@/lib/utils';
 import type { ListingType } from '@/types';
 
-const TABS: { value: ListingType; label: string }[] = [
-  { value: 'sale', label: 'BUY' },
-  { value: 'rent', label: 'RENT' },
+const TABS: { value: ListingType; labelKey: 'buy' | 'rent' }[] = [
+  // Nhãn lấy từ file dịch lúc render; ở đây chỉ giữ khoá.
+  { value: 'sale', labelKey: 'buy' },
+  { value: 'rent', labelKey: 'rent' },
 ];
 
 export function PropertySearch({
@@ -33,6 +35,7 @@ function PropertySearchInner({
   layout: 'inline' | 'stacked';
   redirectOnlyOnSubmit: boolean;
 }) {
+  const t = useTranslations('Search');
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -93,7 +96,7 @@ function PropertySearchInner({
         {/* Centered BUY & RENT Toggle Group on top */}
         <div
           role="tablist"
-          aria-label="Listing type"
+          aria-label={t('listingType')}
           className="relative inline-flex bg-white p-1 rounded-none border border-line shadow-sm mb-3 z-10 overflow-hidden"
         >
           <div
@@ -119,7 +122,7 @@ function PropertySearchInner({
                     : 'text-navy/75 hover:text-navy'
                 )}
               >
-                {item.label}
+                {t(item.labelKey)}
               </button>
             );
           })}
@@ -137,7 +140,7 @@ function PropertySearchInner({
                 htmlFor="area-stacked"
                 className="text-[8px] font-bold tracking-[0.14em] text-muted uppercase block mb-0.5"
               >
-                Khu vực (Area)
+                {t('area')}
               </label>
               <select
                 id="area-stacked"
@@ -157,7 +160,7 @@ function PropertySearchInner({
                 htmlFor="property-type-stacked"
                 className="text-[8px] font-bold tracking-[0.14em] text-muted uppercase block mb-0.5"
               >
-                Loại hình (Property Type)
+                {t('propertyType')}
               </label>
               <select
                 id="property-type-stacked"
@@ -177,7 +180,7 @@ function PropertySearchInner({
                 htmlFor="budget-stacked"
                 className="text-[8px] font-bold tracking-[0.14em] text-muted uppercase block mb-0.5"
               >
-                Mức ngân sách (Budget)
+                {t('budgetLabel')}
               </label>
               <select
                 id="budget-stacked"
@@ -202,7 +205,7 @@ function PropertySearchInner({
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                   </svg>
-                  Đang tìm...
+                  {t('searchingShort')}
                 </>
               ) : (
                 <>
@@ -228,7 +231,7 @@ function PropertySearchInner({
           {/* BUY & RENT Toggle Group on left of same row */}
           <div
             role="tablist"
-            aria-label="Listing type"
+            aria-label={t('listingType')}
             className="relative inline-flex bg-paper p-1 rounded-none border border-line shadow-xs overflow-hidden items-center self-stretch justify-center"
           >
             <div
@@ -254,7 +257,7 @@ function PropertySearchInner({
                       : 'text-navy/75 hover:text-navy'
                   )}
                 >
-                  {item.label}
+                  {t(item.labelKey)}
                 </button>
               );
             })}
@@ -266,7 +269,7 @@ function PropertySearchInner({
               htmlFor="area-inline"
               className="text-[8px] font-bold tracking-[0.14em] text-muted uppercase block mb-0.5"
             >
-              Khu vực (Area)
+              {t('area')}
             </label>
             <select
               id="area-inline"
@@ -286,7 +289,7 @@ function PropertySearchInner({
               htmlFor="property-type-inline"
               className="text-[8px] font-bold tracking-[0.14em] text-muted uppercase block mb-0.5"
             >
-              Loại hình (Property Type)
+              {t('propertyType')}
             </label>
             <select
               id="property-type-inline"
@@ -306,7 +309,7 @@ function PropertySearchInner({
               htmlFor="budget-inline"
               className="text-[8px] font-bold tracking-[0.14em] text-muted uppercase block mb-0.5"
             >
-              Mức ngân sách (Budget)
+              {t('budgetLabel')}
             </label>
             <select
               id="budget-inline"
@@ -331,7 +334,7 @@ function PropertySearchInner({
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                 </svg>
-                Đang tìm...
+                {t('searchingShort')}
               </>
             ) : (
               <>

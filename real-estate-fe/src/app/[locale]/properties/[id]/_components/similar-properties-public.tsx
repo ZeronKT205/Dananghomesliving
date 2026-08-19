@@ -1,4 +1,8 @@
+'use client';
+
 import Image from 'next/image';
+import { useTranslations } from 'next-intl';
+
 
 import { Link } from '@/i18n/routing';
 import type { Listing } from '@/types';
@@ -14,17 +18,20 @@ import type { Listing } from '@/types';
  * tại. Không còn dữ liệu dự phòng: không có tin tương tự thì không hiện khối.
  */
 export function SimilarPropertiesPublic({ items }: { items: Listing[] }) {
+  const t = useTranslations('Property');
+  const tl = useTranslations('Listings');
+
   if (items.length === 0) return null;
 
   return (
     <div>
       <div className="flex items-center justify-between mb-8">
-        <h2 className="text-[24px] font-display font-normal text-navy tracking-tight">Bất động sản tương tự</h2>
+        <h2 className="text-[24px] font-display font-normal text-navy tracking-tight">{t('similarTitleFull')}</h2>
         <Link
           href="/properties"
           className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-navy hover:text-gold transition-colors"
         >
-          Xem tất cả BĐS
+          {t('similarViewAllFull')}
           <span aria-hidden>→</span>
         </Link>
       </div>
@@ -86,7 +93,7 @@ export function SimilarPropertiesPublic({ items }: { items: Listing[] }) {
               <div className="flex items-center justify-between">
                 <p className="font-sans text-[16px] text-gold font-semibold leading-none">
                   {prop.price}
-                  {prop.priceNote ? <span className="text-muted text-[11px] font-normal"> {prop.priceNote}</span> : null}
+                  {prop.priceNote ? <span className="text-muted text-[11px] font-normal"> {tl('perMonth')}</span> : null}
                 </p>
                 <div className="w-8 h-8 flex items-center justify-center rounded-none border border-line text-navy group-hover:bg-navy group-hover:text-white transition-colors">
                   <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

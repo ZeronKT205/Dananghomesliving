@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
+
 interface ContactButtonsProps {
   id?: string;
   listedDate: string;
@@ -7,19 +9,21 @@ interface ContactButtonsProps {
 }
 
 export function ContactButtons({ listedDate, updatedDate }: ContactButtonsProps) {
+  const t = useTranslations('Property');
+
   return (
     <div className="bg-white border border-line p-6 rounded-none shadow-lift space-y-5">
       {/* Brand Advisory Header */}
       <div className="border-b border-line pb-4">
         <span className="text-gold text-[10px] font-bold uppercase tracking-[0.2em] block mb-1">
-          Tư vấn trực tiếp
+          {t('advisoryEyebrow')}
         </span>
         <h4 className="font-display text-navy text-[18px] font-normal leading-tight">
           Da Nang Homes Luxury Advisory
         </h4>
         <p className="text-emerald-700 text-[11px] font-medium mt-1 flex items-center gap-1.5">
           <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
-          Đội ngũ cố vấn trực tuyến 24/7
+          {t('advisoryOnline')}
         </p>
       </div>
 
@@ -29,7 +33,7 @@ export function ContactButtons({ listedDate, updatedDate }: ContactButtonsProps)
           href="#enquiry-form"
           className="w-full bg-gold hover:bg-gold-soft text-navy py-3.5 px-4 rounded-none text-[12px] font-bold uppercase tracking-[0.14em] flex items-center justify-center gap-2 transition-all shadow-md active:scale-98 cursor-pointer"
         >
-          Đặt lịch xem nhà riêng tư
+          {t('bookPrivateViewing')}
           <span aria-hidden>→</span>
         </a>
 
@@ -41,7 +45,7 @@ export function ContactButtons({ listedDate, updatedDate }: ContactButtonsProps)
             <svg className="w-4 h-4 text-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
             </svg>
-            Hotline
+            {t('hotline')}
           </a>
 
           <a 
@@ -61,11 +65,11 @@ export function ContactButtons({ listedDate, updatedDate }: ContactButtonsProps)
       {/* Property Meta Info */}
       <div className="grid grid-cols-2 gap-2 pt-4 border-t border-line text-[11px] text-muted text-center">
         <div>
-          <span className="block text-[9px] uppercase tracking-widest text-muted font-bold">Ngày đăng</span>
+          <span className="block text-[9px] uppercase tracking-widest text-muted font-bold">{t('listedOn')}</span>
           <strong className="text-navy font-semibold text-[12px]">{listedDate}</strong>
         </div>
         <div>
-          <span className="block text-[9px] uppercase tracking-widest text-muted font-bold">Cập nhật</span>
+          <span className="block text-[9px] uppercase tracking-widest text-muted font-bold">{t('updatedOn')}</span>
           <strong className="text-navy font-semibold text-[12px]">{updatedDate}</strong>
         </div>
       </div>

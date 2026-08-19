@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation';
+import { getTranslations } from 'next-intl/server';
 
 import { DEFAULT_LOCALE, isLocale } from '@/config/locales';
 import { Link } from '@/i18n/routing';
@@ -29,6 +30,7 @@ export default async function PropertyDetailsPage({
 }) {
   const { locale, id: slug } = await params;
   const lang = isLocale(locale) ? locale : DEFAULT_LOCALE;
+  const tp = await getTranslations('Property');
 
   // Hai truy vấn độc lập nhau — chạy song song để khỏi cộng dồn thời gian chờ.
   const [property, similar] = await Promise.all([
@@ -48,9 +50,9 @@ export default async function PropertyDetailsPage({
       <div className="border-b border-line">
         <div className="container mx-auto px-4 lg:px-8 py-4 flex items-center justify-between text-[13px]">
           <nav className="flex items-center text-muted gap-2">
-            <Link href="/" className="hover:text-navy transition-colors">Home</Link>
+            <Link href="/" className="hover:text-navy transition-colors">{tp('breadcrumbHome')}</Link>
             <span>›</span>
-            <Link href="/properties?type=sale" className="hover:text-navy transition-colors">Properties</Link>
+            <Link href="/properties?type=sale" className="hover:text-navy transition-colors">{tp('breadcrumbProperties')}</Link>
             <span>›</span>
             <span className="text-navy font-medium truncate max-w-xs sm:max-w-md">{property.title}</span>
           </nav>

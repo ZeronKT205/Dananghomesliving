@@ -1,4 +1,7 @@
+'use client';
+
 import Image from 'next/image';
+import { useTranslations } from 'next-intl';
 
 import { TextLink } from '@/components/ui/button';
 import { SectionHead, SectionKicker, SectionTitle } from '@/components/ui/section-heading';
@@ -6,18 +9,20 @@ import { cn } from '@/lib/utils';
 import type { Article } from '@/types';
 
 export function JournalSection({ articles }: { articles: Article[] }) {
+  const t = useTranslations('Journal');
+
   return (
     <section id="news" className="bg-white py-20 lg:py-24">
       <div className="container-page">
         <SectionHead
           aside={
             <TextLink href="/news" className="text-navy hover:text-gold font-bold">
-              View all news &amp; market notes →
+              {t('viewAll')} →
             </TextLink>
           }
         >
-          <SectionKicker>News &amp; Market Insights</SectionKicker>
-          <SectionTitle>Local insight for better property decisions.</SectionTitle>
+          <SectionKicker>{t('kicker')}</SectionKicker>
+          <SectionTitle>{t('title')}</SectionTitle>
         </SectionHead>
 
         <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-[1.1fr_0.9fr_0.9fr]">
@@ -51,7 +56,7 @@ export function JournalSection({ articles }: { articles: Article[] }) {
                 </h3>
                 <p className="text-muted mt-3 mb-5 text-[13px] line-clamp-3">{article.excerpt}</p>
                 <TextLink href={`/news/${article.slug}`} className="text-navy hover:text-gold mt-auto self-start font-bold">
-                  Read article
+                  {t('readArticle')}
                 </TextLink>
               </div>
             </article>

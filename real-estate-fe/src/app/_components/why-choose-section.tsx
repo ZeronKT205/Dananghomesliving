@@ -1,3 +1,7 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
+
 import { SectionKicker, SectionTitle } from '@/components/ui/section-heading';
 
 const STEPS = [
@@ -108,6 +112,8 @@ const STEPS = [
 ] as const;
 
 export function WhyChooseSection() {
+  const t = useTranslations('WhyChoose');
+
   return (
     <section id="why-us" className="bg-ivory relative overflow-hidden py-20 lg:py-24">
       {/* ── Decorative background elements ─────────────── */}
@@ -142,10 +148,10 @@ export function WhyChooseSection() {
       <div className="container-page relative">
         {/* ── Section header ──────────────────────────────── */}
         <div className="mb-14 max-w-[560px]">
-          <SectionKicker>Our process</SectionKicker>
-          <SectionTitle>A clear five-step journey</SectionTitle>
+          <SectionKicker>{t('kicker')}</SectionKicker>
+          <SectionTitle>{t('title')}</SectionTitle>
           <p className="text-muted mt-4 max-w-[480px] text-[15px]">
-            From first conversation to keys in hand — every stage is transparent and guided.
+            {t('lead')}
           </p>
         </div>
 

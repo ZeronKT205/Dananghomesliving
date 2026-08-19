@@ -1,3 +1,7 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
+
 interface PropertyOverviewProps {
   description: string[];
   /**
@@ -11,12 +15,14 @@ interface PropertyOverviewProps {
 }
 
 export function PropertyOverview({ description, features }: PropertyOverviewProps) {
+  const t = useTranslations('Property');
+
   return (
     <div className="space-y-10 pb-10 border-b border-line">
       {/* Overview Description */}
       <div id="overview" className="space-y-4 text-[15px] text-ink leading-relaxed">
         <h2 className="text-[22px] font-display font-normal text-navy tracking-tight mb-4">
-          Tổng quan dự án
+          {t('overviewSectionTitle')}
         </h2>
         {description.map((paragraph, i) => (
           <p key={i} className="text-muted leading-relaxed">
@@ -29,7 +35,7 @@ export function PropertyOverview({ description, features }: PropertyOverviewProp
       {features && features.length > 0 && (
         <div id="features" className="space-y-4 pt-4">
           <h2 className="text-[22px] font-display font-normal text-navy tracking-tight mb-4">
-            Đặc điểm &amp; Tiện ích nổi bật
+            {t('featuresTitle')}
           </h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {features.map((label) => (

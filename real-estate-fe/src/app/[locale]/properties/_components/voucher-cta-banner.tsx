@@ -1,6 +1,6 @@
 'use client';
 
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { useState, useEffect, useTransition } from 'react';
 import { createPortal } from 'react-dom';
 
@@ -10,6 +10,7 @@ import { actionSubmitQuote } from '@/server/actions/public-actions';
 export function VoucherCtaBanner() {
   const [isOpen, setIsOpen] = useState(false);
   const locale = useLocale();
+  const t = useTranslations('Voucher');
   const [submitted, setSubmitted] = useState(false);
   const [busy, startSending] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -120,15 +121,15 @@ export function VoucherCtaBanner() {
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <span className="bg-gold text-navy text-[9px] font-bold tracking-[0.2em] uppercase px-2 py-0.5 rounded-none">
-                  DỊCH VỤ CỐ VẤN MIỄN PHÍ
+                  {t('bannerEyebrow')}
                 </span>
-                <span className="text-gold text-[12px] font-bold">Hỗ trợ 24/7</span>
+                <span className="text-gold text-[12px] font-bold">{t('support247')}</span>
               </div>
               <h3 className="font-display text-white text-[18px] sm:text-[22px] font-normal leading-tight">
-                Đặt Lịch Xem Bất Động Sản &amp; Tư Vấn Trực Tiếp
+                {t('bannerHeading')}
               </h3>
               <p className="text-white/70 text-[12.5px] mt-1 max-w-xl">
-                Đội ngũ cố vấn Da Nang Homes &amp; Living hỗ trợ đưa đón tham quan thực tế và phân tích pháp lý BĐS hoàn toàn miễn phí.
+                {t('bannerBodyFull')}
               </p>
             </div>
           </div>
@@ -139,7 +140,7 @@ export function VoucherCtaBanner() {
             onClick={() => setIsOpen(true)}
             className="relative z-10 bg-gold hover:bg-white text-navy px-7 py-3.5 text-[11.5px] font-bold tracking-[0.18em] uppercase transition-all duration-300 rounded-none cursor-pointer shrink-0 shadow-md hover:scale-102 flex items-center gap-2 border border-gold"
           >
-            📅 Đặt Lịch Xem BĐS Miễn Phí
+            📅 {t('bannerButton')}
             <span aria-hidden>→</span>
           </button>
         </div>
@@ -159,7 +160,7 @@ export function VoucherCtaBanner() {
               type="button"
               onClick={() => setIsOpen(false)}
               className="absolute top-4 right-4 text-muted hover:text-navy p-1.5 transition-colors cursor-pointer"
-              aria-label="Đóng popup"
+              aria-label={t('closePopup')}
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -175,10 +176,10 @@ export function VoucherCtaBanner() {
                     Dịch Vụ Cố Vấn Cao Cấp
                   </span>
                   <h3 className="font-display text-navy text-[22px] font-normal leading-tight">
-                    Đăng Ký Tư Vấn &amp; Đặt Lịch Xem BĐS
+                    {t('formHeading')}
                   </h3>
                   <p className="text-muted text-[12px] mt-1 max-w-sm">
-                    Vui lòng để lại thông tin, chuyên viên sẽ liên hệ sắp xếp lịch trình đưa đón xem thực tế hoàn toàn miễn phí.
+                    {t('modalIntro')}
                   </p>
                 </div>
 
@@ -186,14 +187,14 @@ export function VoucherCtaBanner() {
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div>
                     <label className="block text-navy text-[10px] font-bold uppercase tracking-[0.14em] mb-1">
-                      Họ và tên của bạn <span className="text-red-500">*</span>
+                      {t('labelName')} <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
                       required
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      placeholder="Ví dụ: Nguyễn Văn A"
+                      placeholder={t('phName')}
                       className="w-full bg-paper border border-line focus:border-gold focus:outline-none px-3.5 py-2.5 text-[13px] font-medium text-navy rounded-none"
                     />
                   </div>
@@ -201,28 +202,28 @@ export function VoucherCtaBanner() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-navy text-[10px] font-bold uppercase tracking-[0.14em] mb-1">
-                        Số điện thoại (Zalo) <span className="text-red-500">*</span>
+                        {t('labelPhone')} <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="tel"
                         required
                         value={formData.phone}
                         onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                        placeholder="0905 xxx xxx"
+                        placeholder={t('phPhone')}
                         className="w-full bg-paper border border-line focus:border-gold focus:outline-none px-3.5 py-2.5 text-[13px] font-medium text-navy rounded-none"
                       />
                     </div>
 
                     <div>
                       <label className="block text-navy text-[10px] font-bold uppercase tracking-[0.14em] mb-1">
-                        Địa chỉ Email <span className="text-red-500">*</span>
+                        {t('labelEmailFull')} <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="email"
                         required
                         value={formData.email}
                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                        placeholder="youremail@example.com"
+                        placeholder={t('phEmail')}
                         className="w-full bg-paper border border-line focus:border-gold focus:outline-none px-3.5 py-2.5 text-[13px] font-medium text-navy rounded-none"
                       />
                     </div>
@@ -231,46 +232,46 @@ export function VoucherCtaBanner() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-navy text-[10px] font-bold uppercase tracking-[0.14em] mb-1">
-                        Loại hình BĐS quan tâm
+                        {t('labelType')}
                       </label>
                       <select
                         value={formData.propertyType}
                         onChange={(e) => setFormData({ ...formData, propertyType: e.target.value })}
                         className="w-full bg-paper border border-line focus:border-gold focus:outline-none px-3.5 py-2.5 text-[12.5px] font-semibold text-navy rounded-none cursor-pointer"
                       >
-                        <option value="Biệt thự biển / Villa">Biệt thự biển / Villa</option>
-                        <option value="Penthouse căn hộ cao cấp">Penthouse căn hộ cao cấp</option>
-                        <option value="Căn hộ Studio / 1-2 PN">Căn hộ Studio / 1-2 PN</option>
-                        <option value="Đất nền / Shophouse">Đất nền / Shophouse</option>
+                        <option value="Biệt thự biển / Villa">{t('optVilla')}</option>
+                        <option value="Penthouse căn hộ cao cấp">{t('optPenthouse')}</option>
+                        <option value="Căn hộ Studio / 1-2 PN">{t('optApartment')}</option>
+                        <option value="Đất nền / Shophouse">{t('optLand')}</option>
                       </select>
                     </div>
 
                     <div>
                       <label className="block text-navy text-[10px] font-bold uppercase tracking-[0.14em] mb-1">
-                        Thời gian dự kiến xem
+                        {t('labelTime')}
                       </label>
                       <select
                         value={formData.preferredTime}
                         onChange={(e) => setFormData({ ...formData, preferredTime: e.target.value })}
                         className="w-full bg-paper border border-line focus:border-gold focus:outline-none px-3.5 py-2.5 text-[12.5px] font-semibold text-navy rounded-none cursor-pointer"
                       >
-                        <option value="Cuối tuần này">Cuối tuần này</option>
-                        <option value="Trong 2-3 ngày tới">Trong 2-3 ngày tới</option>
-                        <option value="Sáng mai">Sáng mai</option>
-                        <option value="Lịch linh hoạt">Lịch linh hoạt</option>
+                        <option value="Cuối tuần này">{t('optWeekend')}</option>
+                        <option value="Trong 2-3 ngày tới">{t('optSoon')}</option>
+                        <option value="Sáng mai">{t('optTomorrow')}</option>
+                        <option value="Lịch linh hoạt">{t('optFlexible')}</option>
                       </select>
                     </div>
                   </div>
 
                   <div>
                     <label className="block text-navy text-[10px] font-bold uppercase tracking-[0.14em] mb-1">
-                      Yêu cầu chi tiết (Tùy chọn)
+                      {t('noteOptional')}
                     </label>
                     <textarea
                       rows={2}
                       value={formData.note}
                       onChange={(e) => setFormData({ ...formData, note: e.target.value })}
-                      placeholder="Ví dụ: Cần xem biệt thự hướng biển khu vực Ngũ Hành Sơn..."
+                      placeholder={t('notePlaceholder')}
                       className="w-full bg-paper border border-line focus:border-gold focus:outline-none px-3.5 py-2.5 text-[13px] font-medium text-navy rounded-none resize-none"
                     />
                   </div>
@@ -306,11 +307,11 @@ export function VoucherCtaBanner() {
                           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                         </svg>
-                        Đang đăng ký lịch xem...
+                        {t('registering')}
                       </>
                     ) : (
                       <>
-                        XÁC NHẬN ĐẶT LỊCH XEM BĐS MIỄN PHÍ →
+                        {t('confirmButton')} →
                       </>
                     )}
                   </button>
@@ -325,10 +326,12 @@ export function VoucherCtaBanner() {
                   </svg>
                 </div>
 
-                <h3 className="font-display text-navy text-[24px]">Đăng Ký Đặt Lịch Thành Công!</h3>
+                <h3 className="font-display text-navy text-[24px]">{t('doneTitle')}</h3>
 
                 <p className="text-muted text-[13px] max-w-sm mx-auto">
-                  Cảm ơn <strong className="text-navy">{formData.name}</strong>! Chuyên viên cố vấn cao cấp Da Nang Homes &amp; Living sẽ liên hệ xác nhận thời gian đưa đón xem BĐS thực tế qua SĐT <strong>{formData.phone}</strong> trong 15 phút tới.
+                  {/* `{name}` và `{phone}` là chỗ thay ICU thường, không phải thẻ —
+                      dùng `t()` chứ không `t.rich()`. */}
+                  {t('doneBody', { name: formData.name, phone: formData.phone })}
                 </p>
 
                 <button
@@ -336,7 +339,7 @@ export function VoucherCtaBanner() {
                   onClick={handleReset}
                   className="bg-navy hover:bg-gold text-white hover:text-navy px-8 py-3 text-[11px] font-bold tracking-[0.16em] uppercase transition-all rounded-none cursor-pointer mt-2"
                 >
-                  Hoàn thành &amp; Đóng
+                  {t('doneClose')}
                 </button>
               </div>
             )}

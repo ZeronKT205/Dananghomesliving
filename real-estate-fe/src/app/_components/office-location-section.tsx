@@ -1,3 +1,7 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
+
 import { ButtonLink } from '@/components/ui/button';
 import { SectionKicker, SectionTitle } from '@/components/ui/section-heading';
 import {
@@ -10,6 +14,8 @@ import {
 } from '@/config/constants';
 
 export function OfficeLocationSection() {
+  const t = useTranslations('Office');
+
   return (
     <section id="location" className="bg-navy relative overflow-hidden py-20 text-white lg:py-24">
       {/* Decorative background text */}
@@ -23,8 +29,8 @@ export function OfficeLocationSection() {
       <div className="container-page relative grid items-center gap-12 lg:grid-cols-[0.95fr_1.05fr] lg:gap-16">
         {/* Left column — text */}
         <div>
-          <SectionKicker className="text-gold-soft">Office &amp; Location</SectionKicker>
-          <SectionTitle className="text-white">Visit us in the heart of Da Nang.</SectionTitle>
+          <SectionKicker className="text-gold-soft">{t('kicker')}</SectionKicker>
+          <SectionTitle className="text-white">{t('title')}</SectionTitle>
 
           <p className="mt-5 max-w-[480px] text-[15px] text-white/70">
             Our office is centrally located for easy access. Drop by for a coffee, a conversation
@@ -34,19 +40,19 @@ export function OfficeLocationSection() {
           <dl className="mt-6 grid gap-3 border-t border-white/16 pt-6">
             <div>
               <dt className="text-gold-soft text-[9px] font-bold tracking-[0.16em] uppercase">
-                Address
+                {t('addressLabel')}
               </dt>
               <dd className="mt-1 text-[14px] text-white/80">{OFFICE_ADDRESS}</dd>
             </div>
             <div>
               <dt className="text-gold-soft text-[9px] font-bold tracking-[0.16em] uppercase">
-                Working hours
+                {t('hoursLabel')}
               </dt>
               <dd className="mt-1 text-[14px] text-white/80">{CONTACT_HOURS}</dd>
             </div>
             <div>
               <dt className="text-gold-soft text-[9px] font-bold tracking-[0.16em] uppercase">
-                Phone
+                {t('phoneLabel')}
               </dt>
               <dd className="mt-1 text-[14px] text-white/80">{CONTACT_PHONE}</dd>
             </div>
@@ -54,7 +60,7 @@ export function OfficeLocationSection() {
 
           <div className="mt-8 flex flex-wrap gap-3">
             <ButtonLink href={GOOGLE_MAPS_LINK} variant="gold" target="_blank" rel="noreferrer">
-              Open in Google Maps <span aria-hidden>→</span>
+              {t('openMaps')} <span aria-hidden>→</span>
             </ButtonLink>
             <ButtonLink href={CONTACT_PHONE_HREF} variant="outline" className="text-white">
               Call {CONTACT_PHONE}

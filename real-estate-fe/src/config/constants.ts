@@ -45,38 +45,48 @@ export const NAV_LOCATIONS = [
   { area: 'Hoa Hai', label: 'Hoa Hai Beachfront' },
 ] as const;
 
+/**
+ * Menu chính.
+ *
+ * `labelKey` là KHOÁ trong `messages/*.json` (namespace `Nav`), không phải chữ
+ * hiển thị — nhãn nằm trong file dịch để đổi ngôn ngữ là đổi cả menu.
+ *
+ * Tên khu vực trong `locations` KHÔNG dịch: theo quy ước của dự án, tên riêng
+ * Đà Nẵng viết Latin không dấu ở mọi ngôn ngữ.
+ */
+const PROPERTY_TYPE_LINKS = (deal: 'rent' | 'sale') =>
+  [
+    { key: 'apartments', type: 'Apartment' },
+    { key: 'villas', type: 'Villa' },
+    { key: 'penthouses', type: 'Penthouse' },
+    { key: 'beachResidences', type: 'Beach residence' },
+  ].map((t) => ({
+    href: `/properties?type=${deal}&propertyType=${encodeURIComponent(t.type)}`,
+    labelKey: t.key,
+  }));
+
+const AREA_LINKS = (deal: 'rent' | 'sale') =>
+  NAV_LOCATIONS.map((loc) => ({
+    href: `/properties?type=${deal}&area=${encodeURIComponent(loc.area)}`,
+    label: loc.label,
+  }));
+
 export const NAV_ITEMS = [
-  { href: '/', label: 'Home' },
+  { href: '/', labelKey: 'home' },
   {
     href: '/properties?type=rent',
-    label: 'Rent',
-    children: [
-      { href: '/properties?type=rent&propertyType=Apartment', label: 'Apartments' },
-      { href: '/properties?type=rent&propertyType=Villa', label: 'Villas' },
-      { href: '/properties?type=rent&propertyType=Penthouse', label: 'Penthouses' },
-      { href: '/properties?type=rent&propertyType=Beach residence', label: 'Beach residences' },
-    ],
-    locations: NAV_LOCATIONS.map((loc) => ({
-      href: `/properties?type=rent&area=${encodeURIComponent(loc.area)}`,
-      label: loc.label,
-    })),
+    labelKey: 'rent',
+    children: PROPERTY_TYPE_LINKS('rent'),
+    locations: AREA_LINKS('rent'),
   },
   {
     href: '/properties?type=sale',
-    label: 'Buy',
-    children: [
-      { href: '/properties?type=sale&propertyType=Apartment', label: 'Apartments' },
-      { href: '/properties?type=sale&propertyType=Villa', label: 'Villas' },
-      { href: '/properties?type=sale&propertyType=Penthouse', label: 'Penthouses' },
-      { href: '/properties?type=sale&propertyType=Beach residence', label: 'Beach residences' },
-    ],
-    locations: NAV_LOCATIONS.map((loc) => ({
-      href: `/properties?type=sale&area=${encodeURIComponent(loc.area)}`,
-      label: loc.label,
-    })),
+    labelKey: 'buy',
+    children: PROPERTY_TYPE_LINKS('sale'),
+    locations: AREA_LINKS('sale'),
   },
-  { href: '/news', label: 'Tips' },
-  { href: '/about', label: 'About us' },
+  { href: '/news', labelKey: 'tips' },
+  { href: '/about', labelKey: 'about' },
 ] as const;
 
 export type NavItem = (typeof NAV_ITEMS)[number];

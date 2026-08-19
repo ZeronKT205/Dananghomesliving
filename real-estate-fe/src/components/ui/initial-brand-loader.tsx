@@ -1,10 +1,13 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
 import { BrandLogo } from './brand-logo';
 
 export function InitialBrandLoader() {
+  const t = useTranslations('Common');
+
   const [loading, setLoading] = useState(true);
   const [progress, setProgress] = useState(0);
   const [fadeOut, setFadeOut] = useState(false);
@@ -73,7 +76,7 @@ export function InitialBrandLoader() {
 
         {/* Progress Text & Status */}
         <div className="mt-3.5 flex items-center justify-between w-60 sm:w-72 text-[10.5px] font-semibold tracking-[0.2em] text-white/70 uppercase">
-          <span className="text-gold animate-pulse">Đang tải trải nghiệm...</span>
+          <span className="text-gold animate-pulse">{t('loadingExperience')}</span>
           <span className="font-mono text-white font-bold">{progress}%</span>
         </div>
       </div>

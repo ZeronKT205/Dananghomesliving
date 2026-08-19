@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import { useTranslations } from 'next-intl';
 import { useEffect, useId, useState } from 'react';
 import { createPortal } from 'react-dom';
 
@@ -8,7 +9,7 @@ import { ButtonLink } from '@/components/ui/button';
 import { CONTACT_EMAIL } from '@/config/constants';
 import type { Listing } from '@/types';
 
-/** Nút "View property" + modal xem nhanh của CHÍNH tin đó.
+/** Nút "{t('viewProperty')}" + modal xem nhanh của CHÍNH tin đó.
  *  Mỗi thẻ tự giữ state của mình nên thẻ tin vẫn là Server Component;
  *  modal chỉ được render khi mở.
  *
@@ -17,6 +18,8 @@ import type { Listing } from '@/types';
  *  transform trở thành containing block của `position: fixed`, làm overlay bị
  *  giam trong thẻ thay vì phủ toàn màn hình. */
 export function ListingQuickView({ listing }: { listing: Listing }) {
+  const t = useTranslations('Property');
+
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const titleId = useId();
@@ -43,9 +46,9 @@ export function ListingQuickView({ listing }: { listing: Listing }) {
   }, [open]);
 
   const specs = [
-    { value: listing.beds, label: 'Bedrooms' },
-    { value: listing.baths, label: 'Bathrooms' },
-    { value: listing.area, label: 'Internal area' },
+    { value: listing.beds, label: t('beds') },
+    { value: listing.baths, label: t('baths') },
+    { value: listing.area, label: t('internalArea') },
   ];
 
   return (
@@ -58,7 +61,7 @@ export function ListingQuickView({ listing }: { listing: Listing }) {
         }}
         className="text-navy border-gold focus-visible:outline-gold hover:text-gold cursor-pointer border-b pb-1 text-[10px] font-extrabold tracking-[0.12em] uppercase transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 relative z-10"
       >
-        View property
+        {t('viewProperty')}
       </button>
 
       {open && mounted
@@ -76,7 +79,7 @@ export function ListingQuickView({ listing }: { listing: Listing }) {
                 <button
                   type="button"
                   onClick={() => setOpen(false)}
-                  aria-label="Close"
+                  aria-label={t('closeGallery')}
                   className="border-line focus-visible:outline-gold absolute top-3 right-3 z-10 h-9 w-9 cursor-pointer border bg-white text-xl leading-none focus-visible:outline-2"
                 >
                   ×
@@ -130,7 +133,7 @@ export function ListingQuickView({ listing }: { listing: Listing }) {
 
                   <div className="mt-6 flex flex-col gap-2.5 sm:flex-row">
                     <ButtonLink href={`mailto:${CONTACT_EMAIL}`} variant="gold">
-                      Request details
+                      {t('requestDetails')}
                     </ButtonLink>
                   </div>
                 </div>

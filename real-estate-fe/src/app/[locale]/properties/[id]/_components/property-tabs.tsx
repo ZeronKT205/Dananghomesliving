@@ -1,8 +1,11 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { useState, useEffect } from 'react';
 
 export function PropertyTabs() {
+  const t = useTranslations('Property');
+
   const [activeTab, setActiveTab] = useState('overview');
 
   useEffect(() => {
@@ -48,7 +51,7 @@ export function PropertyTabs() {
               : 'text-muted hover:text-navy hover:bg-white'
           }`}
         >
-          Tổng quan
+          {t('tabOverviewFull')}
         </button>
         <button 
           onClick={() => scrollToSection('features')}
@@ -58,7 +61,7 @@ export function PropertyTabs() {
               : 'text-muted hover:text-navy hover:bg-white'
           }`}
         >
-          Tiện ích &amp; Đặc điểm
+          {t('tabFeaturesFull')}
         </button>
         <button 
           onClick={() => scrollToSection('location')}
@@ -68,7 +71,7 @@ export function PropertyTabs() {
               : 'text-muted hover:text-navy hover:bg-white'
           }`}
         >
-          Vị trí &amp; Bản đồ
+          {t('tabLocationFull')}
         </button>
       </div>
     </div>

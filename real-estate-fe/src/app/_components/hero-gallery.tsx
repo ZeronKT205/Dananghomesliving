@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
 import { cn } from '@/lib/utils';
@@ -21,6 +22,8 @@ const INTERVAL_MS = 5200;
 /** Carousel tự chạy. Chỉ phần này cần client — phần chữ của hero vẫn là
  *  Server Component. Ảnh đầu tiên là LCP nên đánh `priority`. */
 export function HeroGallery() {
+  const t = useTranslations('Hero');
+
   const [current, setCurrent] = useState(0);
 
   useEffect(() => {
@@ -71,10 +74,10 @@ export function HeroGallery() {
 
         <figcaption className="absolute inset-x-4 bottom-4 z-10 flex items-end justify-between gap-3 text-white">
           <strong className="font-display text-[19px] font-normal">
-            Live beautifully in Da Nang
+            {t('galleryCaption')}
           </strong>
           <span className="text-[8.5px] tracking-[0.14em] uppercase opacity-90">
-            Curated collection
+            {t('galleryKicker')}
           </span>
         </figcaption>
       </figure>

@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 
 import { BrandLogo } from '@/components/ui/brand-logo';
@@ -25,6 +26,8 @@ export function SiteHeader() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [activeHref, setActiveHref] = useState('');
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
+
+  const tNav = useTranslations('Nav');
 
   const toggleSubmenu = (label: string) => {
     setExpandedItems((prev) => ({
@@ -122,7 +125,7 @@ export function SiteHeader() {
               <button
                 type="button"
                 onClick={() => setMenuOpen(true)}
-                aria-label="Open menu"
+                aria-label={tNav('openMenu')}
                 aria-expanded={menuOpen}
                 className="border-line hover:border-gold hover:text-gold focus-visible:outline-gold grid h-9 w-9 cursor-pointer place-items-center border transition-colors focus-visible:outline-2 lg:hidden"
               >
@@ -168,7 +171,7 @@ export function SiteHeader() {
           <button
             type="button"
             onClick={() => setMenuOpen(false)}
-            aria-label="Close menu"
+            aria-label={tNav('closeMenu')}
             className="grid h-9 w-9 cursor-pointer place-items-center rounded-md border border-white/15 text-white/80 transition-colors hover:border-gold hover:text-gold"
           >
             <CloseIcon className="h-4 w-4" />
@@ -177,16 +180,16 @@ export function SiteHeader() {
 
         {/* Scrollable Accordion Menu */}
         <div className="flex-1 overflow-y-auto px-5 py-4">
-          <nav aria-label="Mobile Navigation">
+          <nav aria-label={tNav('mobileNav')}>
             <ul className="flex flex-col gap-1">
               {NAV_ITEMS.map((item) => {
                 const children = 'children' in item ? item.children : undefined;
                 const locations = 'locations' in item ? item.locations : undefined;
                 const hasSub = Boolean((children && children.length > 0) || (locations && locations.length > 0));
-                const isExpanded = Boolean(expandedItems[item.label]);
+                const isExpanded = Boolean(expandedItems[item.labelKey]);
 
                 return (
-                  <li key={item.label} className="border-b border-white/5 pb-1">
+                  <li key={item.labelKey} className="border-b border-white/5 pb-1">
                     {hasSub ? (
                       <div>
                         {/* Parent item header with toggle */}
@@ -196,12 +199,12 @@ export function SiteHeader() {
                             onClick={() => setMenuOpen(false)}
                             className="font-medium text-[15px] tracking-wide text-white/90 transition-colors hover:text-gold"
                           >
-                            {item.label}
+                            {tNav(item.labelKey)}
                           </Link>
                           <button
                             type="button"
-                            onClick={() => toggleSubmenu(item.label)}
-                            aria-label={`Toggle ${item.label} menu`}
+                            onClick={() => toggleSubmenu(item.labelKey)}
+                            aria-label={`${tNav(item.labelKey)} — ${tNav('menu')}`}
                             aria-expanded={isExpanded}
                             className="p-1.5 text-white/60 transition-colors hover:text-gold"
                           >
@@ -219,19 +222,19 @@ export function SiteHeader() {
                           <div className="border-gold/30 ml-3 my-1 flex flex-col gap-0.5 border-l-2 pl-3 py-1">
                             {children?.map((child) => (
                               <Link
-                                key={child.label}
+                                key={child.href}
                                 href={child.href}
                                 onClick={() => setMenuOpen(false)}
                                 className="block rounded py-2 px-2 text-[13.5px] text-white/75 transition-colors hover:bg-white/5 hover:text-gold"
                               >
-                                {child.label}
+                                {tNav(child.labelKey)}
                               </Link>
                             ))}
 
                             {locations && locations.length > 0 ? (
                               <div className="mt-2 pt-2 border-t border-white/10">
                                 <span className="text-gold block px-2 text-[10px] font-bold tracking-[0.2em] uppercase mb-1">
-                                  Locations
+                                  {tNav('locations')}
                                 </span>
                                 <div className="flex flex-col gap-0.5">
                                   {locations.map((loc) => (
@@ -257,7 +260,7 @@ export function SiteHeader() {
                         onClick={() => setMenuOpen(false)}
                         className="block rounded-md px-3 py-3 font-medium text-[15px] tracking-wide text-white/90 transition-colors hover:bg-white/5 hover:text-gold"
                       >
-                        {item.label}
+                        {tNav(item.labelKey)}
                       </Link>
                     )}
                   </li>
