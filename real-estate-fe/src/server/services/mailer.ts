@@ -30,11 +30,16 @@ function transporter(): Transporter {
     requireTLS: port !== 465,
     connectionTimeout: 15_000,
     greetingTimeout: 15_000,
+    family: 4,
+    tls: {
+      rejectUnauthorized: false,
+    },
     auth: {
       user,
       pass,
     },
-  });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } as any);
 }
 
 export interface MailInput {
