@@ -1,11 +1,16 @@
+'use client';
+
 import Image from 'next/image';
 
 import { cn } from '@/lib/utils';
+import { actionDeleteProperty } from '@/server/actions/admin-actions';
 
 import { DEAL_TYPE, formatUsd, PUBLISH_STATE } from '../_data/view-models';
 
-import { IcBed, IcEdit, IcEye, IcImages, IcPin, IcTrash } from './icons';
-import { IconButton, Pill } from './ui';
+
+import { IcBed, IcEye, IcImages, IcPin } from './icons';
+import { RowActions } from './row-actions';
+import { Pill } from './ui';
 
 import type { AdminProperty, PropertyGroup } from '../_data/view-models';
 
@@ -90,14 +95,15 @@ export function PropertyCard({
 
       <div className="border-line-soft bg-ivory/40 flex items-center justify-between gap-2 border-t px-3.5 py-2.5">
         <span className="text-muted truncate text-[11.5px]">Sửa {property.updatedLabel}</span>
-        <span className="flex shrink-0 items-center gap-1.5">
-          <IconButton label="Sửa">
-            <IcEdit size={13} />
-          </IconButton>
-          <IconButton label="Xoá" tone="danger">
-            <IcTrash size={13} />
-          </IconButton>
-        </span>
+        {/* `RowActions` chứ không phải `IconButton`: hai nút cũ chỉ là icon
+            trang trí, bấm không làm gì — không sửa cũng không xoá được tin nào
+            từ danh sách. Trang tin tức đã dùng RowActions từ lâu, thẻ BĐS bị
+            bỏ sót. */}
+        <RowActions
+          editHref={`/admin/properties/${property.id}`}
+          onDelete={() => actionDeleteProperty(property.id)}
+          deleteLabel="Chuyển bất động sản này vào thùng rác?"
+        />
       </div>
     </article>
   );

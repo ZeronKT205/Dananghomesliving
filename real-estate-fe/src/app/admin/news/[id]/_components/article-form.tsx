@@ -10,6 +10,7 @@ import { DraftRestoreBar } from '@/components/ui/draft-restore-bar';
 import { ImageDropZone } from '@/components/ui/image-drop-zone';
 import { LOCALES } from '@/config/locales';
 import { useDraftBackup } from '@/hooks/use-draft-backup';
+import { useLeaveGuard } from '@/hooks/use-leave-guard';
 import {
   actionAddMediaByUrl,
   actionDeleteArticle,
@@ -85,6 +86,10 @@ export function ArticleForm({
     value: v,
     enabled: dirty,
   });
+
+  // Chặn cả điều hướng nội bộ, không chỉ đóng tab — bấm nhầm một liên kết
+  // trong CMS là mất sạch form mà không có cảnh báo nào.
+  useLeaveGuard({ when: dirty, message: 'Bài viết này còn thay đổi chưa lưu. Bản nháp đã được giữ lại, nhưng bạn có chắc muốn rời trang?' });
 
   const isNew = initial.id === null;
 

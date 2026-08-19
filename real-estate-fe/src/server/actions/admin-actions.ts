@@ -605,20 +605,113 @@ export async function actionSaveSettings(input: unknown): Promise<ActionResult> 
 
 /* ── AI cho tin bất động sản ──────────────────────────── */
 
-type PropertyAiResult =
-  | { ok: true; text: { title: string; summary: string; description: string[] } }
-  | { ok: false; message: string };
+interface PropertyDraftPayload {
+  title: string;
+  summary: string;
+  description: string[];
+  deal: 'sale' | 'rent';
+  priceUsd: number | null;
+  priceNote: string | null;
+  pricePeriod: 'total' | 'month';
+  negotiable: boolean;
+  specs: Record<string, number | string | null>;
+  location: { address: string | null; ward: string | null; district: string | null };
+  /** Id tiện ích để tick sẵn, gồm cả tiện ích vừa được tạo. */
+  amenityIds: string[];
+  /** Tiện ích vừa tạo, để form thêm vào danh sách hiển thị. */
+  createdAmenities: Array<{ id: string; name: string; group: string }>;
+  translations: Record<string, { title: string; summary: string; description: string[] }>;
+  failedLocales: string[];
+}
 
-/** Dựng tiêu đề, tóm tắt và mô tả từ ghi chú thô của môi giới. */
-export async function actionComposeProperty(raw: string, locale: string): Promise<PropertyAiResult> {
+type PropertyDraftResult = { ok: true; draft: PropertyDraftPayload } | { ok: false; message: string };
+
+/**
+ * Đọc ghi chú thô → điền TOÀN BỘ form, kèm ba bản dịch.
+ *
+ * Gộp ba việc vào một hành động (đọc, tạo tiện ích còn thiếu, dịch) vì với
+ * người dùng đó là một ý định duy nhất: "điền hộ tôi cái tin này". Tách thành
+ * ba nút thì họ phải nhớ thứ tự bấm, và quên bước nào là tin lên web thiếu.
+ *
+ * Tiện ích chưa có trong CMS được TẠO LUÔN rồi tick. Trả về danh sách đã tạo
+ * để form hiện chúng ra ngay mà không phải tải lại trang.
+ */
+export async function actionDraftProperty(
+  raw: string,
+  locale: string,
+  alsoTranslate = true,
+): Promise<PropertyDraftResult> {
   try {
-    await requirePermission('content:write');
-    const { composePropertyText } = await import('@/server/services/property-ai-service');
+    const user = await requirePermission('content:write');
+
+    const { draftPropertyFromNotes, translatePropertyText } = await import(
+      '@/server/services/property-ai-service'
+    );
     const { isLocale } = await import('@/config/locales');
+    const { listAmenities } = await import('@/lib/db/repositories/catalog-repo');
 
     if (!isLocale(locale)) return { ok: false, message: 'Ngôn ngữ không hợp lệ' };
 
-    return { ok: true, text: await composePropertyText(raw, locale) };
+    const amenities = await listAmenities();
+    const nameOf = (a: (typeof amenities)[number]) => a.name.vi ?? a.name.en ?? a.slug;
+
+    const draft = await draftPropertyFromNotes(raw, locale, amenities.map(nameOf));
+
+    // Tick những tiện ích đã có.
+    const idByName = new Map(amenities.map((a) => [nameOf(a).trim().toLowerCase(), a._id.toHexString()]));
+    const amenityIds = draft.amenityNames
+      .map((n) => idByName.get(n.trim().toLowerCase()))
+      .filter((id): id is string => Boolean(id));
+
+    /*
+     * Tạo tiện ích ghi chú có nhắc mà CMS chưa có.
+     *
+     * Giới hạn 8 cái mỗi lần: model thỉnh thoảng tách một câu thành cả chục
+     * "tiện ích" vụn, và tạo hết thì bảng tiện ích ngập rác chỉ sau vài tin.
+     */
+    const createdAmenities: Array<{ id: string; name: string; group: string }> = [];
+
+    for (const name of draft.newAmenityNames.slice(0, 8)) {
+      const created = await createAmenity(
+        { slug: slugify(name), name: { vi: name }, icon: 'check', group: 'service', order: 99 },
+        user.sub,
+      );
+      const id = created._id.toHexString();
+      createdAmenities.push({ id, name, group: 'service' });
+      amenityIds.push(id);
+    }
+
+    const text = { title: draft.title, summary: draft.summary, description: draft.description };
+
+    const { translations, failed } = alsoTranslate
+      ? await translatePropertyText(text, locale)
+      : { translations: {}, failed: [] };
+
+    if (createdAmenities.length > 0) {
+      revalidatePath('/admin/properties');
+    }
+
+    return {
+      ok: true,
+      draft: {
+        ...text,
+        deal: draft.deal,
+        priceUsd: draft.priceUsd,
+        // Ghi lại giá gốc để biên tập đối chiếu — quy đổi sai tỷ giá là lỗi
+        // rất khó phát hiện nếu chỉ nhìn con số USD.
+        priceNote: draft.price
+          ? `${draft.price.amount.toLocaleString('vi-VN')} ${draft.price.currency}`
+          : null,
+        pricePeriod: draft.price?.period ?? 'total',
+        negotiable: draft.price?.negotiable ?? false,
+        specs: draft.specs,
+        location: draft.location,
+        amenityIds,
+        createdAmenities,
+        translations: translations as never,
+        failedLocales: failed,
+      },
+    };
   } catch (err) {
     const r = fail(err);
     return { ok: false, message: r.ok ? 'Lỗi không xác định' : r.message };
@@ -633,7 +726,7 @@ type PropertyTranslateResult =
     }
   | { ok: false; message: string };
 
-/** Dịch tin sang ba ngôn ngữ còn lại trong một lượt gọi. */
+/** Dịch tin sang ba ngôn ngữ còn lại. Dùng khi biên tập tự viết bản gốc. */
 export async function actionTranslateProperty(
   source: { title: string; summary: string; description: string[] },
   locale: string,

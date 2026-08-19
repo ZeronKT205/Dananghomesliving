@@ -7,6 +7,7 @@ import { useState, useTransition } from 'react';
 import { DraftRestoreBar } from '@/components/ui/draft-restore-bar';
 import { ImageDropZone } from '@/components/ui/image-drop-zone';
 import { useDraftBackup } from '@/hooks/use-draft-backup';
+import { useLeaveGuard } from '@/hooks/use-leave-guard';
 import { SOCIAL_LABEL, SOCIAL_PLATFORMS, type SiteSettingsInput } from '@/lib/validations/settings';
 import { actionSaveSettings } from '@/server/actions/admin-actions';
 
@@ -38,6 +39,10 @@ export function SettingsForm({ initial }: { initial: SiteSettingsInput }) {
 
   // Cài đặt cũng là form dài, cũng mất dữ liệu y như trang soạn bài nếu lỡ tay.
   const draft = useDraftBackup<SiteSettingsInput>({ key: 'settings', value: v, enabled: dirty });
+
+  // Chặn cả điều hướng nội bộ, không chỉ đóng tab — bấm nhầm một liên kết
+  // trong CMS là mất sạch form mà không có cảnh báo nào.
+  useLeaveGuard({ when: dirty, message: 'Cài đặt còn thay đổi chưa lưu. Bản nháp đã được giữ lại, nhưng bạn có chắc muốn rời trang?' });
 
   function patch(fn: (draft: SiteSettingsInput) => SiteSettingsInput) {
     setV((p) => fn(structuredClone(p)));

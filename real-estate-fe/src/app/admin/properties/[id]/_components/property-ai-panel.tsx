@@ -2,12 +2,27 @@
 
 import { useState, useTransition } from 'react';
 
-import { actionComposeProperty, actionTranslateProperty } from '@/server/actions/admin-actions';
+import { actionDraftProperty, actionTranslateProperty } from '@/server/actions/admin-actions';
 
 export interface PropertyTextValue {
   title: string;
   summary: string;
   description: string[];
+}
+
+/** Toàn bộ dữ liệu AI rút được — form tự quyết định ghi đè trường nào. */
+export interface PropertyDraftValue extends PropertyTextValue {
+  deal: 'sale' | 'rent';
+  priceUsd: number | null;
+  priceNote: string | null;
+  pricePeriod: 'total' | 'month';
+  negotiable: boolean;
+  specs: Record<string, number | string | null>;
+  location: { address: string | null; ward: string | null; district: string | null };
+  amenityIds: string[];
+  createdAmenities: Array<{ id: string; name: string; group: string }>;
+  translations: Record<string, PropertyTextValue>;
+  failedLocales: string[];
 }
 
 /**
@@ -20,21 +35,19 @@ export interface PropertyTextValue {
  */
 export function PropertyAiPanel({
   locale,
-  localeLabel,
   enabled,
   modelName,
   current,
-  onComposed,
+  onDrafted,
   onTranslated,
 }: {
   locale: string;
-  localeLabel: string;
   /** Có khoá AI hay không. */
   enabled: boolean;
   modelName: string;
   /** Nội dung đang có ở ngôn ngữ hiện tại — nguồn để dịch. */
   current: PropertyTextValue;
-  onComposed: (text: PropertyTextValue) => void;
+  onDrafted: (draft: PropertyDraftValue) => void;
   onTranslated: (translations: Record<string, PropertyTextValue>, failed: string[]) => void;
 }) {
   const [open, setOpen] = useState(false);
@@ -48,27 +61,49 @@ export function PropertyAiPanel({
   const chars = raw.trim().length;
   const hasContent = Boolean(current.title.trim() || current.description.length);
 
-  function compose() {
+  function draft() {
     setError(null);
     setMessage(null);
 
     if (
       hasContent &&
-      !window.confirm('Tin này đã có nội dung. Dựng lại sẽ GHI ĐÈ tiêu đề, tóm tắt và mô tả. Tiếp tục?')
+      !window.confirm(
+        'Tin này đã có nội dung. AI sẽ GHI ĐÈ tiêu đề, tóm tắt, mô tả và các thông số đọc được từ ghi chú. Tiếp tục?',
+      )
     ) {
       return;
     }
 
     startBusy(async () => {
-      const res = await actionComposeProperty(raw, locale);
+      const res = await actionDraftProperty(raw, locale, true);
       if (!res.ok) {
         setError(res.message);
         return;
       }
-      onComposed(res.text);
+
+      onDrafted(res.draft);
       setRaw('');
       setOpen(false);
-      setMessage(`Đã dựng nội dung ${localeLabel} — kiểm tra lại rồi bấm Lưu.`);
+
+      // Nói rõ ĐÃ ĐIỀN GÌ. Người dùng cần biết trường nào máy điền để soát lại,
+      // nhất là giá — quy đổi sai tỷ giá thì nhìn con số USD không thấy được.
+      const filled: string[] = [];
+      if (res.draft.priceUsd) filled.push(`giá ${res.draft.priceUsd.toLocaleString('en-US')} USD`);
+      if (res.draft.specs.bedrooms) filled.push(`${res.draft.specs.bedrooms} PN`);
+      if (res.draft.specs.bathrooms) filled.push(`${res.draft.specs.bathrooms} WC`);
+      if (res.draft.amenityIds.length) filled.push(`${res.draft.amenityIds.length} tiện ích`);
+
+      const langs = Object.keys(res.draft.translations).length;
+      const failed = res.draft.failedLocales.length
+        ? ` Chưa dịch được: ${res.draft.failedLocales.join(', ')}.`
+        : '';
+
+      setMessage(
+        `Đã điền ${filled.join(', ') || 'nội dung'}${langs ? ` và ${langs} bản dịch` : ''}.` +
+          (res.draft.priceNote ? ` Giá gốc trong ghi chú: ${res.draft.priceNote}.` : '') +
+          failed +
+          ' Kiểm tra lại rồi bấm Lưu.',
+      );
     });
   }
 
@@ -105,7 +140,8 @@ export function PropertyAiPanel({
         <div>
           <p className="text-navy text-[13px] font-bold">✨ Trợ lý AI</p>
           <p className="text-muted mt-0.5 text-[11.5px]">
-            Dựng nội dung từ ghi chú, hoặc dịch bản {localeLabel} sang ba ngôn ngữ còn lại.
+            Dán ghi chú khảo sát — AI viết nội dung, điền giá, thông số, địa chỉ, tick tiện ích và dịch sang
+            ba ngôn ngữ còn lại. Ảnh và vị trí bản đồ vẫn phải tự làm.
           </p>
         </div>
 
@@ -116,7 +152,7 @@ export function PropertyAiPanel({
             disabled={busy}
             className="border-navy text-navy hover:bg-navy h-8 cursor-pointer rounded-md border px-3 text-[12px] font-bold transition-colors hover:text-white disabled:opacity-50"
           >
-            {open ? 'Đóng' : 'Dựng từ ghi chú'}
+            {open ? 'Đóng' : 'Điền từ ghi chú'}
           </button>
           <button
             type="button"
@@ -151,11 +187,11 @@ export function PropertyAiPanel({
             </span>
             <button
               type="button"
-              onClick={compose}
+              onClick={draft}
               disabled={busy || chars < 40}
               className="bg-navy hover:bg-gold h-8 cursor-pointer rounded-md px-3.5 text-[12px] font-bold text-white transition-colors disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {busy ? 'AI đang viết…' : `Dựng nội dung ${localeLabel}`}
+              {busy ? 'AI đang đọc và điền…' : 'Điền toàn bộ + dịch'}
             </button>
           </div>
         </div>

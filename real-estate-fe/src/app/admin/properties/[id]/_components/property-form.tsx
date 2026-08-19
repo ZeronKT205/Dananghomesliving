@@ -11,7 +11,8 @@ import { ImageDropZone } from '@/components/ui/image-drop-zone';
 import { MapPicker } from '@/components/ui/map-picker';
 import { LOCALES } from '@/config/locales';
 import { useDraftBackup } from '@/hooks/use-draft-backup';
-import { actionDeleteProperty, actionSaveProperty } from '@/server/actions/admin-actions';
+import { useLeaveGuard } from '@/hooks/use-leave-guard';
+import { actionDeleteProperty, actionSaveAmenity, actionSaveProperty } from '@/server/actions/admin-actions';
 
 import { Field, FormCard, LocaleTabs, SaveBar, Toggle, inputClass } from '../../../_components/form-kit';
 import { IcTrash } from '../../../_components/icons';
@@ -116,11 +117,32 @@ export function PropertyForm({
    * tiện ích, ảnh, toạ độ bản đồ. Mất giữa chừng là mất hàng chục phút nhập
    * liệu.
    */
+  /*
+   * Chỉ số ảnh đang kéo.
+   *
+   * Dùng state chứ không dùng `dataTransfer`: Safari không cho đọc dữ liệu
+   * trong `dragover`, mà đó lại đúng lúc cần biết đang thả vào đâu để tô sáng.
+   */
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
+
+  /*
+   * Danh sách tiện ích là state chứ không dùng thẳng prop: thêm tiện ích mới
+   * ngay tại đây phải hiện ra liền, không thì người dùng phải sang tab khác rồi
+   * quay lại — mà quay lại là mất toàn bộ form đang nhập dở.
+   */
+  const [amenities, setAmenities] = useState(options.amenities);
+  const [newAmenity, setNewAmenity] = useState('');
+  const [addingAmenity, startAddingAmenity] = useTransition();
+
   const draft = useDraftBackup<PropertyFormValue>({
     key: initial.id ?? 'new',
     value: v,
     enabled: dirty,
   });
+
+  // Chặn cả điều hướng nội bộ, không chỉ đóng tab — bấm nhầm một liên kết
+  // trong CMS là mất sạch form mà không có cảnh báo nào.
+  useLeaveGuard({ when: dirty, message: 'Bất động sản này còn thay đổi chưa lưu. Bản nháp đã được giữ lại, nhưng bạn có chắc muốn rời trang?' });
 
   function set<K extends keyof PropertyFormValue>(key: K, value: PropertyFormValue[K]) {
     setV((prev) => ({ ...prev, [key]: value }));
@@ -176,12 +198,12 @@ export function PropertyForm({
 
   const amenitiesByGroup = useMemo(() => {
     const m = new Map<string, FormOptions['amenities']>();
-    for (const a of options.amenities) {
+    for (const a of amenities) {
       if (!m.has(a.group)) m.set(a.group, []);
       m.get(a.group)!.push(a);
     }
     return [...m.entries()];
-  }, [options.amenities]);
+  }, [amenities]);
 
   function removeImage(id: string) {
     setV((prev) => ({
@@ -219,6 +241,56 @@ export function PropertyForm({
     setHighlights(next);
     setLocalized('summary', next.join('\n'));
     setDirty(true);
+  }
+
+  /**
+   * Kéo ảnh thả vào vị trí mới.
+   *
+   * Ảnh ĐẦU TIÊN luôn là ảnh bìa — kéo lên đầu là đặt làm bìa, không cần bấm
+   * thêm nút nào. Nút "Đặt làm bìa" vẫn giữ cho người quen bấm hơn kéo.
+   */
+  function reorderImages(from: number, to: number) {
+    if (from === to) return;
+    setV((prev) => {
+      const images = [...prev.images];
+      const [moved] = images.splice(from, 1);
+      if (!moved) return prev;
+      images.splice(to, 0, moved);
+      return { ...prev, images, coverId: images[0]?.id ?? null };
+    });
+    setDirty(true);
+  }
+
+  /**
+   * Tạo tiện ích mới ngay trong form soạn tin.
+   *
+   * Nhóm mặc định `service`: người nhập nhanh không quan tâm phân nhóm, và
+   * bắt chọn nhóm ở đây là thêm một bước cho việc lẽ ra chỉ tốn ba giây. Sửa
+   * nhóm lại được ở tab Tiện ích.
+   */
+  function addAmenity() {
+    const name = newAmenity.trim();
+    if (!name || addingAmenity) return;
+
+    // Đã có tên này rồi thì tick luôn, không tạo trùng.
+    const existing = amenities.find((a) => a.name.toLowerCase() === name.toLowerCase());
+    if (existing) {
+      if (!v.amenityIds.includes(existing.id)) set('amenityIds', [...v.amenityIds, existing.id]);
+      setNewAmenity('');
+      return;
+    }
+
+    startAddingAmenity(async () => {
+      const res = await actionSaveAmenity(null, { name, icon: 'check', group: 'service', order: 99 });
+      if (!res.ok || !res.id) {
+        setError(res.ok ? 'Không tạo được tiện ích' : res.message);
+        return;
+      }
+      setAmenities((prev) => [...prev, { id: res.id!, name, group: 'service' }]);
+      set('amenityIds', [...v.amenityIds, res.id]);
+      setNewAmenity('');
+      setError(null);
+    });
   }
 
   function buildPayload() {
@@ -273,9 +345,17 @@ export function PropertyForm({
       isFeatured: v.isFeatured,
       isVerified: v.isVerified,
       badges: [],
+      /*
+       * SEO sinh TỰ ĐỘNG từ tiêu đề và tóm tắt.
+       *
+       * Đã gỡ hẳn ba ô nhập SEO khỏi giao diện: biên tập không rành kỹ thuật
+       * thì hoặc bỏ trống hoặc điền trùng tiêu đề — cả hai đều không hơn gì
+       * việc sinh tự động, mà lại chiếm chỗ và làm form đáng sợ hơn. Slug cũng
+       * để server tự sinh từ tên.
+       */
       seo: {
-        title: clean(v.seoTitle),
-        description: clean(v.seoDescription),
+        title: clean(v.title),
+        description: clean(v.summary),
         focusKeyword: {},
         ogImageId: v.coverId,
       },
@@ -408,7 +488,6 @@ export function PropertyForm({
 
           <PropertyAiPanel
             locale={locale}
-            localeLabel={LOCALE_LABEL[locale] ?? locale}
             enabled={options.aiEnabled}
             modelName={options.modelName}
             current={{
@@ -421,14 +500,59 @@ export function PropertyForm({
                 .map((t) => t.trim())
                 .filter(Boolean),
             }}
-            onComposed={(text) => {
-              setV((p) => ({
-                ...p,
-                title: { ...p.title, [locale]: text.title },
-                summary: { ...p.summary, [locale]: text.summary },
-                description: { ...p.description, [locale]: text.description.join('\n\n') },
-              }));
+            onDrafted={(d) => {
+              // Tiện ích AI vừa tạo phải vào danh sách hiển thị ngay, nếu không
+              // ô tick sẽ trống trong khi id đã nằm trong `amenityIds`.
+              if (d.createdAmenities.length) setAmenities((prev) => [...prev, ...d.createdAmenities]);
+
+              setV((p) => {
+                const next: PropertyFormValue = {
+                  ...p,
+                  title: { ...p.title, [locale]: d.title },
+                  summary: { ...p.summary, [locale]: d.summary },
+                  description: { ...p.description, [locale]: d.description.join('\n\n') },
+                  deal: d.deal,
+                  pricePeriod: d.pricePeriod,
+                  negotiable: d.negotiable,
+                  amenityIds: [...new Set([...p.amenityIds, ...d.amenityIds])],
+                };
+
+                // CHỈ ghi đè khi AI thật sự đọc được. Trường nào ghi chú không
+                // nhắc tới thì giữ nguyên giá trị đang có, đừng xoá về 0 —
+                // người dùng có thể đã nhập tay trước khi bấm.
+                if (d.priceUsd !== null) next.priceUsd = d.priceUsd;
+
+                const specs = { ...p.specs };
+                const n = (k: string) => (typeof d.specs[k] === 'number' ? (d.specs[k] as number) : null);
+                if (n('bedrooms') !== null) specs.bedrooms = n('bedrooms')!;
+                if (n('bathrooms') !== null) specs.bathrooms = n('bathrooms')!;
+                if (n('internalArea') !== null) specs.internalArea = n('internalArea')!;
+                if (n('landArea') !== null) specs.landArea = n('landArea');
+                if (n('floors') !== null) specs.floors = n('floors');
+                if (n('yearBuilt') !== null) specs.yearBuilt = n('yearBuilt');
+                if (n('parking') !== null) specs.parking = n('parking');
+                if (typeof d.specs.furnishing === 'string') {
+                  specs.furnishing = d.specs.furnishing as PropertyFormValue['specs']['furnishing'];
+                }
+                if (typeof d.specs.ownership === 'string') {
+                  specs.ownership = d.specs.ownership as PropertyFormValue['specs']['ownership'];
+                }
+                next.specs = specs;
+
+                if (d.location.address) next.address = { ...p.address, [locale]: d.location.address };
+                if (d.location.ward) next.ward = d.location.ward;
+                if (d.location.district) next.district = d.location.district;
+
+                for (const [l, t] of Object.entries(d.translations)) {
+                  next.title[l] = t.title;
+                  next.summary[l] = t.summary;
+                  next.description[l] = t.description.join('\n\n');
+                }
+
+                return next;
+              });
               setDirty(true);
+              setError(null);
             }}
             onTranslated={(translations) => {
               setV((p) => {
@@ -453,7 +577,7 @@ export function PropertyForm({
           <div className="bg-white border border-line p-5 sm:p-6 rounded-xl shadow-xs hover:shadow-md transition-shadow relative group">
             <div className="flex items-center justify-between mb-3">
               <label className="text-[11px] font-bold uppercase tracking-wider text-gold flex items-center gap-1.5">
-                🖼 Album ảnh bất động sản (Ảnh đầu tiên là ảnh bìa hero):
+                🖼 Album ảnh — kéo thả để sắp xếp, ảnh đầu tiên là ảnh bìa:
               </label>
               <span className="text-[10px] text-muted font-mono bg-ivory px-2 py-0.5 rounded border border-line">
                 Khối 1 • Photo Gallery
@@ -462,8 +586,9 @@ export function PropertyForm({
 
             <ImageDropZone
               ownerType="property"
-              label="Kéo thả ảnh vào đây để tải lên album (hoặc bấm chọn tệp / dán Ctrl+V)"
-              hint="Hỗ trợ nhiều tệp JPG, PNG, WebP. Tự động tối ưu trên Cloudflare R2."
+              multiple={true}
+              label="Kéo thả nhiều ảnh vào đây để tải lên album (hoặc bấm để chọn nhiều tệp cùng lúc / dán Ctrl+V)"
+              hint="Hỗ trợ chọn nhiều tệp JPG, PNG, WebP cùng lúc. Tự động thu nhỏ & tải lên Cloudflare R2."
               onUploaded={(img) => {
                 setV((prev) => ({
                   ...prev,
@@ -480,7 +605,20 @@ export function PropertyForm({
                 {v.images.map((img, i) => (
                   <li
                     key={img.id}
-                    className="border-line relative overflow-hidden rounded-lg border bg-paper group/img shadow-xs"
+                    draggable
+                    onDragStart={() => setDragIndex(i)}
+                    onDragEnd={() => setDragIndex(null)}
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      if (dragIndex !== null) reorderImages(dragIndex, i);
+                      setDragIndex(null);
+                    }}
+                    className={[
+                      'border-line relative overflow-hidden rounded-lg border bg-paper group/img shadow-xs cursor-grab active:cursor-grabbing transition-opacity',
+                      dragIndex === i ? 'opacity-40' : '',
+                      dragIndex !== null && dragIndex !== i ? 'ring-gold/60 ring-2 ring-offset-1' : '',
+                    ].join(' ')}
                   >
                     <span className="bg-ivory relative block aspect-[4/3]">
                       <Image src={img.url} alt="" fill sizes="200px" className="object-cover" />
@@ -772,6 +910,30 @@ export function PropertyForm({
                   </div>
                 </div>
               ))}
+
+              {/* Thêm tiện ích ngay tại chỗ — không phải rời trang sang tab khác. */}
+              <div className="border-line mt-3 flex flex-wrap items-center gap-2 border-t pt-3">
+                <input
+                  value={newAmenity}
+                  onChange={(e) => setNewAmenity(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      addAmenity();
+                    }
+                  }}
+                  placeholder="Thiếu tiện ích? Gõ tên rồi Enter, vd: Sân tennis"
+                  className="border-line focus:border-navy focus:outline-navy min-w-0 flex-1 rounded-full border px-3.5 py-1.5 text-[12px]"
+                />
+                <button
+                  type="button"
+                  onClick={addAmenity}
+                  disabled={addingAmenity || !newAmenity.trim()}
+                  className="bg-navy hover:bg-gold h-8 shrink-0 cursor-pointer rounded-full px-3.5 text-[11.5px] font-bold text-white transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {addingAmenity ? 'Đang thêm…' : '+ Thêm & tick'}
+                </button>
+              </div>
             </div>
           </div>
 
@@ -881,42 +1043,6 @@ export function PropertyForm({
             </div>
           </FormCard>
 
-          <FormCard title="SEO & Đường dẫn">
-            <div className="grid gap-4">
-              <Field
-                label="Đường dẫn (slug)"
-                hint={isNew ? 'Bỏ trống để tự sinh từ tên.' : 'Đổi slug sẽ làm hỏng link cũ đã chia sẻ.'}
-              >
-                <input
-                  value={v.slug}
-                  onChange={(e) => set('slug', e.target.value)}
-                  className={inputClass}
-                  placeholder="tu-sinh-tu-ten"
-                />
-              </Field>
-              <Field
-                label={`Tiêu đề SEO (${locale.toUpperCase()})`}
-                hint={`${(v.seoTitle[locale] ?? '').length} / 60 ký tự`}
-              >
-                <input
-                  value={v.seoTitle[locale] ?? ''}
-                  onChange={(e) => setLocalized('seoTitle', e.target.value)}
-                  className={inputClass}
-                />
-              </Field>
-              <Field
-                label={`Mô tả meta (${locale.toUpperCase()})`}
-                hint={`${(v.seoDescription[locale] ?? '').length} / 160 ký tự`}
-              >
-                <textarea
-                  rows={3}
-                  value={v.seoDescription[locale] ?? ''}
-                  onChange={(e) => setLocalized('seoDescription', e.target.value)}
-                  className={inputClass}
-                />
-              </Field>
-            </div>
-          </FormCard>
         </div>
       </div>
 

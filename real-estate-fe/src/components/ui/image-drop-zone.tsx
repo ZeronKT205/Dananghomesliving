@@ -17,37 +17,71 @@ export function ImageDropZone({
   label = 'Kéo ảnh vào đây, hoặc bấm để chọn tệp',
   hint = 'JPG, PNG, WebP hoặc GIF. Ảnh lớn được tự thu nhỏ trước khi tải lên.',
   compact = false,
+  multiple = false,
 }: {
   onUploaded: (image: UploadedImage) => void;
   ownerType?: string;
   label?: string;
   hint?: string;
   compact?: boolean;
+  /** Cho chọn nhiều tệp một lần. Ảnh bìa bài viết thì không, album BĐS thì có. */
+  multiple?: boolean;
 }) {
   const inputId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [total, setTotal] = useState(0);
+  const [index, setIndex] = useState(0);
   const [dragging, setDragging] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  /*
+   * Tải LẦN LƯỢT từng tệp, không song song.
+   *
+   * Chọn 20 ảnh rồi bắn 20 request cùng lúc thì mạng nghẽn, thanh tiến trình
+   * nhảy loạn và R2 dễ trả 429. Tuần tự thì chậm hơn chút nhưng biết đang ở
+   * tệp thứ mấy, và một tệp hỏng không kéo đổ cả mẻ.
+   */
   const send = useCallback(
-    async (file: File | undefined | null) => {
-      if (!file || busy) return;
+    async (files: FileList | File[] | null | undefined) => {
+      const list = [...(files ?? [])].filter((f) => f.type.startsWith('image/'));
+      if (list.length === 0 || busy) return;
+
       setError(null);
       setBusy(true);
-      setProgress(0);
-      try {
-        onUploaded(await uploadImage(file, { ownerType, onProgress: setProgress }));
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Tải ảnh lên thất bại.');
-      } finally {
-        setBusy(false);
+      setTotal(list.length);
+
+      const failures: string[] = [];
+
+      for (let i = 0; i < list.length; i++) {
+        setIndex(i + 1);
         setProgress(0);
-        // Cho phép chọn LẠI đúng tệp vừa rồi: input file không phát `change`
-        // khi giá trị không đổi.
-        if (inputRef.current) inputRef.current.value = '';
+        try {
+          onUploaded(await uploadImage(list[i]!, { ownerType, onProgress: setProgress }));
+        } catch (err) {
+          failures.push(list[i]!.name);
+          // Ghi lại rồi đi tiếp: dừng hẳn ở tệp thứ 3 của 20 là mất công người
+          // dùng chọn lại từ đầu.
+          console.error('[upload] hỏng', list[i]!.name, err);
+        }
       }
+
+      if (failures.length > 0) {
+        setError(
+          failures.length === list.length
+            ? 'Tải ảnh lên thất bại. Thử lại sau ít phút.'
+            : `Đã tải ${list.length - failures.length}/${list.length} ảnh. Hỏng: ${failures.join(', ')}`,
+        );
+      }
+
+      setBusy(false);
+      setProgress(0);
+      setTotal(0);
+      setIndex(0);
+      // Cho phép chọn LẠI đúng tệp vừa rồi: input file không phát `change`
+      // khi giá trị không đổi.
+      if (inputRef.current) inputRef.current.value = '';
     },
     [busy, onUploaded, ownerType],
   );
@@ -64,11 +98,14 @@ export function ImageDropZone({
         onDrop={(e) => {
           e.preventDefault();
           setDragging(false);
-          void send(e.dataTransfer.files[0]);
+          void send(e.dataTransfer.files);
         }}
         onPaste={(e) => {
-          const item = [...e.clipboardData.items].find((i) => i.type.startsWith('image/'));
-          if (item) void send(item.getAsFile());
+          const files = [...e.clipboardData.items]
+            .filter((i) => i.type.startsWith('image/'))
+            .map((i) => i.getAsFile())
+            .filter((f): f is File => f !== null);
+          if (files.length) void send(files);
         }}
         tabIndex={0}
         className={[
@@ -80,7 +117,10 @@ export function ImageDropZone({
       >
         {busy ? (
           <>
-            <p className="text-navy text-[13px] font-bold">Đang tải ảnh lên… {Math.round(progress * 100)}%</p>
+            <p className="text-navy text-[13px] font-bold">
+              {total > 1 ? `Đang tải ảnh ${index}/${total}… ` : 'Đang tải ảnh lên… '}
+              {Math.round(progress * 100)}%
+            </p>
             <div className="bg-navy/10 mt-1 h-1.5 w-40 overflow-hidden rounded-full">
               <div
                 className="bg-gold h-full transition-[width] duration-200"
@@ -101,9 +141,10 @@ export function ImageDropZone({
         id={inputId}
         ref={inputRef}
         type="file"
+        multiple={multiple}
         accept="image/jpeg,image/png,image/webp,image/avif,image/gif"
         className="sr-only"
-        onChange={(e) => void send(e.target.files?.[0])}
+        onChange={(e) => void send(e.target.files)}
       />
 
       {error ? (
