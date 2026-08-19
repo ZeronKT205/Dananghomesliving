@@ -1,7 +1,7 @@
 'use client';
 
 import { useLocale, useTranslations } from 'next-intl';
-import { useState, useTransition } from 'react';
+import { useMemo, useState, useTransition } from 'react';
 
 import { useToast } from '@/components/ui/toast-provider';
 import { actionSubmitPropertyInquiry } from '@/server/actions/public-actions';
@@ -42,10 +42,23 @@ export function EnquiryForm({ propertySlug, propertyTitle }: { propertySlug: str
     setFields((p) => (p[k] ? { ...p, [k]: [] } : p));
   }
 
+  const todayISO = useMemo(() => {
+    const d = new Date();
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }, []);
+
   function submit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     setFields({});
+
+    if (form.date && form.date < todayISO) {
+      setFields({ date: ['Ngày hẹn xem nhà không thể ở quá khứ.'] });
+      return;
+    }
 
     startSending(async () => {
       const res = await actionSubmitPropertyInquiry({
@@ -160,10 +173,19 @@ export function EnquiryForm({ propertySlug, propertyTitle }: { propertySlug: str
             <input
               id="enq-date"
               type="date"
+              min={todayISO}
               value={form.date}
-              onChange={(e) => set('date', e.target.value)}
+              onChange={(e) => {
+                const val = e.target.value;
+                if (val && val < todayISO) {
+                  setFields((p) => ({ ...p, date: ['Ngày hẹn xem nhà không thể ở quá khứ.'] }));
+                  return;
+                }
+                set('date', val);
+              }}
               className={INPUT}
             />
+            {err('date') ? <p className="mt-1 text-[11px] text-[#a33]">{err('date')}</p> : null}
           </div>
 
           <div>
