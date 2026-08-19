@@ -99,10 +99,16 @@ function toListing(doc: PropertyDoc, locale: Locale, lookup: Lookup): Listing {
   const { price, priceNote } = formatPrice(doc);
   const { badge, badgeTone } = badgeOf(doc, locale);
 
-  const gallery = [doc.coverId, ...doc.mediaIds]
-    .filter((id): id is NonNullable<typeof id> => id !== null)
-    .map((id) => lookup.mediaUrl.get(id.toHexString()))
-    .filter((url): url is string => Boolean(url));
+  const gallery: string[] = [];
+  const seenUrls = new Set<string>();
+  for (const id of [doc.coverId, ...doc.mediaIds]) {
+    if (!id) continue;
+    const url = lookup.mediaUrl.get(id.toHexString());
+    if (url && !seenUrls.has(url)) {
+      seenUrls.add(url);
+      gallery.push(url);
+    }
+  }
 
   return {
     slug: doc.slug,
@@ -207,10 +213,16 @@ export async function getPropertyDetail(
     doc.amenityIds.length ? getAmenitiesByIds(doc.amenityIds) : Promise.resolve([]),
   ]);
 
-  const images = [doc.coverId, ...doc.mediaIds]
-    .filter((id): id is NonNullable<typeof id> => id !== null)
-    .map((id) => lookup.mediaUrl.get(id.toHexString()))
-    .filter((url): url is string => Boolean(url));
+  const images: string[] = [];
+  const seenUrls = new Set<string>();
+  for (const id of [doc.coverId, ...doc.mediaIds]) {
+    if (!id) continue;
+    const url = lookup.mediaUrl.get(id.toHexString());
+    if (url && !seenUrls.has(url)) {
+      seenUrls.add(url);
+      images.push(url);
+    }
+  }
 
   const { price, priceNote } = formatPrice(doc);
   const { badge } = badgeOf(doc, locale);
