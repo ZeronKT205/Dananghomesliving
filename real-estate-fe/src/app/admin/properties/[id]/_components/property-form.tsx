@@ -98,7 +98,7 @@ export function PropertyForm({
 
   // Thẻ đặc điểm & tiện ích nổi bật (giống screenshot của user)
   const [highlights, setHighlights] = useState<string[]>(() => {
-    const existing = (v.summary['vi'] ?? '').split('\n').map((s) => s.trim()).filter(Boolean);
+    const existing = (v.summary?.['vi'] ?? v.summary?.[locale] ?? '').split('\n').map((s) => s.trim()).filter(Boolean);
     if (existing.length > 0) return existing;
     return [
       'Trực diện Biển Mỹ Khê',
@@ -154,7 +154,7 @@ export function PropertyForm({
     key: 'title' | 'summary' | 'description' | 'address' | 'seoTitle' | 'seoDescription',
     text: string,
   ) {
-    setV((prev) => ({ ...prev, [key]: { ...prev[key], [locale]: text } }));
+    setV((prev) => ({ ...prev, [key]: { ...(prev[key] ?? {}), [locale]: text } }));
     setDirty(true);
     setMessage(null);
   }
@@ -166,7 +166,7 @@ export function PropertyForm({
 
   // Tự động nhảy vị trí bản đồ khi gõ địa chỉ
   useEffect(() => {
-    const addr = v.address[locale]?.trim();
+    const addr = (v.address?.[locale] ?? '').trim();
     if (!addr || addr.length < 5) return;
 
     const timer = setTimeout(async () => {
@@ -192,7 +192,7 @@ export function PropertyForm({
   }, [v.address, locale]);
 
   const filled = useMemo(
-    () => Object.fromEntries(LOCALES.map((l) => [l, Boolean(v.title[l]?.trim())])),
+    () => Object.fromEntries(LOCALES.map((l) => [l, Boolean((v.title?.[l] ?? '').trim())])),
     [v.title],
   );
 
@@ -295,16 +295,16 @@ export function PropertyForm({
 
   function buildPayload() {
     const description: Record<string, string[]> = {};
-    for (const [l, text] of Object.entries(v.description)) {
-      const paras = text.split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean);
+    for (const [l, text] of Object.entries(v.description ?? {})) {
+      const paras = text.split('\n\n').map((s) => s.trim()).filter(Boolean);
       if (paras.length) description[l] = paras;
     }
 
-    const clean = (o: Record<string, string>) =>
-      Object.fromEntries(Object.entries(o).filter(([, val]) => val?.trim()));
+    const clean = (o: Record<string, string> | undefined) =>
+      Object.fromEntries(Object.entries(o ?? {}).filter(([, val]) => val?.trim()));
 
     // Đồng bộ highlights vào summary nếu cần
-    const summaryData = { ...v.summary };
+    const summaryData = { ...(v.summary ?? {}) };
     if (highlights.length > 0 && !summaryData[locale]) {
       summaryData[locale] = highlights.join('\n');
     }
@@ -491,11 +491,11 @@ export function PropertyForm({
             enabled={options.aiEnabled}
             modelName={options.modelName}
             current={{
-              title: v.title[locale] ?? '',
-              summary: v.summary[locale] ?? '',
+              title: v.title?.[locale] ?? '',
+              summary: v.summary?.[locale] ?? '',
               // Ô mô tả là một textarea; đoạn ngăn nhau bằng dòng trống, đúng
               // quy ước mà `buildPayload` dùng khi lưu.
-              description: (v.description[locale] ?? '')
+              description: (v.description?.[locale] ?? '')
                 .split(/\n\s*\n/)
                 .map((t) => t.trim())
                 .filter(Boolean),
@@ -690,7 +690,7 @@ export function PropertyForm({
                 Tên / Tiêu đề bất động sản ({locale.toUpperCase()}):
               </label>
               <input
-                value={v.title[locale] ?? ''}
+                value={v.title?.[locale] ?? ''}
                 onChange={(e) => setLocalized('title', e.target.value)}
                 className="font-display text-navy text-[24px] sm:text-[30px] font-normal leading-[1.2] w-full bg-paper/50 border border-dashed border-line group-hover:border-gold p-3 focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold/30 transition-all rounded-lg placeholder:text-navy/30"
                 placeholder="VD: Căn hộ cao cấp Mỹ Khê Beachfront 2PN"
@@ -797,7 +797,7 @@ export function PropertyForm({
             >
               <textarea
                 rows={2}
-                value={v.summary[locale] ?? ''}
+                value={v.summary?.[locale] ?? ''}
                 onChange={(e) => setLocalized('summary', e.target.value)}
                 className={inputClass}
                 placeholder="Mô tả tóm tắt..."
@@ -809,7 +809,7 @@ export function PropertyForm({
                 Nội dung bài viết tổng quan chi tiết:
               </label>
               <RichTextEditor
-                value={v.description[locale] ?? ''}
+                value={v.description?.[locale] ?? ''}
                 onChange={(html) => setLocalized('description', html)}
                 contentKey={locale}
                 placeholder="Viết nội dung giới thiệu tổng quan bất động sản..."
@@ -961,7 +961,7 @@ export function PropertyForm({
                 hint="Nhập địa chỉ bất động sản (VD: 120 Võ Nguyên Giáp, Mỹ An, Ngũ Hành Sơn)"
               >
                 <input
-                  value={v.address[locale] ?? ''}
+                  value={v.address?.[locale] ?? ''}
                   onChange={(e) => setLocalized('address', e.target.value)}
                   className={inputClass}
                   placeholder="VD: 120 Võ Nguyên Giáp, Ngũ Hành Sơn, Đà Nẵng"
