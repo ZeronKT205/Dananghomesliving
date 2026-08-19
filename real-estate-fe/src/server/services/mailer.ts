@@ -13,46 +13,28 @@ import nodemailer, { type Transporter } from 'nodemailer';
  * thì yêu cầu phải vào CMS, còn thông báo chỉ là tiện ích thêm.
  */
 
-const KEY = Symbol.for('dhl.mailer');
-type GlobalWithMailer = typeof globalThis & { [KEY]?: Transporter };
-
 export function isMailConfigured(): boolean {
   return Boolean(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASSWORD);
 }
 
 function transporter(): Transporter {
-  const g = globalThis as GlobalWithMailer;
-
+  const host = process.env.SMTP_HOST;
+  const user = process.env.SMTP_USER;
+  const pass = (process.env.SMTP_PASSWORD ?? '').replace(/\s+/g, '');
   const port = Number(process.env.SMTP_PORT) || 587;
 
-  g[KEY] ??= nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
+  return nodemailer.createTransport({
+    host,
     port,
-    /*
-     * Dùng cổng 587 + STARTTLS, KHÔNG dùng 465.
-     *
-     * Đã đo trên chính máy này: cổng 465 luôn hỏng với
-     * `ECONNREFUSED 2404:6800:...::6c:465` — nodemailer phân giải
-     * smtp.gmail.com ra IPv6 trong khi mạng không có đường IPv6 ra ngoài, và
-     * `family: 4` không sửa được vì nó có bộ phân giải riêng. Cổng 587 kết nối
-     * bình thường. 587 cũng là cổng gửi thư Google khuyến nghị.
-     *
-     * `secure` chỉ bật ở 465 (TLS ngay từ đầu); 587 bắt tay rồi mới nâng cấp
-     * TLS qua STARTTLS, nên `requireTLS` để chắc chắn không gửi thư trần.
-     */
     secure: port === 465,
     requireTLS: port !== 465,
     connectionTimeout: 15_000,
     greetingTimeout: 15_000,
     auth: {
-      user: process.env.SMTP_USER,
-      // Gmail đòi "App password" 16 ký tự, thường được chép kèm dấu cách.
-      // Nodemailer không tự bỏ nên phải lược ở đây, nếu không luôn báo sai mật khẩu.
-      pass: (process.env.SMTP_PASSWORD ?? '').replace(/\s+/g, ''),
+      user,
+      pass,
     },
   });
-
-  return g[KEY];
 }
 
 export interface MailInput {
@@ -71,13 +53,19 @@ export interface MailInput {
  * thành "khách không gửi được yêu cầu".
  */
 export async function sendMail({ to, subject, html, text, replyTo }: MailInput): Promise<boolean> {
-  if (!isMailConfigured()) return false;
+  if (!isMailConfigured()) {
+    console.warn('[mailer] Chưa cấu hình SMTP (thiếu SMTP_HOST, SMTP_USER hoặc SMTP_PASSWORD trong .env.local)');
+    return false;
+  }
 
   const recipient = to || process.env.INQUIRY_NOTIFY_TO || process.env.SMTP_USER;
-  if (!recipient) return false;
+  if (!recipient) {
+    console.warn('[mailer] Không có địa chỉ nhận email');
+    return false;
+  }
 
   try {
-    await transporter().sendMail({
+    const info = await transporter().sendMail({
       // Tên hiển thị để hộp thư nhận ra ngay, địa chỉ vẫn phải là tài khoản
       // SMTP — Gmail từ chối gửi hộ địa chỉ khác.
       from: `"Da Nang Homes & Living" <${process.env.SMTP_USER}>`,
@@ -88,9 +76,10 @@ export async function sendMail({ to, subject, html, text, replyTo }: MailInput):
       // Bấm "Trả lời" là soạn thẳng cho khách, không phải cho chính hộp thư mình.
       ...(replyTo ? { replyTo } : {}),
     });
+    console.log(`[mailer] ✓ Đã gửi email thành công tới [${recipient}]: "${subject}" (MessageID: ${info.messageId})`);
     return true;
   } catch (err) {
-    console.error('[mailer] gui that bai:', err);
+    console.error(`[mailer] ✗ Lỗi gửi email tới [${recipient}]:`, err);
     return false;
   }
 }

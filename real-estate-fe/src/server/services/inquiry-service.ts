@@ -50,8 +50,13 @@ function isBot(input: { website?: string }): boolean {
  * xong một cái email là vô lý — yêu cầu đã nằm trong DB rồi. `sendNewInquiryEmail`
  * tự nuốt mọi lỗi nên không có promise nào bị bỏ rơi mà văng ra.
  */
-function notify(doc: InquiryDoc): void {
-  void import('./inquiry-email').then(({ sendNewInquiryEmail }) => sendNewInquiryEmail(doc));
+async function notify(doc: InquiryDoc): Promise<void> {
+  try {
+    const { sendNewInquiryEmail } = await import('./inquiry-email');
+    await sendNewInquiryEmail(doc);
+  } catch (err) {
+    console.error(`[inquiry-service] Lỗi tiến trình gửi mail cho yêu cầu ${doc.code}:`, err);
+  }
 }
 
 export async function submitQuoteForm(
@@ -82,7 +87,7 @@ export async function submitQuoteForm(
     utm: input.utm ?? null,
   });
 
-  notify(doc);
+  await notify(doc);
   return { code: doc.code };
 }
 
@@ -124,7 +129,7 @@ export async function submitPropertyInquiry(
 
   await incrementInquiryCount(input.propertyId);
 
-  notify(doc);
+  await notify(doc);
   return { code: doc.code };
 }
 
