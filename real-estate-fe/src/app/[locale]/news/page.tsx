@@ -17,6 +17,16 @@ export const metadata: Metadata = {
     'Stay informed with curated real estate analysis, neighbourhood guides, ownership policies, and luxury coastal living insights in Da Nang.',
 };
 
+/*
+ * ISR 60 giây.
+ *
+ * Trang này đọc DB nhưng được dựng sẵn lúc build, nên nếu không có dòng này thì
+ * tin đăng mới KHÔNG bao giờ hiện ra cho tới lần build kế tiếp. Server Action
+ * trong CMS đã gọi `revalidatePath` để cập nhật ngay; con số 60 giây là lưới
+ * an toàn cho những thay đổi không đi qua CMS.
+ */
+export const revalidate = 60;
+
 export default async function NewsPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   setRequestLocale(locale);

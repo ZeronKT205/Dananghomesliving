@@ -39,7 +39,13 @@ export function Button({ variant = 'navy', className, children, ...props }: Butt
   );
 }
 
-type ButtonLinkProps = Omit<AnchorHTMLAttributes<HTMLAnchorElement>, 'popover'> & {
+/*
+ * `Link` của Next nhận `ComponentProps<'a'>` nhưng vài thuộc tính (`popover`,
+ * `ref`) khai lệch nhau giữa React và Next. Loại chúng ra ở kiểu thay vì ép
+ * `as any` lúc truyền — ép kiểu ở chỗ truyền thì mọi lỗi prop sau này đều bị
+ * nuốt.
+ */
+type ButtonLinkProps = Omit<AnchorHTMLAttributes<HTMLAnchorElement>, 'popover' | 'href' | 'ref'> & {
   href: string;
   variant?: Variant;
   children: ReactNode;
@@ -53,7 +59,7 @@ export function ButtonLink({
   ...props
 }: ButtonLinkProps) {
   return (
-    <Link href={href} className={cn(BASE, VARIANTS[variant], className)} {...(props as any)}>
+    <Link href={href} className={cn(BASE, VARIANTS[variant], className)} {...props}>
       {children}
     </Link>
   );

@@ -1,6 +1,13 @@
 interface PropertyOverviewProps {
   description: string[];
-  features: { icon: string; label: string }[];
+  /**
+   * Tên tiện ích, lấy từ bảng `amenities` trong CMS.
+   *
+   * Trước đây nhận `{ icon, label }` với `icon` là chuỗi path SVG lưu kèm dữ
+   * liệu. Bỏ đi: path SVG là tài sản giao diện, để nó trong DB nghĩa là đổi bộ
+   * icon phải chạy migrate dữ liệu. Giờ dùng chung một dấu tích.
+   */
+  features: string[];
 }
 
 export function PropertyOverview({ description, features }: PropertyOverviewProps) {
@@ -25,14 +32,14 @@ export function PropertyOverview({ description, features }: PropertyOverviewProp
             Đặc điểm &amp; Tiện ích nổi bật
           </h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            {features.map((item, i) => (
-              <div key={i} className="flex items-center gap-3 p-4 bg-paper border border-line rounded-none">
+            {features.map((label) => (
+              <div key={label} className="flex items-center gap-3 p-4 bg-paper border border-line rounded-none">
                 <div className="h-8 w-8 rounded-none bg-gold/15 text-gold border border-gold/30 flex items-center justify-center shrink-0">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d={item.icon} />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M5 13l4 4L19 7" />
                   </svg>
                 </div>
-                <span className="text-[13px] font-semibold text-navy">{item.label}</span>
+                <span className="text-[13px] font-semibold text-navy">{label}</span>
               </div>
             ))}
           </div>

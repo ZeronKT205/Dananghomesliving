@@ -5,6 +5,7 @@ import type { Article } from '@/types';
 
 import { getArticleCategoryBySlug, listArticleCategories, listArticles, getPublishedArticleBySlug } from './repositories/article-repo';
 import { getMediaByIds } from './repositories/media-repo';
+import { getSiteSettings } from './site-settings';
 
 import type { ArticleDoc } from './collections';
 
@@ -27,7 +28,13 @@ function formatDate(d: Date | null): string | undefined {
   return d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
 }
 
-async function toArticle(doc: ArticleDoc, locale: Locale, categoryName: string, coverUrl?: string): Promise<Article> {
+async function toArticle(
+  doc: ArticleDoc,
+  locale: Locale,
+  categoryName: string,
+  author: Article['author'],
+  coverUrl?: string,
+): Promise<Article> {
   const title = pickLocale(doc.title, locale, doc.slug);
 
   return {
@@ -39,7 +46,7 @@ async function toArticle(doc: ArticleDoc, locale: Locale, categoryName: string, 
     image: coverUrl ?? PLACEHOLDER_IMAGE,
     imageAlt: title,
     date: formatDate(doc.publishedAt),
-    author: { name: doc.author.name, role: doc.author.role ?? undefined },
+    author,
     content: pickLocale(doc.content, locale, ''),
     tags: doc.tags,
     featured: doc.isFeatured,
@@ -50,10 +57,25 @@ async function toArticle(doc: ArticleDoc, locale: Locale, categoryName: string, 
 async function hydrate(docs: readonly ArticleDoc[], locale: Locale): Promise<Article[]> {
   if (!docs.length) return [];
 
-  const [categories, covers] = await Promise.all([
+  const [categories, covers, settings] = await Promise.all([
     listArticleCategories(),
     getMediaByIds(docs.map((d) => d.coverId).filter((c): c is NonNullable<typeof c> => c !== null)),
+    getSiteSettings(),
   ]);
+
+  /*
+   * Tác giả lấy từ Cài đặt chứ không từ trường `author` lưu trong bài.
+   *
+   * Hiện chỉ một người đăng bài, và ảnh đại diện chỉ có ở Cài đặt. Lấy theo bài
+   * thì đổi tên trong Cài đặt xong các bài cũ vẫn đứng tên cũ — đúng kiểu lỗi
+   * "sửa rồi mà không thấy đổi". Khi nào có nhiều biên tập viên thì chuyển sang
+   * đọc `doc.author` và chỉ dùng Cài đặt làm giá trị mặc định.
+   */
+  const author = {
+    name: settings.author.name,
+    role: settings.author.role || undefined,
+    avatar: settings.author.avatarUrl ?? undefined,
+  };
 
   const catName = new Map(categories.map((c) => [c._id.toHexString(), pickLocale(c.name, locale, c.slug)]));
   const coverUrl = new Map(covers.map((m) => [m._id.toHexString(), m.url]));
@@ -64,6 +86,7 @@ async function hydrate(docs: readonly ArticleDoc[], locale: Locale): Promise<Art
         d,
         locale,
         catName.get(d.categoryId?.toHexString() ?? '') ?? '',
+        author,
         d.coverId ? coverUrl.get(d.coverId.toHexString()) : undefined,
       ),
     ),

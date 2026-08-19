@@ -1,6 +1,7 @@
 import { setRequestLocale } from 'next-intl/server';
 
 import { APP_NAME } from '@/config/constants';
+import { DEFAULT_LOCALE, isLocale } from '@/config/locales';
 import { Link } from '@/i18n/routing';
 import { getAllListings } from '@/lib/db/listings';
 
@@ -28,6 +29,22 @@ export async function generateMetadata({
   };
 }
 
+/*
+ * ISR 60 giây.
+ *
+ * Trang này đọc DB nhưng được dựng sẵn lúc build, nên nếu không có dòng này thì
+ * tin đăng mới KHÔNG bao giờ hiện ra cho tới lần build kế tiếp. Server Action
+ * trong CMS đã gọi `revalidatePath` để cập nhật ngay; con số 60 giây là lưới
+ * an toàn cho những thay đổi không đi qua CMS.
+ */
+/*
+ * Trang này lọc theo `searchParams` (loại giao dịch, khu vực, tầm giá) nên kết
+ * quả khác nhau theo từng lượt truy cập — không có bản dựng sẵn nào đúng cho
+ * mọi tổ hợp bộ lọc. `force-dynamic` là đúng ngữ nghĩa; các trang danh sách
+ * không lọc thì dùng ISR 60 giây.
+ */
+export const dynamic = 'force-dynamic';
+
 export default async function PropertiesPage({
   params,
   searchParams,
@@ -40,7 +57,7 @@ export default async function PropertiesPage({
 
   setRequestLocale(locale);
 
-  let listings = await getAllListings();
+  let listings = await getAllListings(isLocale(locale) ? locale : DEFAULT_LOCALE);
 
   if (type === 'rent' || type === 'sale') {
     listings = listings.filter((item) => item.listingType === type);

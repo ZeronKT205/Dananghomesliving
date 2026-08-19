@@ -304,3 +304,26 @@ export async function getPropertyStats(): Promise<{
 }
 
 export type { PropertyCreateInput, PropertyUpdateInput };
+
+/**
+ * Đếm số bất động sản đang dùng từng tiện ích.
+ *
+ * Dùng cho màn quản lý tiện ích: xoá một tiện ích đang được gắn thì nó biến
+ * mất khỏi mọi tin, nên phải nói rõ con số trước khi hỏi xác nhận.
+ *
+ * Một lượt `$unwind` + `$group` cho tất cả, thay vì `countDocuments` cho từng
+ * tiện ích — hai chục tiện ích là hai chục vòng đi Atlas.
+ */
+export async function countPropertiesByAmenity(): Promise<Map<string, number>> {
+  const col = await propertiesCol();
+
+  const rows = await col
+    .aggregate<{ _id: ObjectId; count: number }>([
+      { $match: { deletedAt: null } },
+      { $unwind: '$amenityIds' },
+      { $group: { _id: '$amenityIds', count: { $sum: 1 } } },
+    ])
+    .toArray();
+
+  return new Map(rows.map((r) => [r._id.toHexString(), r.count]));
+}

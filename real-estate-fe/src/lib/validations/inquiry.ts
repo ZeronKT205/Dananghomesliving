@@ -34,8 +34,15 @@ export const zQuoteFormInput = z.object({
   message: zMessage,
   locale: zLocaleCode.default('vi'),
   utm: z.record(z.string().max(200)).nullable().default(null),
-  // Bẫy bot: trường ẩn, người thật không bao giờ điền.
-  website: z.string().max(0).optional(),
+  /*
+   * Bẫy bot: trường ẩn, người thật không bao giờ điền.
+   *
+   * KHÔNG dùng `.max(0)`. Zod sẽ chặn ngay và trả lỗi có kèm tên trường
+   * `website` — tức mách thẳng cho bot biết bẫy nằm ở đâu để lần sau né, đúng
+   * thứ mà `isBot()` trong service cố tránh bằng cách trả thành công giả.
+   * Ở đây chỉ nhận chuỗi; việc phán xét để service làm.
+   */
+  website: z.string().max(200).optional(),
 });
 
 /** Form hỏi về một BĐS cụ thể (trang chi tiết). */
@@ -48,7 +55,15 @@ export const zPropertyInquiryInput = z.object({
   propertyId: zObjectId,
   locale: zLocaleCode.default('vi'),
   utm: z.record(z.string().max(200)).nullable().default(null),
-  website: z.string().max(0).optional(),
+  /*
+   * Bẫy bot: trường ẩn, người thật không bao giờ điền.
+   *
+   * KHÔNG dùng `.max(0)`. Zod sẽ chặn ngay và trả lỗi có kèm tên trường
+   * `website` — tức mách thẳng cho bot biết bẫy nằm ở đâu để lần sau né, đúng
+   * thứ mà `isBot()` trong service cố tránh bằng cách trả thành công giả.
+   * Ở đây chỉ nhận chuỗi; việc phán xét để service làm.
+   */
+  website: z.string().max(200).optional(),
 });
 
 export const zInquiryQuery = zPagination.extend({

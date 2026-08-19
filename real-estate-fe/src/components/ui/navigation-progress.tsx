@@ -28,16 +28,21 @@ function NavigationProgressInner() {
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
 
-  // Khi pathname hoặc searchParams đổi -> kết thúc progress bar
+  /*
+   * Khi pathname hoặc searchParams đổi -> kết thúc thanh tiến trình.
+   *
+   * `loading` PHẢI nằm trong deps. Trước đây bị bỏ ra để effect chỉ chạy khi
+   * đổi URL, nhưng như vậy React đọc `loading` của lần render cũ — điều hướng
+   * hai lần liên tiếp là thanh kẹt lại. Thay bằng bản cập nhật theo hàm nên
+   * không cần đọc `loading` từ closure nữa.
+   */
   useEffect(() => {
-    if (loading) {
-      setProgress(100);
-      const timer = setTimeout(() => {
-        setLoading(false);
-        setProgress(0);
-      }, 300);
-      return () => clearTimeout(timer);
-    }
+    setProgress(100);
+    const timer = setTimeout(() => {
+      setLoading(false);
+      setProgress(0);
+    }, 300);
+    return () => clearTimeout(timer);
   }, [pathname, searchParams]);
 
   // Lắng nghe click toàn cục để khởi chạy progress bar tức thì khi bấm link hoặc submit form

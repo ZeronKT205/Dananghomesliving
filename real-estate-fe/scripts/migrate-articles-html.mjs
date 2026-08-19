@@ -28,8 +28,6 @@ if (!URI || !DB) {
   process.exit(1);
 }
 
-const CALLOUT_LABEL = { note: 'Ghi nhớ', tip: 'Mẹo', warning: 'Lưu ý' };
-
 const escapeHtml = (s) =>
   s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 

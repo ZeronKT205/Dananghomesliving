@@ -1,7 +1,8 @@
 import { notFound } from 'next/navigation';
 
+import { DEFAULT_LOCALE, isLocale } from '@/config/locales';
 import { Link } from '@/i18n/routing';
-import { MOCK_PROPERTIES } from '@/lib/mock-data';
+import { getPropertyDetail, getSimilarListings } from '@/lib/db/listings';
 
 import { SiteFooter } from '../../../_components/site-footer';
 import { SiteHeader } from '../../../_components/site-header';
@@ -16,13 +17,25 @@ import { PropertyOverview } from './_components/property-overview';
 import { PropertyTabs } from './_components/property-tabs';
 import { SimilarPropertiesPublic } from './_components/similar-properties-public';
 
-export default async function PropertyDetailsPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
-  
-  // Lấy dữ liệu từ mock-data
-  const property = MOCK_PROPERTIES[id];
-  
-  // Nếu không tìm thấy, trả về trang 404
+/*
+ * Đoạn route tên là `[id]` nhưng giá trị thật là SLUG của bất động sản — link
+ * ngoài danh sách đều trỏ tới `/properties/<slug>`. Giữ nguyên tên thư mục vì
+ * đổi sẽ làm hỏng mọi link đã chia sẻ; đặt lại tên biến cho khỏi hiểu nhầm.
+ */
+export default async function PropertyDetailsPage({
+  params,
+}: {
+  params: Promise<{ locale: string; id: string }>;
+}) {
+  const { locale, id: slug } = await params;
+  const lang = isLocale(locale) ? locale : DEFAULT_LOCALE;
+
+  // Hai truy vấn độc lập nhau — chạy song song để khỏi cộng dồn thời gian chờ.
+  const [property, similar] = await Promise.all([
+    getPropertyDetail(slug, lang),
+    getSimilarListings(slug, lang),
+  ]);
+
   if (!property) {
     notFound();
   }
@@ -51,11 +64,13 @@ export default async function PropertyDetailsPage({ params }: { params: Promise<
           <div className="space-y-10 min-w-0">
             <PropertyGallery images={property.images} badges={property.badges} />
             <PropertyTabs />
-            <PropertyOverview description={property.description} features={property.features} />
-            <PropertyLocation 
-              address={property.location.address} 
-              nearby={property.nearby} 
-              keyInfo={property.keyInfo} 
+            <PropertyOverview description={property.description} features={property.amenities} />
+            <PropertyLocation
+              address={property.location.address}
+              nearby={property.nearby}
+              keyInfo={property.keyInfo}
+              latitude={property.geo?.lat}
+              longitude={property.geo?.lng}
             />
           </div>
 
@@ -68,9 +83,9 @@ export default async function PropertyDetailsPage({ params }: { params: Promise<
                 price={property.price} 
                 stats={property.stats} 
               />
-              <ContactButtons id={property.id} listedDate={property.listedDate} updatedDate={property.updatedDate} />
+              <ContactButtons listedDate={property.listedDate} updatedDate={property.updatedDate} />
               <div id="enquiry-form">
-                <EnquiryForm />
+                <EnquiryForm propertySlug={property.slug} propertyTitle={property.title} />
               </div>
             </div>
           </div>
@@ -81,7 +96,7 @@ export default async function PropertyDetailsPage({ params }: { params: Promise<
       {/* Bottom Section */}
       <div className="bg-[#F9FAFB] py-16 mt-16 border-t border-line">
         <div className="container mx-auto px-4 lg:px-8">
-          <SimilarPropertiesPublic currentId={property.id} />
+          <SimilarPropertiesPublic items={similar} />
         </div>
       </div>
 

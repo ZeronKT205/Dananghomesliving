@@ -2,6 +2,7 @@
 
 import { ObjectId } from 'mongodb';
 import { revalidatePath } from 'next/cache';
+import { z, ZodError } from 'zod';
 
 import { requirePermission } from '@/lib/auth/session';
 import type { InquiryStatus, PublishState } from '@/lib/db/collections';
@@ -14,6 +15,7 @@ import {
   updateAmenity,
   updateCategory,
 } from '@/lib/db/repositories/catalog-repo';
+import { revalidatePublicArticles, revalidatePublicProperties } from '@/lib/revalidate-public';
 import { slugify } from '@/lib/validations/common';
 import {
   changeInquiryStatus,
@@ -43,6 +45,22 @@ export type ActionResult =
   | { ok: false; message: string; fields?: Record<string, string[]> };
 
 function fail(err: unknown): ActionResult {
+  /*
+   * ZodError phải bóc ra trước.
+   *
+   * `ZodError.message` là toàn bộ danh sách issue dạng JSON. Không bóc thì
+   * người dùng nhận nguyên khối `[{"code":"custom","path":["social",1,...` —
+   * đã thấy đúng như vậy khi lưu cài đặt với link sai định dạng.
+   */
+  if (err instanceof ZodError) {
+    const fields: Record<string, string[]> = {};
+    for (const issue of err.issues) {
+      const key = issue.path.join('.') || 'form';
+      (fields[key] ??= []).push(issue.message);
+    }
+    return { ok: false, message: err.issues[0]?.message ?? 'Dữ liệu không hợp lệ', fields };
+  }
+
   if (err instanceof Error) {
     const code = (err as { code?: string }).code;
     if (code === 'FORBIDDEN') return { ok: false, message: 'Không đủ quyền thực hiện thao tác này' };
@@ -60,6 +78,7 @@ export async function actionDeleteProperty(id: string): Promise<ActionResult> {
     const user = await requirePermission('content:write');
     await removeProperty(id, user.sub);
     revalidatePath('/admin/properties');
+    revalidatePublicProperties();
     revalidatePath('/admin');
     return { ok: true, message: 'Đã chuyển vào thùng rác' };
   } catch (err) {
@@ -72,6 +91,7 @@ export async function actionRestoreProperty(id: string): Promise<ActionResult> {
     const user = await requirePermission('content:write');
     await undoRemoveProperty(id, user.sub);
     revalidatePath('/admin/properties');
+    revalidatePublicProperties();
     return { ok: true, message: 'Đã khôi phục' };
   } catch (err) {
     return fail(err);
@@ -83,6 +103,7 @@ export async function actionSetPropertyState(id: string, state: PublishState): P
     const user = await requirePermission('content:write');
     await setPublishState(id, state, user.sub);
     revalidatePath('/admin/properties');
+    revalidatePublicProperties();
     revalidatePath('/admin');
     return { ok: true, message: state === 'published' ? 'Đã xuất bản' : 'Đã cập nhật trạng thái' };
   } catch (err) {
@@ -100,6 +121,7 @@ export async function actionSaveProperty(id: string | null, payload: unknown): P
       const input = zPropertyUpdate.parse(payload);
       await updatePropertyFromInput(id, input, user.sub);
       revalidatePath('/admin/properties');
+      revalidatePublicProperties();
       revalidatePath(`/admin/properties/${id}`);
       return { ok: true, message: 'Đã cập nhật', id };
     }
@@ -107,6 +129,7 @@ export async function actionSaveProperty(id: string | null, payload: unknown): P
     const input = zPropertyCreate.parse(payload);
     const created = await createPropertyFromInput(input, user.sub);
     revalidatePath('/admin/properties');
+    revalidatePublicProperties();
     return { ok: true, message: 'Đã tạo bất động sản', id: created._id.toHexString() };
   } catch (err) {
     return fail(err);
@@ -176,11 +199,13 @@ export async function actionSaveArticle(id: string | null, payload: unknown): Pr
         user.sub,
       );
       revalidatePath('/admin/news');
+      revalidatePublicArticles();
       return { ok: true, message: 'Đã cập nhật bài viết', id };
     }
 
     const created = await create(doc, user.sub);
     revalidatePath('/admin/news');
+    revalidatePublicArticles();
     return { ok: true, message: 'Đã tạo bài viết', id: created._id.toHexString() };
   } catch (err) {
     return fail(err);
@@ -192,6 +217,7 @@ export async function actionDeleteArticle(id: string): Promise<ActionResult> {
     const user = await requirePermission('content:write');
     await deleteArticle(id, user.sub);
     revalidatePath('/admin/news');
+    revalidatePublicArticles();
     return { ok: true, message: 'Đã xoá bài viết' };
   } catch (err) {
     return fail(err);
@@ -200,10 +226,23 @@ export async function actionDeleteArticle(id: string): Promise<ActionResult> {
 
 /* ── Yêu cầu tư vấn ───────────────────────────────────── */
 
+/**
+ * Đổi trạng thái một yêu cầu tư vấn.
+ *
+ * PHẢI kiểm `status` bằng Zod dù TypeScript đã khai kiểu: Server Action là một
+ * endpoint HTTP thật, ai cũng gọi thẳng được với giá trị tuỳ ý. Đã đo: gọi với
+ * `status: 'khong-hop-le'` thì chuỗi đó ghi thẳng vào DB, và trang admin tra
+ * `INQUIRY_STATUS[status]` ra `undefined` rồi vỡ khi render.
+ */
 export async function actionSetInquiryStatus(id: string, status: InquiryStatus): Promise<ActionResult> {
   try {
     const user = await requirePermission('inquiry:write');
-    await changeInquiryStatus(id, status, user.sub);
+
+    const { zInquiryStatus } = await import('@/lib/validations/inquiry');
+    const parsed = zInquiryStatus.safeParse(status);
+    if (!parsed.success) return { ok: false, message: 'Trạng thái không hợp lệ' };
+
+    await changeInquiryStatus(id, parsed.data, user.sub);
     revalidatePath('/admin/inquiries');
     revalidatePath('/admin');
     return { ok: true, message: 'Đã cập nhật trạng thái' };
@@ -237,18 +276,43 @@ export async function actionDeleteInquiry(id: string): Promise<ActionResult> {
 
 /* ── Danh mục & tiện ích ──────────────────────────────── */
 
+/*
+ * Kiểm dữ liệu form ở RUNTIME, không chỉ dựa vào kiểu TypeScript.
+ *
+ * Server Action là một endpoint HTTP thật: `required` trên ô input chỉ chặn
+ * được người dùng bình thường. Đã đo — gọi thẳng với tên rỗng thì tạo ra nhóm
+ * không tên, slug rỗng; gọi với `group: 'khong-hop-le'` thì tiện ích lọt vào DB
+ * rồi biến mất khỏi mọi nhóm trong giao diện quản lý.
+ */
+const zCategoryForm = z.object({
+  name: z.string().trim().min(1, 'Chưa nhập tên nhóm').max(120),
+  nameEn: z.string().trim().max(120).optional().default(''),
+  showOnHome: z.boolean(),
+  order: z.coerce.number().int().min(0).max(999),
+});
+
+const zAmenityForm = z.object({
+  name: z.string().trim().min(1, 'Chưa nhập tên tiện ích').max(120),
+  nameEn: z.string().trim().max(120).optional().default(''),
+  icon: z.string().trim().max(60).default('check'),
+  group: z.enum(['indoor', 'outdoor', 'security', 'service']),
+  order: z.coerce.number().int().min(0).max(999),
+});
+
 export async function actionSaveCategory(
   id: string | null,
   data: { name: string; nameEn?: string; showOnHome: boolean; order: number },
 ): Promise<ActionResult> {
   try {
     const user = await requirePermission('content:write');
+    const clean = zCategoryForm.parse(data);
+
     const payload = {
-      slug: slugify(data.nameEn || data.name),
-      name: { vi: data.name, en: data.nameEn || data.name },
+      slug: slugify(clean.nameEn || clean.name),
+      name: { vi: clean.name, en: clean.nameEn || clean.name },
       description: null,
-      showOnHome: data.showOnHome,
-      order: data.order,
+      showOnHome: clean.showOnHome,
+      order: clean.order,
       coverId: null,
       propertyCount: 0,
     };
@@ -256,10 +320,12 @@ export async function actionSaveCategory(
     if (id) {
       await updateCategory(id, payload, user.sub);
       revalidatePath('/admin/properties');
+      revalidatePublicProperties();
       return { ok: true, message: 'Đã cập nhật nhóm' };
     }
     const created = await createCategory(payload, user.sub);
     revalidatePath('/admin/properties');
+    revalidatePublicProperties();
     return { ok: true, message: 'Đã tạo nhóm', id: created._id.toHexString() };
   } catch (err) {
     return fail(err);
@@ -276,6 +342,7 @@ export async function actionDeleteCategory(id: string): Promise<ActionResult> {
       return { ok: false, message: `Còn ${res.count} bất động sản thuộc nhóm này. Chuyển chúng sang nhóm khác trước.` };
     }
     revalidatePath('/admin/properties');
+    revalidatePublicProperties();
     return { ok: true, message: 'Đã xoá nhóm' };
   } catch (err) {
     return fail(err);
@@ -288,12 +355,14 @@ export async function actionSaveAmenity(
 ): Promise<ActionResult> {
   try {
     const user = await requirePermission('content:write');
+    const clean = zAmenityForm.parse(data);
+
     const payload = {
-      slug: slugify(data.nameEn || data.name),
-      name: { vi: data.name, en: data.nameEn || data.name },
-      icon: data.icon,
-      group: data.group,
-      order: data.order,
+      slug: slugify(clean.nameEn || clean.name),
+      name: { vi: clean.name, en: clean.nameEn || clean.name },
+      icon: clean.icon,
+      group: clean.group,
+      order: clean.order,
     };
     if (id) {
       await updateAmenity(id, payload, user.sub);
@@ -301,6 +370,7 @@ export async function actionSaveAmenity(
       await createAmenity(payload, user.sub);
     }
     revalidatePath('/admin/properties');
+    revalidatePublicProperties();
     return { ok: true, message: 'Đã lưu tiện ích' };
   } catch (err) {
     return fail(err);
@@ -312,6 +382,7 @@ export async function actionDeleteAmenity(id: string): Promise<ActionResult> {
     const user = await requirePermission('content:write');
     await deleteAmenity(id, user.sub);
     revalidatePath('/admin/properties');
+    revalidatePublicProperties();
     return { ok: true, message: 'Đã xoá tiện ích' };
   } catch (err) {
     return fail(err);
@@ -407,6 +478,8 @@ export async function actionSaveArticleCategory(
     }
 
     revalidatePath('/admin/news');
+
+    revalidatePublicArticles();
     return { ok: true, message: 'Đã lưu chuyên mục', id: savedId ?? undefined };
   } catch (err) {
     return fail(err);
@@ -424,6 +497,7 @@ export async function actionDeleteArticleCategory(id: string): Promise<ActionRes
       return { ok: false, message: `Còn ${res.count} bài viết thuộc chuyên mục này. Chuyển chúng sang chuyên mục khác trước.` };
     }
     revalidatePath('/admin/news');
+    revalidatePublicArticles();
     return { ok: true, message: 'Đã xoá chuyên mục' };
   } catch (err) {
     return fail(err);
@@ -496,6 +570,83 @@ export async function actionComposeArticle(
       failedLocales: bundle.failedLocales as never,
       stats: bundle.stats,
     };
+  } catch (err) {
+    const r = fail(err);
+    return { ok: false, message: r.ok ? 'Lỗi không xác định' : r.message };
+  }
+}
+
+/* ── Cài đặt website ──────────────────────────────────── */
+
+/**
+ * Lưu cài đặt website.
+ *
+ * `revalidatePath('/', 'layout')` là bắt buộc: cài đặt hiện ở header và footer
+ * của MỌI trang public. Chỉ revalidate trang cài đặt thì đổi số hotline xong
+ * ngoài web vẫn hiện số cũ cho tới khi cache tự hết hạn.
+ */
+export async function actionSaveSettings(input: unknown): Promise<ActionResult> {
+  try {
+    const user = await requirePermission('user:manage');
+    const { zSiteSettings } = await import('@/lib/validations/settings');
+    const { saveSettings } = await import('@/lib/db/repositories/settings-repo');
+
+    const data = zSiteSettings.parse(input);
+    await saveSettings(data, user.sub);
+
+    revalidatePath('/', 'layout');
+    revalidatePath('/admin/settings');
+
+    return { ok: true, message: 'Đã lưu cài đặt' };
+  } catch (err) {
+    return fail(err);
+  }
+}
+
+/* ── AI cho tin bất động sản ──────────────────────────── */
+
+type PropertyAiResult =
+  | { ok: true; text: { title: string; summary: string; description: string[] } }
+  | { ok: false; message: string };
+
+/** Dựng tiêu đề, tóm tắt và mô tả từ ghi chú thô của môi giới. */
+export async function actionComposeProperty(raw: string, locale: string): Promise<PropertyAiResult> {
+  try {
+    await requirePermission('content:write');
+    const { composePropertyText } = await import('@/server/services/property-ai-service');
+    const { isLocale } = await import('@/config/locales');
+
+    if (!isLocale(locale)) return { ok: false, message: 'Ngôn ngữ không hợp lệ' };
+
+    return { ok: true, text: await composePropertyText(raw, locale) };
+  } catch (err) {
+    const r = fail(err);
+    return { ok: false, message: r.ok ? 'Lỗi không xác định' : r.message };
+  }
+}
+
+type PropertyTranslateResult =
+  | {
+      ok: true;
+      translations: Record<string, { title: string; summary: string; description: string[] }>;
+      failed: string[];
+    }
+  | { ok: false; message: string };
+
+/** Dịch tin sang ba ngôn ngữ còn lại trong một lượt gọi. */
+export async function actionTranslateProperty(
+  source: { title: string; summary: string; description: string[] },
+  locale: string,
+): Promise<PropertyTranslateResult> {
+  try {
+    await requirePermission('content:write');
+    const { translatePropertyText } = await import('@/server/services/property-ai-service');
+    const { isLocale } = await import('@/config/locales');
+
+    if (!isLocale(locale)) return { ok: false, message: 'Ngôn ngữ không hợp lệ' };
+
+    const { translations, failed } = await translatePropertyText(source, locale);
+    return { ok: true, translations: translations as never, failed };
   } catch (err) {
     const r = fail(err);
     return { ok: false, message: r.ok ? 'Lỗi không xác định' : r.message };

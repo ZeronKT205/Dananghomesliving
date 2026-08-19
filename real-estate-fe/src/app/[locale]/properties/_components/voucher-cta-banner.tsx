@@ -1,14 +1,19 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useLocale } from 'next-intl';
+import { useState, useEffect, useTransition } from 'react';
 import { createPortal } from 'react-dom';
 
 import { BrandLogo } from '@/components/ui/brand-logo';
+import { actionSubmitQuote } from '@/server/actions/public-actions';
 
 export function VoucherCtaBanner() {
   const [isOpen, setIsOpen] = useState(false);
+  const locale = useLocale();
   const [submitted, setSubmitted] = useState(false);
-  const [busy, setBusy] = useState(false);
+  const [busy, startSending] = useTransition();
+  const [error, setError] = useState<string | null>(null);
+  const [website, setWebsite] = useState(''); // bẫy bot
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -45,18 +50,48 @@ export function VoucherCtaBanner() {
     };
   }, [isOpen]);
 
+  /*
+   * Gửi thật vào bảng `inquiries`.
+   *
+   * Trước đây chỉ `setTimeout(700)` rồi hiện màn hình cảm ơn — khách để lại số
+   * điện thoại xong không ai nhận được, mà không có dấu hiệu nào cho thấy hỏng.
+   *
+   * Loại BĐS quan tâm và thời gian thuận tiện gộp vào `message`: bảng
+   * `inquiries` không có cột riêng cho chúng, và thêm cột chỉ để phục vụ một
+   * form thì mọi nơi khác phải mang theo hai cột rỗng.
+   */
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setBusy(true);
+    setError(null);
 
-    setTimeout(() => {
-      setBusy(false);
+    startSending(async () => {
+      const res = await actionSubmitQuote({
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        service: 'other',
+        message: [
+          formData.note.trim(),
+          `Loại BĐS quan tâm: ${formData.propertyType}`,
+          `Thời gian thuận tiện: ${formData.preferredTime}`,
+        ]
+          .filter(Boolean)
+          .join('\n'),
+        locale,
+        website,
+      });
+
+      if (!res.ok) {
+        setError(res.message);
+        return;
+      }
       setSubmitted(true);
-    }, 700);
+    });
   };
 
   const handleReset = () => {
     setSubmitted(false);
+    setError(null);
     setIsOpen(false);
     setFormData({
       name: '',
@@ -239,6 +274,26 @@ export function VoucherCtaBanner() {
                       className="w-full bg-paper border border-line focus:border-gold focus:outline-none px-3.5 py-2.5 text-[13px] font-medium text-navy rounded-none resize-none"
                     />
                   </div>
+
+                  {/* Bẫy bot: ẩn với người dùng và trình đọc màn hình. */}
+                  <input
+                    type="text"
+                    tabIndex={-1}
+                    autoComplete="off"
+                    aria-hidden="true"
+                    value={website}
+                    onChange={(e) => setWebsite(e.target.value)}
+                    className="hidden"
+                  />
+
+                  {error ? (
+                    <p
+                      role="alert"
+                      className="rounded border border-[#e5b8b8] bg-[#fdf4f4] px-3 py-2 text-[12px] text-[#a33]"
+                    >
+                      {error}
+                    </p>
+                  ) : null}
 
                   <button
                     type="submit"

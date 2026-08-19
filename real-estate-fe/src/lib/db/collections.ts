@@ -29,6 +29,7 @@ export const COLLECTIONS = {
   users: 'users',
   sessions: 'sessions',
   redirects: 'redirects',
+  settings: 'settings',
 } as const;
 
 /** Trường dịch được ở tầng DB. */
@@ -295,6 +296,29 @@ export async function articleCategoriesCol(): Promise<Collection<ArticleCategory
 export async function inquiriesCol(): Promise<Collection<InquiryDoc>> {
   return (await getDb()).collection<InquiryDoc>(COLLECTIONS.inquiries);
 }
+/* ─────────────── settings ─────────────── */
+
+/**
+ * Cài đặt website — MỘT document duy nhất, khoá cố định `SETTINGS_KEY`.
+ *
+ * Dùng một document thay vì bảng khoá-giá trị: đọc một phát ra cả cụm, và
+ * schema Zod kiểm được toàn bộ cùng lúc thay vì từng dòng rời rạc.
+ */
+export const SETTINGS_KEY = 'site';
+
+export interface SettingsDoc extends BaseDoc {
+  key: typeof SETTINGS_KEY;
+  brand: { name: string; tagline: string; description: string };
+  contact: { email: string; phone: string; address: string; city: string; hours: string };
+  social: Array<{ platform: string; href: string; enabled: boolean }>;
+  /** Tác giả mặc định hiện trên bài viết. `avatarId` giữ để dọn media không dùng. */
+  author: { name: string; role: string; avatarUrl: string | null; avatarId: ObjectId | null };
+}
+
+export async function settingsCol(): Promise<Collection<SettingsDoc>> {
+  return (await getDb()).collection<SettingsDoc>(COLLECTIONS.settings);
+}
+
 export async function mediaCol(): Promise<Collection<MediaDoc>> {
   return (await getDb()).collection<MediaDoc>(COLLECTIONS.media);
 }

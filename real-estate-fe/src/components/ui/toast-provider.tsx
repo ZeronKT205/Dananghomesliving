@@ -80,7 +80,9 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
 export function useToast() {
   const context = useContext(ToastContext);
   if (!context) {
-    return { showToast: (msg: string) => console.log('Toast:', msg) };
+    // Dùng ngoài provider là lỗi lập trình, không phải chuyện bình thường —
+    // `console.warn` để nó nổi lên trong console thay vì lẫn vào log thường.
+    return { showToast: (msg: string) => console.warn('[toast] dùng ngoài provider:', msg) };
   }
   return context;
 }

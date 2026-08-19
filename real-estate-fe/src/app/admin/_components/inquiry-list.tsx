@@ -4,9 +4,12 @@ import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 
+import type { InquiryStatus } from '@/lib/db/collections';
+
 import { formatUsd, INQUIRY_STATUS, LOCALE_LABEL } from '../_data/view-models';
 
 import { IcAlert, IcClock, IcClose, IcGlobe, IcInbox, IcPhone, IcTag } from './icons';
+import { InquiryActions } from './inquiry-actions';
 import { Avatar, EmptyState, Pill } from './ui';
 
 import type { AdminInquiry } from '../_data/view-models';
@@ -17,9 +20,24 @@ export function InquiryList({ inquiries }: { inquiries: AdminInquiry[] }) {
   const [openId, setOpenId] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
 
+  /*
+   * Trạng thái vừa đổi, ghi đè lên dữ liệu từ server.
+   *
+   * `router.refresh()` mất vài trăm ms mới trả dữ liệu mới về; trong khoảng đó
+   * người dùng vẫn thấy nhãn cũ và tưởng bấm hụt. Map này giữ giá trị mới cho
+   * tới khi server trả về đúng nó.
+   */
+  const [overrides, setOverrides] = useState<Record<string, InquiryStatus>>({});
+
   useEffect(() => setMounted(true), []);
 
-  const selected = inquiries.find((item) => item.id === openId) ?? null;
+  const withOverride = (item: AdminInquiry): AdminInquiry =>
+    overrides[item.id] ? { ...item, status: overrides[item.id]! } : item;
+
+  const selected = (() => {
+    const found = inquiries.find((item) => item.id === openId);
+    return found ? withOverride(found) : null;
+  })();
 
   // BĐS đã được join sẵn ở tầng server (presenters.ts) — client không truy DB
   // được, và tra cứu trong mảng như bản mock thì không còn mảng nào để tra.
@@ -51,57 +69,85 @@ export function InquiryList({ inquiries }: { inquiries: AdminInquiry[] }) {
 
   return (
     <>
-      <ul className="divide-line-soft divide-y">
-        {inquiries.map((item) => {
-          const status = INQUIRY_STATUS[item.status];
-          return (
-            <li key={item.id}>
-              <button
-                type="button"
-                onClick={() => setOpenId(item.id)}
-                className="border-l-2 border-transparent hover:border-gold hover:bg-ivory/60 focus-visible:outline-gold flex w-full cursor-pointer items-center gap-3 px-4 py-3 text-left transition-all duration-300 hover:pl-5 focus-visible:outline-2 focus-visible:-outline-offset-2"
-              >
-                <Avatar name={item.name} />
+      {/* Container Thẻ Bảng màu Trắng giúp nổi bật trên nền Ivory */}
+      <div className="bg-white border border-line rounded-xl shadow-xs overflow-hidden">
+        {/* Table Header Row */}
+        <div className="hidden md:grid grid-cols-[1.5fr_1.2fr_2fr_1.2fr_1fr_60px] items-center gap-3 bg-navy/5 border-b border-line px-5 py-3 text-[11px] font-extrabold uppercase tracking-wider text-navy">
+          <span>Khách hàng &amp; SĐT</span>
+          <span>Dịch vụ quan tâm</span>
+          <span>Lời nhắn từ khách</span>
+          <span className="text-right">Thời gian gửi</span>
+          <span className="text-center">Trạng thái</span>
+          <span className="text-right">Thao tác</span>
+        </div>
 
-                <span className="min-w-0 flex-[1.4]">
-                  <span className="text-navy flex items-center gap-1.5 text-[13px] font-bold">
-                    <span className="truncate">{item.name}</span>
-                    {item.overdue ? (
-                      <IcAlert size={12} className="shrink-0 text-[#8a4038]" />
-                    ) : null}
-                  </span>
-                  <span className="text-muted flex items-center gap-1.5 text-[11.5px]">
-                    <IcPhone size={10} />
-                    {item.phone}
-                  </span>
-                  <span className="text-muted/70 block text-[10.5px]">{item.code}</span>
-                </span>
+        <ul className="divide-y divide-line">
+          {inquiries.map((item) => {
+            const status = INQUIRY_STATUS[withOverride(item).status];
+            return (
+              <li key={item.id} className="hover:bg-gold/5 transition-colors">
+                <button
+                  type="button"
+                  onClick={() => setOpenId(item.id)}
+                  className="group flex w-full cursor-pointer items-center justify-between gap-3 px-5 py-3.5 text-left focus-visible:outline-2 focus-visible:outline-gold"
+                >
+                  {/* Khách hàng */}
+                  <div className="flex items-center gap-3 min-w-0 flex-[1.5]">
+                    <Avatar name={item.name} />
+                    <div className="min-w-0">
+                      <div className="text-navy text-[13.5px] font-bold flex items-center gap-1.5 truncate">
+                        <span className="truncate">{item.name}</span>
+                        {item.overdue ? (
+                          <span className="bg-red-100 text-red-700 px-1.5 py-0.2 rounded text-[10px] font-bold border border-red-200">
+                            Quá hạn
+                          </span>
+                        ) : null}
+                      </div>
+                      <div className="text-muted text-[11.5px] flex items-center gap-1 mt-0.5">
+                        <IcPhone size={11} className="text-gold shrink-0" />
+                        <span>{item.phone}</span>
+                      </div>
+                      <div className="text-muted/60 text-[10.5px] font-mono mt-0.5">{item.code}</div>
+                    </div>
+                  </div>
 
-                <span className="hidden min-w-0 flex-1 md:block">
-                  <span className="bg-navy/6 text-navy inline-block rounded px-2 py-[3px] text-[10.5px] font-bold">
-                    {item.service}
-                  </span>
-                </span>
+                  {/* Dịch vụ */}
+                  <div className="hidden md:block flex-[1.2] min-w-0">
+                    <span className="bg-navy/8 text-navy font-bold px-2.5 py-1 rounded text-[11px] border border-navy/10 inline-block truncate max-w-full">
+                      {item.service}
+                    </span>
+                  </div>
 
-                <span className="text-muted hidden min-w-0 flex-[1.6] truncate text-[12px] lg:block">
-                  {item.message}
-                </span>
+                  {/* Lời nhắn */}
+                  <div className="hidden md:block flex-[2] min-w-0">
+                    <p className="text-navy/80 text-[12.5px] leading-snug line-clamp-2">
+                      {item.message || '—'}
+                    </p>
+                  </div>
 
-                <span className="hidden shrink-0 text-right xl:block">
-                  <span className="text-navy block text-[12px] font-bold">
-                    {item.receivedLabel}
-                  </span>
-                  <span className="text-muted block text-[10.5px]">{item.receivedAt}</span>
-                </span>
+                  {/* Thời gian */}
+                  <div className="hidden md:block flex-[1.2] text-right shrink-0">
+                    <div className="text-navy text-[12px] font-bold">{item.receivedLabel}</div>
+                    <div className="text-muted text-[10.5px] font-mono">{item.receivedAt}</div>
+                  </div>
 
-                <span className="shrink-0">
-                  <Pill tone={status.tone}>{status.label}</Pill>
-                </span>
-              </button>
-            </li>
-          );
-        })}
-      </ul>
+                  {/* Trạng thái */}
+                  <div className="shrink-0 text-center">
+                    <Pill tone={status.tone}>{status.label}</Pill>
+                  </div>
+
+                  {/* Nút Xem */}
+                  <div className="shrink-0 text-right">
+                    <span className="bg-paper border border-line text-navy group-hover:border-gold group-hover:text-gold px-2.5 py-1 rounded text-[11px] font-bold transition-colors">
+                      Xem →
+                    </span>
+                  </div>
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
 
       {selected && mounted
         ? createPortal(
@@ -211,7 +257,10 @@ export function InquiryList({ inquiries }: { inquiries: AdminInquiry[] }) {
                   {/* Nội dung là đoạn văn nên vẫn giữ nhãn, khác với mấy mục ngắn ở trên. */}
                   <div>
                     <p className="text-muted mb-1.5 text-[11px]">Nội dung khách gửi</p>
-                    <p className="border-line bg-ivory/40 text-navy rounded-md border p-3 text-[12px] leading-relaxed">
+                    {/* `whitespace-pre-line`: khách hay xuống dòng, và form voucher
+                        cũng ghép nhiều dòng vào đây. Không giữ xuống dòng thì mọi
+                        thứ dồn thành một khối chữ khó đọc. */}
+                    <p className="border-line bg-ivory/40 text-navy rounded-md border p-3 text-[12px] leading-relaxed whitespace-pre-line">
                       {selected.message}
                     </p>
                   </div>
@@ -224,23 +273,12 @@ export function InquiryList({ inquiries }: { inquiries: AdminInquiry[] }) {
                   ) : null}
                 </div>
 
-                <footer className="border-line flex shrink-0 gap-2 border-t p-3">
-                  <button
-                    type="button"
-                    disabled
-                    title="Chức năng đổi trạng thái chưa được xây dựng"
-                    className="border-line text-muted h-9 flex-1 cursor-not-allowed rounded-md border border-dashed text-[12px] font-bold"
-                  >
-                    Đổi trạng thái
-                  </button>
-                  <a
-                    href={`tel:${selected.phone.replace(/\s/g, '')}`}
-                    className="bg-navy hover:bg-navy-2 focus-visible:outline-gold inline-flex h-9 flex-[1.3] items-center justify-center gap-2 rounded-md text-[12px] font-bold text-white transition-colors focus-visible:outline-2"
-                  >
-                    <IcPhone size={13} />
-                    Gọi ngay
-                  </a>
-                </footer>
+                <InquiryActions
+                  id={selected.id}
+                  status={selected.status}
+                  phone={selected.phone}
+                  onChanged={(next) => setOverrides((p) => ({ ...p, [selected.id]: next }))}
+                />
               </aside>
             </div>,
             document.body,

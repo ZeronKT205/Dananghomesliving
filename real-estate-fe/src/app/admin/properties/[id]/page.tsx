@@ -3,6 +3,8 @@ import { notFound } from 'next/navigation';
 import { listAmenities, listCategories } from '@/lib/db/repositories/catalog-repo';
 import { getMediaByIds } from '@/lib/db/repositories/media-repo';
 import { getPropertyById } from '@/lib/db/repositories/property-repo';
+import { aiModelName } from '@/server/services/ai-client';
+import { isTranslationConfigured } from '@/server/services/translation-service';
 
 import { PropertyForm, type PropertyFormValue } from './_components/property-form';
 
@@ -22,7 +24,13 @@ export default async function EditPropertyPage({ params }: { params: Promise<{ i
 
   const [categories, amenities] = await Promise.all([listCategories(), listAmenities()]);
 
+  // Có khoá AI hay không quyết định hiện panel trợ lý.
+  const aiEnabled = isTranslationConfigured();
+  const modelName = aiModelName();
+
   const options = {
+    aiEnabled,
+    modelName,
     categories: categories.map((c) => ({ id: c._id.toHexString(), name: c.name.vi ?? c.name.en ?? c.slug })),
     amenities: amenities.map((a) => ({
       id: a._id.toHexString(),

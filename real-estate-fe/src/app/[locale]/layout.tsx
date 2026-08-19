@@ -5,12 +5,14 @@ import { notFound } from 'next/navigation';
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, setRequestLocale } from 'next-intl/server';
 
+import { SiteSettingsProvider } from '@/components/site-settings-provider';
 import { InitialBrandLoader } from '@/components/ui/initial-brand-loader';
 import { NavigationProgress } from '@/components/ui/navigation-progress';
 import { ToastProvider } from '@/components/ui/toast-provider';
 import { APP_DESCRIPTION, APP_NAME } from '@/config/constants';
 import { isLocale } from '@/config/locales';
 import { routing } from '@/i18n/routing';
+import { getSiteSettings } from '@/lib/db/site-settings';
 
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
@@ -105,7 +107,8 @@ export default async function RootLayout({
   }
 
   setRequestLocale(locale);
-  const messages = await getMessages();
+  // Đọc song song: cả hai đều là điều kiện để render được layout.
+  const [messages, settings] = await Promise.all([getMessages(), getSiteSettings()]);
 
   return (
     <html
@@ -115,11 +118,13 @@ export default async function RootLayout({
     >
       <body className="bg-paper text-ink min-h-screen overflow-x-hidden antialiased">
         <NextIntlClientProvider messages={messages}>
-          <ToastProvider>
-            <InitialBrandLoader />
-            <NavigationProgress />
-            {children}
-          </ToastProvider>
+          <SiteSettingsProvider value={settings}>
+            <ToastProvider>
+              <InitialBrandLoader />
+              <NavigationProgress />
+              {children}
+            </ToastProvider>
+          </SiteSettingsProvider>
         </NextIntlClientProvider>
       </body>
     </html>

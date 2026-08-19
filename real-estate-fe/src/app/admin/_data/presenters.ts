@@ -53,6 +53,12 @@ export function toAdminProperty(
     title: pickLocale(doc.title, 'vi', doc.slug),
     summary: pickLocale(doc.summary, 'vi', ''),
     district: doc.location.district || '—',
+    address:
+      pickLocale(doc.location.address, 'vi', '') ||
+      [doc.location.ward, doc.location.district, doc.location.city].filter(Boolean).join(', '),
+    // GeoJSON lưu [lng, lat] — ngược với thói quen đọc, rất dễ đảo nhầm.
+    lat: doc.location.geo?.coordinates[1] ?? null,
+    lng: doc.location.geo?.coordinates[0] ?? null,
     priceUsd: doc.price.usd,
     perMonth: doc.price.period === 'month',
     groupId: doc.categoryId.toHexString(),

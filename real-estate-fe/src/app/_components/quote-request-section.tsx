@@ -1,12 +1,14 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useLocale } from 'next-intl';
+import { useCallback, useEffect, useRef, useState, useTransition } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { SectionKicker } from '@/components/ui/section-heading';
 import { useToast } from '@/components/ui/toast-provider';
 import { QUOTE_SERVICE_OPTIONS } from '@/config/constants';
 import { cn } from '@/lib/utils';
+import { actionSubmitQuote } from '@/server/actions/public-actions';
 
 
 /* ── Cam kết hiển thị cạnh form ──────────────────────────── */
@@ -78,25 +80,59 @@ function triggerConfetti(canvas: HTMLCanvasElement) {
   return () => cancelAnimationFrame(frame);
 }
 
+const EMPTY_QUOTE = { name: '', email: '', phone: '', service: '', message: '' };
+
 export function QuoteRequestSection() {
-  const [loading, setLoading] = useState(false);
+  const locale = useLocale();
+  const [loading, startSending] = useTransition();
   const [submitted, setSubmitted] = useState(false);
   const [countdown, setCountdown] = useState(6);
+  const [form, setForm] = useState(EMPTY_QUOTE);
+  const [website, setWebsite] = useState(''); // bẫy bot
+  const [error, setError] = useState<string | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const { showToast } = useToast();
 
-  const handleSubmit = useCallback((e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    
-    // Simulate brief API request delay for smooth UX loading feel
-    setTimeout(() => {
-      setLoading(false);
-      setSubmitted(true);
-      setCountdown(6);
-      showToast('Enquiry sent! We will contact you shortly.', 'success');
-    }, 600);
-  }, [showToast]);
+  const set = useCallback((k: keyof typeof EMPTY_QUOTE, value: string) => {
+    setForm((p) => ({ ...p, [k]: value }));
+  }, []);
+
+  /*
+   * Gửi thật vào bảng `inquiries`.
+   *
+   * Trước đây chỉ `setTimeout(600)` rồi bắn pháo giấy — khách tưởng đã gửi, còn
+   * CMS không nhận được gì. Đây là kiểu lỗi tệ nhất vì không ai phát hiện ra
+   * cho tới lúc khách gọi hỏi sao không thấy hồi âm.
+   */
+  const handleSubmit = useCallback(
+    (e: React.FormEvent) => {
+      e.preventDefault();
+      setError(null);
+
+      startSending(async () => {
+        const res = await actionSubmitQuote({
+          name: form.name,
+          email: form.email,
+          phone: form.phone || null,
+          service: form.service || null,
+          message: form.message,
+          locale,
+          website,
+        });
+
+        if (!res.ok) {
+          setError(res.message);
+          return;
+        }
+
+        setSubmitted(true);
+        setCountdown(6);
+        setForm(EMPTY_QUOTE);
+        showToast('Đã gửi yêu cầu! Chúng tôi sẽ liên hệ lại sớm.', 'success');
+      });
+    },
+    [form, locale, showToast, website],
+  );
 
   /* Confetti + countdown timer sau khi gửi */
   useEffect(() => {
@@ -191,6 +227,8 @@ export function QuoteRequestSection() {
                       id="q-name"
                       type="text"
                       required
+                      value={form.name}
+                      onChange={(e) => set('name', e.target.value)}
                       placeholder="e.g. Nguyen Van A"
                       className={cn(inputClass)}
                     />
@@ -208,6 +246,8 @@ export function QuoteRequestSection() {
                       id="q-email"
                       type="email"
                       required
+                      value={form.email}
+                      onChange={(e) => set('email', e.target.value)}
                       placeholder="name@example.com"
                       className={cn(inputClass)}
                     />
@@ -224,6 +264,8 @@ export function QuoteRequestSection() {
                     <input
                       id="q-phone"
                       type="tel"
+                      value={form.phone}
+                      onChange={(e) => set('phone', e.target.value)}
                       placeholder="+84 909 123 456"
                       className={cn(inputClass)}
                     />
@@ -237,7 +279,13 @@ export function QuoteRequestSection() {
                     >
                       Interest *
                     </label>
-                    <select id="q-interest" required className={cn(inputClass)}>
+                    <select
+                      id="q-interest"
+                      required
+                      value={form.service}
+                      onChange={(e) => set('service', e.target.value)}
+                      className={cn(inputClass)}
+                    >
                       <option value="" className="text-navy bg-white">
                         — Select —
                       </option>
@@ -260,11 +308,34 @@ export function QuoteRequestSection() {
                     <textarea
                       id="q-message"
                       rows={4}
+                      required
+                      value={form.message}
+                      onChange={(e) => set('message', e.target.value)}
                       placeholder="Preferred area, number of bedrooms, budget range, move-in date…"
                       className={cn(inputClass, 'resize-y')}
                     />
                   </div>
+
+                  {/* Bẫy bot: ẩn với người dùng và trình đọc màn hình. */}
+                  <input
+                    type="text"
+                    tabIndex={-1}
+                    autoComplete="off"
+                    aria-hidden="true"
+                    value={website}
+                    onChange={(e) => setWebsite(e.target.value)}
+                    className="hidden"
+                  />
                 </div>
+
+                {error ? (
+                  <p
+                    role="alert"
+                    className="mt-4 rounded border border-[#e5b8b8] bg-[#fdf4f4] px-3 py-2 text-[12px] text-[#a33]"
+                  >
+                    {error}
+                  </p>
+                ) : null}
 
                 <Button type="submit" variant="gold" disabled={loading} className="mt-6 w-full sm:w-auto">
                   {loading ? (

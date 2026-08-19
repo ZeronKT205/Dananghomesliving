@@ -1,14 +1,54 @@
 'use client';
 
-import React, { useState, useEffect, useMemo, useRef } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 
 import "leaflet/dist/leaflet.css";
+
+import type { GeoJsonObject } from "geojson";
+import type * as ReactLeafletModule from "react-leaflet";
 
 // Ranh giới phường nằm ở public/geo/, KHÔNG import tĩnh. Import tĩnh sẽ nhét
 // nguyên file JSON vào bundle client — trước đây là chunk 7.4 MB khiến
 // /admin và /admin/properties có First Load JS 1.79 MB. Fetch lúc chạy thì
 // trình duyệt cache được và phần còn lại của trang admin tương tác được ngay.
 const WARDS_GEOJSON_URL = "/geo/danang-wards.json";
+
+/**
+ * Kiểu cho ranh giới phường và cho `react-leaflet` nạp động.
+ *
+ * Khai tối thiểu đúng những gì file này dùng, thay cho `any` rải khắp: chỉ cần
+ * `ten_xa` trong properties và vài component từ react-leaflet. Khai đủ toàn bộ
+ * GeoJSON là thừa và cũng chẳng chính xác hơn.
+ */
+interface WardFeature {
+  properties?: { ten_xa?: string };
+}
+
+/**
+ * Bộ ranh giới phường.
+ *
+ * Kế thừa `GeoJsonObject` vì prop `data` của `<GeoJSON>` đòi đúng kiểu đó;
+ * khai `{ type: string }` cho gọn thì TypeScript từ chối ngay chỗ truyền.
+ */
+interface WardCollection extends GeoJsonObject {
+  features: WardFeature[];
+}
+
+/** Lớp Leaflet gắn với một feature — chỉ dùng tooltip và sự kiện click. */
+interface FeatureLayer {
+  bindTooltip: (content: string, options?: Record<string, unknown>) => void;
+  on: (handlers: Record<string, (e: LeafletFeatureEvent) => void>) => void;
+}
+
+interface LeafletFeatureEvent {
+  target: { getBounds: () => { getCenter: () => { lat: number; lng: number } } };
+}
+
+/** Các component react-leaflet được nạp động (tránh SSR đụng `window`). */
+type ReactLeaflet = Pick<
+  typeof ReactLeafletModule,
+  'MapContainer' | 'TileLayer' | 'GeoJSON' | 'Popup' | 'Marker'
+>;
 
 // Basic SVG Icons
 const LayersIcon = () => (
@@ -51,9 +91,8 @@ export function AdminMap({ properties }: AdminMapProps) {
   
   const [activeWard, setActiveWard] = useState<{name: string, center: [number, number]} | null>(null);
   
-  const geoJsonRef = useRef<any>(null);
 
-  const [geoData, setGeoData] = useState<any>(null);
+  const [geoData, setGeoData] = useState<WardCollection | null>(null);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -72,7 +111,7 @@ export function AdminMap({ properties }: AdminMapProps) {
     const dataMap = new Map<string, PropertyLocation[]>();
     const features = geoData?.features ?? [];
 
-    features.forEach((feature: any) => {
+    features.forEach((feature: WardFeature) => {
       const wardName = feature.properties?.ten_xa || "";
       const items: PropertyLocation[] = [];
       
@@ -89,13 +128,7 @@ export function AdminMap({ properties }: AdminMapProps) {
     return dataMap;
   }, [properties, geoData]);
 
-  const [leaflet, setLeaflet] = useState<{
-    MapContainer: any;
-    TileLayer: any;
-    GeoJSON: any;
-    Popup: any;
-    Marker: any;
-  } | null>(null);
+  const [leaflet, setLeaflet] = useState<ReactLeaflet | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -154,9 +187,20 @@ export function AdminMap({ properties }: AdminMapProps) {
 
   const { MapContainer, TileLayer, GeoJSON, Popup, Marker } = leaflet;
 
-  const styleFeature = (feature: any) => {
-    const wardName = feature.properties?.ten_xa;
-    const count = wardData.get(wardName)?.length || 0;
+  /*
+   * Ảnh trong popup Leaflet dùng <img> thường, KHÔNG dùng next/image.
+   *
+   * Popup do Leaflet chèn thẳng vào DOM ngoài cây bố cục của React nên
+   * `fill` không có phần tử cha định vị để bám, và ảnh chỉ hiện thoáng qua
+   * lúc bấm ghim — tối ưu hoá không bù được rắc rối. `eslint-disable` ở đúng
+   * hai dòng đó thay vì tắt luật cho cả file.
+   */
+
+  // `feature` là optional theo khai báo của react-leaflet — phải chịu được
+  // trường hợp không có, đừng ép kiểu cho qua.
+  const styleFeature = (feature?: WardFeature) => {
+    const wardName = feature?.properties?.ten_xa ?? '';
+    const count = wardData.get(wardName)?.length ?? 0;
 
     let fillColor = "#ffffff"; // Trắng đục
     let fillOpacity = 0.3; // Fill trắng mờ
@@ -188,7 +232,7 @@ export function AdminMap({ properties }: AdminMapProps) {
     };
   };
 
-  const onEachFeature = (feature: any, layer: any) => {
+  const onEachFeature = (feature: WardFeature, layer: FeatureLayer) => {
     const wardName = feature.properties?.ten_xa || "Chưa rõ";
     const count = wardData.get(wardName)?.length || 0;
 
@@ -201,11 +245,11 @@ export function AdminMap({ properties }: AdminMapProps) {
     );
 
     layer.on({
-      click: (e: any) => {
+      click: (e: LeafletFeatureEvent) => {
         if (!showSurge) return;
         const center = e.target.getBounds().getCenter();
         setActiveWard({
-          name: feature.properties.ten_xa,
+          name: feature.properties?.ten_xa ?? 'Chưa rõ',
           center: [center.lat, center.lng]
         });
       }
@@ -281,15 +325,20 @@ export function AdminMap({ properties }: AdminMapProps) {
             // react-leaflet không cập nhật lại lớp GeoJSON khi prop `data` đổi,
             // nên cần key để nó dựng lại khi dữ liệu về / khi wardData đổi màu.
             key={`wards-${geoData.features?.length ?? 0}`}
-            ref={geoJsonRef}
             data={geoData}
             style={styleFeature}
             onEachFeature={onEachFeature}
           />
         )}
 
+        {/* react-leaflet truyền sự kiện qua `eventHandlers`, không có prop
+            `onClose` — dùng sai thì popup không bao giờ đóng lại được. */}
         {showSurge && activeWard && (
-          <Popup position={activeWard.center} onClose={() => setActiveWard(null)} className="property-popup">
+          <Popup
+            position={activeWard.center}
+            eventHandlers={{ popupclose: () => setActiveWard(null) }}
+            className="property-popup"
+          >
             <div className="p-4 w-[280px]">
               <strong className="text-[14px] text-navy border-b border-line pb-2 mb-3 block font-bold uppercase">
                 {activeWard.name} ({activeWardItems.length} BĐS)
@@ -299,6 +348,7 @@ export function AdminMap({ properties }: AdminMapProps) {
                   {activeWardItems.map((p, idx) => (
                     <a key={idx} href={`/admin/properties/${p.id}`} className="block bg-slate-50 p-2 rounded-lg border border-line hover:border-gold hover:shadow-sm transition-all group">
                       <div className="flex gap-3">
+                        {/* eslint-disable-next-line @next/next/no-img-element -- popup Leaflet nằm ngoài cây bố cục React, next/image không định vị được */}
                         <img src={p.image} alt={p.title} className="w-14 h-14 object-cover rounded-md shrink-0" />
                         <div className="min-w-0 flex-1">
                           <h4 className="font-bold text-navy text-[12px] leading-tight line-clamp-2 group-hover:text-[#C99224] transition-colors">{p.title}</h4>
@@ -328,6 +378,7 @@ export function AdminMap({ properties }: AdminMapProps) {
             <Popup className="property-popup">
               <div className="p-3 w-[220px]">
                 <div className="h-[120px] bg-gray-100 relative mb-3 rounded-md overflow-hidden">
+                  {/* eslint-disable-next-line @next/next/no-img-element -- popup Leaflet nằm ngoài cây bố cục React, next/image không định vị được */}
                   <img src={p.image} alt={p.title} className="w-full h-full object-cover" />
                   <div className="absolute top-2 left-2 bg-navy text-white text-[10px] px-2 py-1 rounded font-bold shadow">{p.status}</div>
                 </div>

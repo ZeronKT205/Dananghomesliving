@@ -6,13 +6,25 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState, useTransition } from 'react';
 
 import { RichTextEditor } from '@/components/editor/rich-text-editor';
+import { DraftRestoreBar } from '@/components/ui/draft-restore-bar';
 import { ImageDropZone } from '@/components/ui/image-drop-zone';
 import { MapPicker } from '@/components/ui/map-picker';
 import { LOCALES } from '@/config/locales';
-import { actionAddMediaByUrl, actionDeleteProperty, actionSaveProperty } from '@/server/actions/admin-actions';
+import { useDraftBackup } from '@/hooks/use-draft-backup';
+import { actionDeleteProperty, actionSaveProperty } from '@/server/actions/admin-actions';
 
 import { Field, FormCard, LocaleTabs, SaveBar, Toggle, inputClass } from '../../../_components/form-kit';
-import { IcPlus, IcTrash } from '../../../_components/icons';
+import { IcTrash } from '../../../_components/icons';
+
+import { PropertyAiPanel } from './property-ai-panel';
+
+/** Nhãn ngôn ngữ hiện trên tiêu đề các khối — khớp với trang soạn tin tức. */
+const LOCALE_LABEL: Record<string, string> = {
+  vi: 'Tiếng Việt',
+  en: 'English',
+  zh: '中文',
+  ko: '한국어',
+};
 
 export interface PropertyFormValue {
   id: string | null;
@@ -56,6 +68,9 @@ export interface PropertyFormValue {
 export interface FormOptions {
   categories: { id: string; name: string }[];
   amenities: { id: string; name: string; group: string }[];
+  /** Có khoá AI hay không — quyết định hiện panel trợ lý. */
+  aiEnabled: boolean;
+  modelName: string;
 }
 
 const GROUP_LABEL: Record<string, string> = {
@@ -93,6 +108,19 @@ export function PropertyForm({
   const [newHighlight, setNewHighlight] = useState('');
 
   const isNew = initial.id === null;
+
+  /*
+   * Giữ hộ bản nháp và cảnh báo khi rời trang lúc chưa lưu.
+   *
+   * Form này còn dài hơn trang soạn tin tức — mô tả bốn thứ tiếng, thông số,
+   * tiện ích, ảnh, toạ độ bản đồ. Mất giữa chừng là mất hàng chục phút nhập
+   * liệu.
+   */
+  const draft = useDraftBackup<PropertyFormValue>({
+    key: initial.id ?? 'new',
+    value: v,
+    enabled: dirty,
+  });
 
   function set<K extends keyof PropertyFormValue>(key: K, value: PropertyFormValue[K]) {
     setV((prev) => ({ ...prev, [key]: value }));
@@ -267,6 +295,7 @@ export function PropertyForm({
         return;
       }
       setDirty(false);
+      draft.clear();
       setMessage(res.message ?? 'Đã lưu');
       router.push('/admin/properties');
     });
@@ -276,13 +305,29 @@ export function PropertyForm({
     if (!v.id) return;
     startSaving(async () => {
       const res = await actionDeleteProperty(v.id!);
-      if (res.ok) router.push('/admin/properties');
-      else setError(res.message);
+      if (res.ok) {
+        draft.clear();
+        router.push('/admin/properties');
+      } else setError(res.message);
     });
   }
 
   return (
     <div className="flex flex-col gap-5">
+      {draft.found ? (
+        <DraftRestoreBar
+          savedAt={draft.found.savedAt}
+          label="Tìm thấy bất động sản nhập dở chưa lưu"
+          onRestore={() => {
+            setV(draft.found!.value);
+            setDirty(true);
+            draft.discard();
+            setMessage('Đã khôi phục bản nháp — kiểm tra rồi bấm Lưu.');
+          }}
+          onDiscard={draft.discard}
+        />
+      ) : null}
+
       {/* Header Bar */}
       <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-4 border border-line shadow-xs rounded-xl">
         <div>
@@ -360,6 +405,49 @@ export function PropertyForm({
               <LocaleTabs locales={LOCALES} current={locale} onChange={setLocale} filled={filled} />
             </div>
           </div>
+
+          <PropertyAiPanel
+            locale={locale}
+            localeLabel={LOCALE_LABEL[locale] ?? locale}
+            enabled={options.aiEnabled}
+            modelName={options.modelName}
+            current={{
+              title: v.title[locale] ?? '',
+              summary: v.summary[locale] ?? '',
+              // Ô mô tả là một textarea; đoạn ngăn nhau bằng dòng trống, đúng
+              // quy ước mà `buildPayload` dùng khi lưu.
+              description: (v.description[locale] ?? '')
+                .split(/\n\s*\n/)
+                .map((t) => t.trim())
+                .filter(Boolean),
+            }}
+            onComposed={(text) => {
+              setV((p) => ({
+                ...p,
+                title: { ...p.title, [locale]: text.title },
+                summary: { ...p.summary, [locale]: text.summary },
+                description: { ...p.description, [locale]: text.description.join('\n\n') },
+              }));
+              setDirty(true);
+            }}
+            onTranslated={(translations) => {
+              setV((p) => {
+                const next = {
+                  ...p,
+                  title: { ...p.title },
+                  summary: { ...p.summary },
+                  description: { ...p.description },
+                };
+                for (const [l, t] of Object.entries(translations)) {
+                  next.title[l] = t.title;
+                  next.summary[l] = t.summary;
+                  next.description[l] = t.description.join('\n\n');
+                }
+                return next;
+              });
+              setDirty(true);
+            }}
+          />
 
           {/* 1. HERO PHOTO GALLERY ALBUM CARD */}
           <div className="bg-white border border-line p-5 sm:p-6 rounded-xl shadow-xs hover:shadow-md transition-shadow relative group">

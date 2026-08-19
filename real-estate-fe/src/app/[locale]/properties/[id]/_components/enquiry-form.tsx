@@ -1,21 +1,76 @@
 'use client';
 
-import { useState } from 'react';
+import { useLocale } from 'next-intl';
+import { useState, useTransition } from 'react';
 
 import { useToast } from '@/components/ui/toast-provider';
+import { actionSubmitPropertyInquiry } from '@/server/actions/public-actions';
 
-export function EnquiryForm() {
-  const [status, setStatus] = useState<'idle' | 'submitting' | 'success'>('idle');
+/**
+ * Form đặt lịch xem một bất động sản.
+ *
+ * Trước đây form này chỉ `setTimeout(1200)` rồi báo thành công — khách tưởng đã
+ * gửi, còn CMS không nhận được gì. Giờ ghi thật vào bảng `inquiries`.
+ *
+ * Các ô là controlled input: gửi lỗi (mạng chập, chạm giới hạn chống spam) thì
+ * chữ khách đã gõ vẫn còn nguyên. Form không lưu nháp như trang soạn bài vì
+ * ngắn, nhưng mất chữ khi bấm gửi hụt là lỗi UX nặng nhất ở đây.
+ */
+
+const INPUT =
+  'w-full px-3.5 py-2.5 border border-line bg-paper text-navy rounded-none text-[13px] focus:border-gold focus:ring-2 focus:ring-gold/20 focus:outline-none transition-all';
+const LABEL = 'block text-[10.5px] font-bold text-navy uppercase tracking-wider mb-1.5';
+
+const EMPTY = { name: '', phone: '', email: '', date: '', message: '' };
+
+export function EnquiryForm({ propertySlug, propertyTitle }: { propertySlug: string; propertyTitle: string }) {
+  const locale = useLocale();
   const { showToast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [form, setForm] = useState(EMPTY);
+  const [website, setWebsite] = useState(''); // bẫy bot, người thật không thấy
+  const [sending, startSending] = useTransition();
+  const [done, setDone] = useState<{ code: string } | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [fields, setFields] = useState<Record<string, string[]>>({});
+
+  function set<K extends keyof typeof EMPTY>(k: K, value: string) {
+    setForm((p) => ({ ...p, [k]: value }));
+    // Xoá lỗi của đúng ô đang sửa: để lỗi đỏ nguyên trong lúc người ta đang gõ
+    // lại là thứ gây bực nhất trong form.
+    setFields((p) => (p[k] ? { ...p, [k]: [] } : p));
+  }
+
+  function submit(e: React.FormEvent) {
     e.preventDefault();
-    setStatus('submitting');
-    setTimeout(() => {
-      setStatus('success');
+    setError(null);
+    setFields({});
+
+    startSending(async () => {
+      const res = await actionSubmitPropertyInquiry({
+        propertySlug,
+        name: form.name,
+        email: form.email,
+        phone: form.phone,
+        message: form.message || `Yêu cầu xem trực tiếp: ${propertyTitle}`,
+        preferredViewingDate: form.date || null,
+        locale,
+        website,
+      });
+
+      if (!res.ok) {
+        setError(res.message);
+        setFields(res.fields ?? {});
+        return;
+      }
+
+      setDone({ code: res.code });
+      setForm(EMPTY);
       showToast('Yêu cầu lịch xem nhà đã được gửi thành công!', 'success');
-    }, 1200);
-  };
+    });
+  }
+
+  const err = (k: string) => fields[k]?.[0];
 
   return (
     <div id="enquiry-form" className="bg-white border border-line p-6 rounded-none shadow-lift">
@@ -24,101 +79,136 @@ export function EnquiryForm() {
           Lịch trình riêng tư
         </span>
         <h3 className="text-[17px] text-navy font-display font-semibold leading-tight">
-          Đăng ký xem biệt thự trực tiếp
+          Đăng ký xem nhà trực tiếp
         </h3>
       </div>
-      
-      {status === 'success' ? (
+
+      {done ? (
         <div className="bg-ivory border border-gold/40 text-navy p-6 rounded-none text-center animate-fade-in space-y-3">
           <div className="w-12 h-12 bg-gold text-navy rounded-none flex items-center justify-center mx-auto text-xl font-bold">
             ✓
           </div>
-          <h4 className="font-display text-[18px] font-normal text-navy">
-            Yêu cầu đã được xác nhận
-          </h4>
+          <h4 className="font-display text-[18px] font-normal text-navy">Yêu cầu đã được ghi nhận</h4>
           <p className="text-[13px] text-muted leading-relaxed">
-            Cảm ơn bạn. Chuyên gia Trần Đức Giáp sẽ liên hệ lại trực tiếp qua số điện thoại để sắp xếp xe đón &amp; thời gian xem nhà phù hợp.
+            Mã yêu cầu của bạn là{' '}
+            <strong className="text-navy font-mono">{done.code}</strong>. Chuyên viên sẽ liên hệ lại qua số điện
+            thoại bạn để lại để sắp xếp thời gian xem nhà.
           </p>
-          <button 
+          <button
             type="button"
-            onClick={() => setStatus('idle')}
-            className="mt-2 text-gold hover:underline text-[12px] font-bold tracking-wider uppercase block mx-auto"
+            onClick={() => setDone(null)}
+            className="mt-2 text-gold hover:underline text-[12px] font-bold tracking-wider uppercase block mx-auto cursor-pointer"
           >
             ← Đăng ký lịch xem khác
           </button>
         </div>
       ) : (
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={submit} className="space-y-4" noValidate>
           <div>
-            <label className="block text-[10.5px] font-bold text-navy uppercase tracking-wider mb-1.5">
+            <label className={LABEL} htmlFor="enq-name">
               Họ và tên *
             </label>
-            <input 
-              type="text" 
-              required 
-              placeholder="Nguyễn Văn A" 
-              className="w-full px-3.5 py-2.5 border border-line bg-paper text-navy rounded-none text-[13px] focus:border-gold focus:ring-2 focus:ring-gold/20 focus:outline-none transition-all" 
+            <input
+              id="enq-name"
+              value={form.name}
+              onChange={(e) => set('name', e.target.value)}
+              required
+              placeholder="Nguyễn Văn A"
+              className={INPUT}
             />
+            {err('name') ? <p className="mt-1 text-[11px] text-[#a33]">{err('name')}</p> : null}
           </div>
-          
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-[10.5px] font-bold text-navy uppercase tracking-wider mb-1.5">
+              <label className={LABEL} htmlFor="enq-phone">
                 Số điện thoại *
               </label>
-              <input 
-                type="tel" 
-                required 
-                placeholder="0909 123 456" 
-                className="w-full px-3.5 py-2.5 border border-line bg-paper text-navy rounded-none text-[13px] focus:border-gold focus:ring-2 focus:ring-gold/20 focus:outline-none transition-all" 
+              <input
+                id="enq-phone"
+                type="tel"
+                value={form.phone}
+                onChange={(e) => set('phone', e.target.value)}
+                required
+                placeholder="0909 123 456"
+                className={INPUT}
               />
+              {err('phone') ? <p className="mt-1 text-[11px] text-[#a33]">{err('phone')}</p> : null}
             </div>
             <div>
-              <label className="block text-[10.5px] font-bold text-navy uppercase tracking-wider mb-1.5">
+              <label className={LABEL} htmlFor="enq-email">
                 Email *
               </label>
-              <input 
-                type="email" 
-                required 
-                placeholder="name@example.com" 
-                className="w-full px-3.5 py-2.5 border border-line bg-paper text-navy rounded-none text-[13px] focus:border-gold focus:ring-2 focus:ring-gold/20 focus:outline-none transition-all" 
+              <input
+                id="enq-email"
+                type="email"
+                value={form.email}
+                onChange={(e) => set('email', e.target.value)}
+                required
+                placeholder="name@example.com"
+                className={INPUT}
               />
+              {err('email') ? <p className="mt-1 text-[11px] text-[#a33]">{err('email')}</p> : null}
             </div>
           </div>
 
           <div>
-            <label className="block text-[10.5px] font-bold text-navy uppercase tracking-wider mb-1.5">
+            <label className={LABEL} htmlFor="enq-date">
               Ngày xem mong muốn
             </label>
-            <input 
-              type="date" 
-              className="w-full px-3.5 py-2.5 border border-line bg-paper text-navy rounded-none text-[13px] focus:border-gold focus:ring-2 focus:ring-gold/20 focus:outline-none transition-all" 
+            <input
+              id="enq-date"
+              type="date"
+              value={form.date}
+              onChange={(e) => set('date', e.target.value)}
+              className={INPUT}
             />
           </div>
 
           <div>
-            <label className="block text-[10.5px] font-bold text-navy uppercase tracking-wider mb-1.5">
+            <label className={LABEL} htmlFor="enq-message">
               Ghi chú thêm
             </label>
-            <textarea 
-              rows={3} 
-              placeholder="Yêu cầu cụ thể về giờ đón, số lượng người xem..." 
-              className="w-full px-3.5 py-2.5 border border-line bg-paper text-navy rounded-none text-[13px] focus:border-gold focus:ring-2 focus:ring-gold/20 focus:outline-none resize-none transition-all"
-            ></textarea>
+            <textarea
+              id="enq-message"
+              rows={3}
+              value={form.message}
+              onChange={(e) => set('message', e.target.value)}
+              placeholder="Yêu cầu cụ thể về giờ đón, số lượng người xem..."
+              className={`${INPUT} resize-none`}
+            />
+            {err('message') ? <p className="mt-1 text-[11px] text-[#a33]">{err('message')}</p> : null}
           </div>
 
-          <button 
-            type="submit" 
-            disabled={status === 'submitting'}
+          {/* Bẫy bot: ẩn với người dùng và với trình đọc màn hình. */}
+          <input
+            type="text"
+            tabIndex={-1}
+            autoComplete="off"
+            aria-hidden="true"
+            value={website}
+            onChange={(e) => setWebsite(e.target.value)}
+            className="hidden"
+          />
+
+          {error ? (
+            <p role="alert" className="rounded border border-[#e5b8b8] bg-[#fdf4f4] px-3 py-2 text-[12px] text-[#a33]">
+              {error}
+            </p>
+          ) : null}
+
+          <button
+            type="submit"
+            disabled={sending}
             className="w-full bg-gold hover:bg-gold-soft text-navy py-3.5 rounded-none text-[12px] font-bold uppercase tracking-[0.15em] transition-all shadow-md flex justify-center items-center gap-2 disabled:opacity-70 active:scale-98 cursor-pointer"
           >
-            {status === 'submitting' ? (
+            {sending ? (
               <span className="flex items-center gap-2">
                 <svg className="animate-spin h-4 w-4 text-navy" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                 </svg>
-                Đang xác nhận...
+                Đang gửi…
               </span>
             ) : (
               <>
@@ -127,10 +217,17 @@ export function EnquiryForm() {
               </>
             )}
           </button>
-          
+
           <p className="text-[10.5px] text-muted text-center mt-3 flex items-center justify-center gap-1.5">
-            <svg className="w-3.5 h-3.5 text-gold shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
-            Bảo mật thông tin 100% theo tiêu chuẩn riêng tư.
+            <svg className="w-3.5 h-3.5 text-gold shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1.5}
+                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+              />
+            </svg>
+            Thông tin của bạn chỉ dùng để liên hệ tư vấn.
           </p>
         </form>
       )}

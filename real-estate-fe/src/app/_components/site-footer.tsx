@@ -2,20 +2,18 @@ import Link from 'next/link';
 
 import { NewsletterForm } from '@/components/features/newsletter/newsletter-form';
 import { BrandLogo } from '@/components/ui/brand-logo';
-import {
-  APP_NAME,
-  APP_TAGLINE,
-  CONTACT_CITY,
-  CONTACT_EMAIL,
-  CONTACT_HOURS,
-  NAV_ITEMS,
-} from '@/config/constants';
+import { NAV_ITEMS } from '@/config/constants';
+import { getSiteSettings } from '@/lib/db/site-settings';
 
 
 // Bỏ "Home" — footer đã ở cuối trang, link về đầu trang không có giá trị ở đây.
 const EXPLORE_LINKS = NAV_ITEMS.filter((item) => item.href !== '/');
 
-export function SiteFooter() {
+// Server Component nên đọc thẳng cài đặt; `getSiteSettings` đã được cache
+// trong phạm vi một request nên header và footer không gọi DB hai lần.
+export async function SiteFooter() {
+  const { brand, contact } = await getSiteSettings();
+
   return (
     <footer className="bg-navy pt-16 pb-6 text-white">
       <div className="container-page">
@@ -50,13 +48,18 @@ export function SiteFooter() {
               Contact
             </h2>
             <ul className="grid gap-2.5 text-[13px] text-white/68">
-              <li>{CONTACT_CITY}</li>
+              <li>{contact.address || contact.city}</li>
               <li>
-                <a href={`mailto:${CONTACT_EMAIL}`} className="transition-colors hover:text-white">
-                  {CONTACT_EMAIL}
+                <a href={`mailto:${contact.email}`} className="transition-colors hover:text-white">
+                  {contact.email}
                 </a>
               </li>
-              <li>{CONTACT_HOURS}</li>
+              <li>
+                <a href={contact.phoneHref} className="transition-colors hover:text-white">
+                  {contact.phone}
+                </a>
+              </li>
+              <li>{contact.hours}</li>
               <li>Viewings by appointment</li>
             </ul>
           </div>
@@ -73,8 +76,8 @@ export function SiteFooter() {
         </div>
 
         <div className="mt-12 flex flex-col gap-2 border-t border-white/13 pt-6 text-[10.5px] text-white/45 sm:flex-row sm:justify-between">
-          <span>© 2026 {APP_NAME}. All rights reserved.</span>
-          <span>{APP_TAGLINE}</span>
+          <span>© {new Date().getFullYear()} {brand.name}. All rights reserved.</span>
+          <span>{brand.tagline}</span>
           <span>Privacy · Terms</span>
         </div>
       </div>

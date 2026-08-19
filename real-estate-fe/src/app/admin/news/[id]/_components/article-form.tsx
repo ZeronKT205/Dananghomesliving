@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useMemo, useState, useTransition } from 'react';
 
 import { RichTextEditor } from '@/components/editor/rich-text-editor';
+import { DraftRestoreBar } from '@/components/ui/draft-restore-bar';
 import { ImageDropZone } from '@/components/ui/image-drop-zone';
 import { LOCALES } from '@/config/locales';
 import { useDraftBackup } from '@/hooks/use-draft-backup';
@@ -216,43 +217,18 @@ export function ArticleForm({
 
   return (
     <div className="flex flex-col gap-5">
-      {/*
-        Thanh khôi phục nháp. Hiện ngay đầu trang chứ không phải hộp thoại tự
-        bật: hộp thoại bắt trả lời trước khi làm gì, mà biên tập cần nhìn nội
-        dung hiện tại rồi mới quyết được có khôi phục hay không.
-      */}
       {draft.found ? (
-        <div className="border-gold/60 bg-gold/10 flex flex-wrap items-center justify-between gap-3 rounded-md border px-4 py-3">
-          <p className="text-navy text-[12.5px]">
-            Tìm thấy bản nháp chưa lưu lúc{' '}
-            <strong>
-              {draft.found.savedAt.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}{' '}
-              {draft.found.savedAt.toLocaleDateString('vi-VN')}
-            </strong>
-            . Khôi phục lại nội dung đang soạn dở?
-          </p>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => {
-                setV(draft.found!.value);
-                setDirty(true);
-                draft.discard();
-                setMessage('Đã khôi phục bản nháp — kiểm tra rồi bấm Lưu.');
-              }}
-              className="bg-navy hover:bg-gold h-8 cursor-pointer rounded px-3.5 text-[12px] font-bold text-white transition-colors"
-            >
-              Khôi phục
-            </button>
-            <button
-              type="button"
-              onClick={draft.discard}
-              className="text-muted hover:text-navy cursor-pointer text-[12px] font-bold"
-            >
-              Bỏ nháp
-            </button>
-          </div>
-        </div>
+        <DraftRestoreBar
+          savedAt={draft.found.savedAt}
+          label={'Tìm thấy bản nháp bài viết chưa lưu'}
+          onRestore={() => {
+            setV(draft.found!.value);
+            setDirty(true);
+            draft.discard();
+            setMessage('Đã khôi phục bản nháp — kiểm tra rồi bấm Lưu.');
+          }}
+          onDiscard={draft.discard}
+        />
       ) : null}
 
       {/* Top Header Bar */}

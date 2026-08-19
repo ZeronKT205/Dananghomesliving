@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { stripVietnameseDiacritics } from './translation-service';
+import { normalizePlaceNames, stripVietnameseDiacritics } from './translation-service';
 
 /**
  * Luật "tên riêng Việt viết Latin không dấu" áp cho mọi ngôn ngữ đích trừ
@@ -34,5 +34,28 @@ describe('bỏ dấu tiếng Việt trong bản dịch', () => {
     expect(stripVietnameseDiacritics('Giá **3,6 tỷ** tại [Mỹ Khê](https://x.com/a)')).toBe(
       'Gia **3,6 ty** tai [My Khe](https://x.com/a)',
     );
+  });
+});
+
+describe('chuẩn hoá tên riêng bị chuyển tự', () => {
+  it('trả chữ Hán về Latin', () => {
+    expect(normalizePlaceNames('An Thuong塔11层双卧室公寓，美溪海景房')).toBe(
+      'An Thuong塔11层双卧室公寓，My Khe海景房',
+    );
+    expect(normalizePlaceNames('位于岘港市中心')).toBe('位于Da Nang市中心');
+  });
+
+  it('trả Hangul về Latin', () => {
+    expect(normalizePlaceNames('다낭 미케 해변 인근')).toBe('Da Nang My Khe 해변 인근');
+  });
+
+  it('không đụng vào chữ đã đúng', () => {
+    const ok = 'Two-bedroom apartment in An Thuong, 350 m from My Khe beach, Da Nang.';
+    expect(normalizePlaceNames(ok)).toBe(ok);
+  });
+
+  it('không đụng vào chữ Hán/Hàn không phải tên riêng', () => {
+    expect(normalizePlaceNames('两卧室公寓')).toBe('两卧室公寓');
+    expect(normalizePlaceNames('침실 2개 아파트')).toBe('침실 2개 아파트');
   });
 });

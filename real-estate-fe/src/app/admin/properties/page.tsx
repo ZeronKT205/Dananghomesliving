@@ -1,8 +1,8 @@
 import Link from 'next/link';
 
 import type { PublishState } from '@/lib/db/collections';
-import { listCategories } from '@/lib/db/repositories/catalog-repo';
-import { listProperties } from '@/lib/db/repositories/property-repo';
+import { listAmenities, listCategories } from '@/lib/db/repositories/catalog-repo';
+import { countPropertiesByAmenity, listProperties } from '@/lib/db/repositories/property-repo';
 
 import { IcBuilding, IcLayers, IcPlus } from '../_components/icons';
 import { PropertyCard } from '../_components/property-card';
@@ -18,6 +18,7 @@ import {
 import { toAdminProperties } from '../_data/presenters';
 
 import { AdminMapWrapper } from './_components/admin-map-wrapper';
+import { AmenityManager } from './_components/amenity-manager';
 import { CategoryManager } from './_components/category-manager';
 
 
@@ -37,6 +38,7 @@ const TABS = [
   { value: 'sale', label: 'Mua', icon: <IcBuilding size={14} /> },
   { value: 'rent', label: 'Thuê', icon: <IcBuilding size={14} /> },
   { value: 'groups', label: 'Nhóm bất động sản', icon: <IcLayers size={14} /> },
+  { value: 'amenities', label: 'Tiện ích', icon: <IcLayers size={14} /> },
   {
     value: 'map',
     label: 'Bản đồ',
@@ -69,8 +71,9 @@ export default async function AdminPropertiesPage({
   const current = TABS.some((item) => item.value === tab) ? (tab as string) : 'sale';
   const isList = current === 'sale' || current === 'rent';
 
-  const [categories, result, saleCount, rentCount, allForMap] = await Promise.all([
+  const [categories, amenities, result, saleCount, rentCount, allForMap] = await Promise.all([
     listCategories(),
+    listAmenities(),
     isList
       ? listProperties({
           page: 1,
@@ -107,7 +110,9 @@ export default async function AdminPropertiesPage({
           ? rentCount.total
           : item.value === 'groups'
             ? categories.length
-            : saleCount.total + rentCount.total,
+            : item.value === 'amenities'
+              ? amenities.length
+              : saleCount.total + rentCount.total,
   }));
 
   const categoryOptions = [
@@ -126,6 +131,27 @@ export default async function AdminPropertiesPage({
   }));
   const groupById = new Map(groups.map((g) => [g.id, g]));
 
+  /*
+   * Đếm số BĐS đang dùng từng tiện ích, để cảnh báo trước khi xoá.
+   *
+   * Chỉ đếm khi đang mở đúng tab: `$unwind` trên toàn bộ bảng properties là
+   * việc thừa với người chỉ vào xem danh sách tin.
+   */
+  const amenityRows =
+    current === 'amenities'
+      ? await (async () => {
+          const usage = await countPropertiesByAmenity();
+          return amenities.map((a) => ({
+            id: a._id.toHexString(),
+            name: a.name.vi ?? a.name.en ?? a.slug,
+            nameEn: a.name.en ?? a.slug,
+            group: a.group,
+            order: a.order,
+            usedBy: usage.get(a._id.toHexString()) ?? 0,
+          }));
+        })()
+      : [];
+
   return (
     <>
       <PageHead
@@ -141,6 +167,8 @@ export default async function AdminPropertiesPage({
         <AdminMapWrapper properties={mapRows} />
       ) : current === 'groups' ? (
         <CategoryManager groups={groups} />
+      ) : current === 'amenities' ? (
+        <AmenityManager amenities={amenityRows} />
       ) : (
         <>
           <Toolbar>

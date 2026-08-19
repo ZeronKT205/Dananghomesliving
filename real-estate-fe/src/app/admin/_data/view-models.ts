@@ -42,6 +42,17 @@ export type AdminProperty = {
   title: string;
   summary: string;
   district: string;
+  /** Địa chỉ đầy đủ — bản đồ admin cần, danh sách thì không. */
+  address: string;
+  /**
+   * Toạ độ thật từ `location.geo`, `null` khi chưa đặt ghim.
+   *
+   * Phải cho phép `null`: trước đây bản đồ admin tự bịa toạ độ bằng
+   * `Math.random()` khi thiếu, nên mỗi lần tải trang các ghim lại nhảy chỗ và
+   * không cái nào đúng vị trí thật.
+   */
+  lat: number | null;
+  lng: number | null;
   priceUsd: number;
   perMonth?: boolean;
   groupId: string;

@@ -2,6 +2,7 @@ import 'server-only';
 
 import type { Paginated } from '@/lib/validations/common';
 import type { InquiryQuery } from '@/lib/validations/inquiry';
+import { VN_TIMEZONE, vnDayRange } from '@/lib/vn-date';
 
 import { inquiriesCol } from '../collections';
 
@@ -166,21 +167,26 @@ export async function getInquiryStats(): Promise<{
   return row ?? { total: 0, new: 0, contacted: 0, done: 0, cancelled: 0 };
 }
 
-/** Số yêu cầu theo ngày, N ngày gần nhất — nguồn cho biểu đồ cột ở admin. */
+/**
+ * Số yêu cầu theo ngày, N ngày gần nhất — nguồn cho biểu đồ cột ở admin.
+ *
+ * Cả dải ngày lẫn khoá ghép đều lấy từ `vnDayRange`, nên luôn cùng một lịch với
+ * `$dateToString` bên dưới. Trước đây khoá dựng bằng `toISOString()` (UTC)
+ * trong khi Mongo gom theo giờ VN — khoá không khớp nên MỌI cột đều bằng 0 và
+ * dải ngày thiếu hẳn hôm nay.
+ */
 export async function getInquiriesByDay(days = 7): Promise<Array<{ date: string; count: number }>> {
   const col = await inquiriesCol();
-  const since = new Date();
-  since.setHours(0, 0, 0, 0);
-  since.setDate(since.getDate() - (days - 1));
+  const { since, keys } = vnDayRange(days);
 
   const rows = await col
     .aggregate<{ _id: string; count: number }>([
       { $match: { deletedAt: null, createdAt: { $gte: since } } },
       {
         $group: {
-          // timezone cứng theo giờ VN — nếu không, yêu cầu gửi lúc 23h tối sẽ
+          // Timezone cứng theo giờ VN — không có thì yêu cầu gửi lúc 23h tối sẽ
           // rơi sang ngày hôm sau theo UTC và biểu đồ lệch một ngày.
-          _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt', timezone: 'Asia/Ho_Chi_Minh' } },
+          _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt', timezone: VN_TIMEZONE } },
           count: { $sum: 1 },
         },
       },
@@ -188,14 +194,5 @@ export async function getInquiriesByDay(days = 7): Promise<Array<{ date: string;
     .toArray();
 
   const byDate = new Map(rows.map((r) => [r._id, r.count]));
-  const out: Array<{ date: string; count: number }> = [];
-
-  for (let i = 0; i < days; i++) {
-    const d = new Date(since);
-    d.setDate(since.getDate() + i);
-    const key = d.toISOString().slice(0, 10);
-    out.push({ date: key, count: byDate.get(key) ?? 0 });
-  }
-
-  return out;
+  return keys.map((date) => ({ date, count: byDate.get(date) ?? 0 }));
 }

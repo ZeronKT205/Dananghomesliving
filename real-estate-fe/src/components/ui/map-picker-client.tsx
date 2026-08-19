@@ -7,6 +7,17 @@ import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from 're
 import 'leaflet/dist/leaflet.css';
 import { type MapPickerProps } from './map-picker';
 
+// `@types/leaflet` đã có sẵn trong dự án — dùng kiểu thật thay cho `any`, để
+// gọi nhầm phương thức trên map/marker là báo lỗi ngay lúc biên dịch.
+import type {
+  LeafletEvent,
+  LeafletEventHandlerFnMap,
+  LeafletMouseEvent,
+  Map as LeafletMap,
+  Marker as LeafletMarker,
+} from 'leaflet';
+
+
 const DEFAULT_CENTER: [number, number] = [16.0544, 108.2022]; // Đà Nẵng
 const DEFAULT_MAP_ZOOM = 11.5;
 
@@ -45,7 +56,15 @@ const customIcon = L.divIcon({
 });
 
 // Component cập nhật trung tâm bản đồ
-function MapViewUpdaterInner({ center, zoom = DEFAULT_MAP_ZOOM, useMap }: { center: [number, number]; zoom?: number; useMap: any }) {
+function MapViewUpdaterInner({
+  center,
+  zoom = DEFAULT_MAP_ZOOM,
+  useMap,
+}: {
+  center: [number, number];
+  zoom?: number;
+  useMap: () => LeafletMap;
+}) {
   const map = useMap();
   useEffect(() => {
     window.setTimeout(() => map.invalidateSize(), 0);
@@ -55,10 +74,16 @@ function MapViewUpdaterInner({ center, zoom = DEFAULT_MAP_ZOOM, useMap }: { cent
 }
 
 // Component xử lý sự kiện click trên bản đồ
-function MapEventsHandler({ onChangeLocation, useMapEvents }: { onChangeLocation?: (lat: number, lng: number) => void, useMapEvents: any }) {
+function MapEventsHandler({
+  onChangeLocation,
+  useMapEvents,
+}: {
+  onChangeLocation?: (lat: number, lng: number) => void;
+  useMapEvents: (handlers: LeafletEventHandlerFnMap) => LeafletMap;
+}) {
   useMapEvents({
-    click(e: any) {
-      if (onChangeLocation) onChangeLocation(e.latlng.lat, e.latlng.lng);
+    click(e) {
+      onChangeLocation?.((e as LeafletMouseEvent).latlng.lat, (e as LeafletMouseEvent).latlng.lng);
     },
   });
   return null;
@@ -86,10 +111,10 @@ export default function MapPickerClient({ latitude, longitude, onChangeLocation,
 
   const markerEventHandlers = useMemo(
     () => ({
-      dragend(e: any) {
+      dragend(e: LeafletEvent) {
         if (readOnly || !onChangeLocation) return;
-        const marker = e.target;
-        if (marker != null) {
+        const marker = e.target as LeafletMarker | null;
+        if (marker !== null) {
           const latLng = marker.getLatLng();
           onChangeLocation(latLng.lat, latLng.lng);
         }

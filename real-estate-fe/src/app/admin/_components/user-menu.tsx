@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
@@ -75,13 +76,13 @@ export function UserMenu({ user }: { user: { name: string; email: string; role: 
             </p>
           </div>
 
-          <a
+          <Link
             href="/admin/settings"
             role="menuitem"
             className="text-navy hover:bg-ivory relative block px-3.5 py-2 text-[12.5px] transition-all duration-200 hover:pl-5"
           >
             Cài đặt tài khoản
-          </a>
+          </Link>
 
           <button
             type="button"

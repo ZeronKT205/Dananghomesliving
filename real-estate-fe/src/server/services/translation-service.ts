@@ -101,6 +101,33 @@ function orderSegments(raw: RawTranslation['segments'], expected: number): strin
  * trong dải U+0300–U+036F, nên chỉ những từ tiếng Việt còn sót lại bị đổi.
  * NFC ở cuối ghép lại âm tiết Hangul mà NFD vừa tách ra.
  */
+/**
+ * Tên riêng Đà Nẵng bị chuyển tự sang chữ Hán / Hangul → trả về Latin.
+ *
+ * Prompt đã cấm rõ ràng nhưng model vẫn làm: đã đo bản tiếng Trung dịch
+ * "Mỹ Khê" thành 美溪 và "Đà Nẵng" thành 岘港. Đây là danh sách đóng và ngắn,
+ * ép bằng code thì chắc chắn, còn nhắc thêm trong prompt thì lần nào cũng phải
+ * cầu may.
+ *
+ * Chỉ liệt kê những tên thật sự hay gặp trong tin BĐS Đà Nẵng. Danh sách dài
+ * hơn không làm nó đúng hơn, chỉ tăng nguy cơ thay nhầm.
+ */
+const PLACE_ALIASES: Array<[RegExp, string]> = [
+  [/岘港|峴港|다낭/g, 'Da Nang'],
+  [/美溪|미케/g, 'My Khe'],
+  [/山茶|손짜|썬짜/g, 'Son Tra'],
+  [/海洲|海珠|하이쩌우/g, 'Hai Chau'],
+  [/五行山|응우한선/g, 'Ngu Hanh Son'],
+  [/安上|안트엉/g, 'An Thuong'],
+  [/韩江|韓江|한강/g, 'Han River'],
+];
+
+export function normalizePlaceNames(text: string): string {
+  let out = text;
+  for (const [pattern, latin] of PLACE_ALIASES) out = out.replace(pattern, latin);
+  return out;
+}
+
 export function stripVietnameseDiacritics(text: string): string {
   return text
     .normalize('NFD')
@@ -168,7 +195,7 @@ async function translateOne(source: TranslatableArticle, from: Locale, to: Local
 
   // Bản tiếng Việt giữ nguyên dấu; ba ngôn ngữ còn lại chỉ được dùng Latin
   // không dấu cho tên riêng Việt.
-  const plain = (t: string) => (to === 'vi' ? t : stripVietnameseDiacritics(t));
+  const plain = (t: string) => (to === 'vi' ? t : normalizePlaceNames(stripVietnameseDiacritics(t)));
 
   const translatedBlocks = ordered ? applySegments(blocks, ordered.map(plain)) : null;
 
