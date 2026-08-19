@@ -26,7 +26,7 @@ export function PropertyHeader({ title, location, price, stats }: PropertyHeader
       </div>
       
       {/* Elegant Luxury Title (Playfair Display) */}
-      <h1 className="font-display text-navy text-[32px] sm:text-[42px] font-normal leading-[1.08] tracking-tight text-balance">
+      <h1 className="font-display text-navy text-[22px] sm:text-[25px] lg:text-[27px] font-semibold leading-[1.25] tracking-tight text-pretty">
         {title}
       </h1>
 
