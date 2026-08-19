@@ -25,10 +25,10 @@ export function HeroSection() {
 
             <h1
               id="hero-title"
-              className="font-display text-navy mt-5 text-[clamp(40px,5.4vw,68px)] leading-[0.92] font-normal tracking-[-0.035em] text-balance"
+              className="font-display text-navy mt-4 sm:mt-5 text-[clamp(34px,4.5vw,58px)] leading-[1.12] sm:leading-[1.08] lg:leading-[1.05] font-normal tracking-[-0.025em] text-balance"
             >
               {t.rich('title', {
-                gold: (chunks) => <span className="text-gold block">{chunks}</span>
+                gold: (chunks) => <span className="text-gold inline-block mt-1 sm:mt-0">{chunks}</span>,
               })}
             </h1>
 

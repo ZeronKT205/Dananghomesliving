@@ -72,17 +72,17 @@ export function HeroGallery() {
           ))}
         </div>
 
-        <figcaption className="absolute inset-x-4 bottom-4 z-10 flex items-end justify-between gap-3 text-white">
-          <strong className="font-display text-[19px] font-normal">
+        <figcaption className="absolute inset-x-0 bottom-0 z-10 p-4 sm:p-5 bg-gradient-to-t from-navy/80 via-navy/40 to-transparent flex flex-wrap items-end justify-between gap-2 text-white">
+          <strong className="font-display text-[16px] sm:text-[18px] font-normal leading-tight drop-shadow-xs">
             {t('galleryCaption')}
           </strong>
-          <span className="text-[8.5px] tracking-[0.14em] uppercase opacity-90">
+          <span className="text-[9px] font-bold tracking-[0.14em] uppercase opacity-90 bg-white/15 backdrop-blur-xs px-2.5 py-1 rounded border border-white/20">
             {t('galleryKicker')}
           </span>
         </figcaption>
       </figure>
 
-      {SIDE_SHOTS.map((shot) => (
+      {SIDE_SHOTS.map((shot, idx) => (
         <figure key={shot.src} className="bg-sand relative hidden overflow-hidden sm:block">
           <Image
             src={shot.src}
@@ -93,10 +93,10 @@ export function HeroGallery() {
           />
           <span
             aria-hidden
-            className="from-navy/35 absolute inset-0 bg-gradient-to-t to-transparent to-50%"
+            className="from-navy/45 absolute inset-0 bg-gradient-to-t to-transparent to-60%"
           />
-          <figcaption className="font-display absolute inset-x-4 bottom-3 z-10 text-[15px] text-white">
-            {shot.caption}
+          <figcaption className="font-display absolute inset-x-4 bottom-3 z-10 text-[14px] font-medium text-white drop-shadow-xs">
+            {idx === 0 ? t('sideShot1') : t('sideShot2')}
           </figcaption>
         </figure>
       ))}
