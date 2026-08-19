@@ -274,6 +274,30 @@ export async function actionDeleteInquiry(id: string): Promise<ActionResult> {
   }
 }
 
+/** Poll số yêu cầu tư vấn mới cho thông báo thời gian thực trên admin panel. */
+export async function actionGetPendingInquiriesPoll(): Promise<{
+  ok: boolean;
+  pendingCount: number;
+  latestCode?: string;
+  latestName?: string;
+}> {
+  try {
+    await requirePermission('inquiry:read');
+    const { getInquiryStats, listInquiries } = await import('@/lib/db/repositories/inquiry-repo');
+    const stats = await getInquiryStats();
+    const recent = await listInquiries({ page: 1, limit: 1, sort: 'newest', status: 'new' });
+    const latest = recent.items[0];
+    return {
+      ok: true,
+      pendingCount: stats.new,
+      latestCode: latest?.code,
+      latestName: latest?.name,
+    };
+  } catch {
+    return { ok: false, pendingCount: 0 };
+  }
+}
+
 /* ── Danh mục & tiện ích ──────────────────────────────── */
 
 /*

@@ -1,10 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 import { BrandLogo } from '@/components/ui/brand-logo';
+import { useToast } from '@/components/ui/toast-provider';
 import { cn } from '@/lib/utils';
 
 import {
@@ -40,8 +41,47 @@ export interface AdminShellProps {
 
 export function AdminShell({ children, pendingInquiries = 0, currentUser = null }: AdminShellProps) {
   const pathname = usePathname();
+  const router = useRouter();
+  const { showToast } = useToast();
+
   const [navOpen, setNavOpen] = useState(false);
   const [pendingHref, setPendingHref] = useState<string | null>(null);
+  const [livePending, setLivePending] = useState(pendingInquiries);
+
+  useEffect(() => {
+    setLivePending(pendingInquiries);
+  }, [pendingInquiries]);
+
+  // Live Polling thông báo yêu cầu tư vấn mới từ khách (mỗi 12 giây)
+  useEffect(() => {
+    if (!currentUser) return;
+    let isMounted = true;
+
+    const interval = setInterval(async () => {
+      try {
+        const { actionGetPendingInquiriesPoll } = await import('@/server/actions/admin-actions');
+        const res = await actionGetPendingInquiriesPoll();
+        if (!isMounted || !res.ok) return;
+
+        if (res.pendingCount > livePending) {
+          setLivePending(res.pendingCount);
+          const name = res.latestName ? ` từ ${res.latestName}` : '';
+          const code = res.latestCode ? ` (${res.latestCode})` : '';
+          showToast(`🔔 Vừa có 1 yêu cầu tư vấn mới${name}${code}!`, 'success');
+          router.refresh();
+        } else if (res.pendingCount !== livePending) {
+          setLivePending(res.pendingCount);
+        }
+      } catch {
+        // Im lặng nếu mạng chập chập
+      }
+    }, 12_000);
+
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, [currentUser, livePending, router, showToast]);
 
   useEffect(() => {
     setNavOpen(false);
@@ -109,7 +149,7 @@ export function AdminShell({ children, pendingInquiries = 0, currentUser = null 
           <ul className="grid gap-0.5">
             {NAV.map(({ href, label, Icon }) => {
               const isActive = activeHref === href;
-              const badge = href === '/admin/inquiries' ? pendingInquiries : 0;
+              const badge = href === '/admin/inquiries' ? livePending : 0;
               return (
                 <li key={href}>
                   <Link

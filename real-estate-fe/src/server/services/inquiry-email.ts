@@ -178,13 +178,61 @@ export async function sendNewInquiryEmail(doc: InquiryDoc): Promise<InquiryMailR
     .filter((line) => line !== '')
     .join('\n');
 
-  const sent = await sendMail({
-    subject: `DANANG HOMES LIVING có yêu cầu tư vấn mới — ${doc.name} (${doc.code})`,
+  // 1. Gửi email thông báo cho Admin / Đội tư vấn
+  const adminSent = await sendMail({
+    to: process.env.INQUIRY_NOTIFY_TO || process.env.SMTP_USER,
+    subject: `[YÊU CẦU MỚI ${doc.code}] ${doc.name} — ${property ? property.title : 'Tư vấn BĐS'}`,
     html,
     text,
-    // Trả lời là soạn thẳng cho khách.
     replyTo: doc.email,
   });
 
-  return { sent };
+  // 2. Gửi email xác nhận tự động cho Khách hàng
+  const customerHtml = `<!doctype html>
+<html lang="vi">
+<body style="margin:0;padding:0;background:#f4f2ec;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f2ec;padding:28px 12px">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border:1px solid ${LINE}">
+          <tr>
+            <td style="background:${BRAND};padding:24px 28px">
+              <div style="color:${GOLD};font-size:10px;letter-spacing:2px;text-transform:uppercase;font-weight:700">
+                Da Nang Homes &amp; Living
+              </div>
+              <div style="color:#ffffff;font-size:18px;font-weight:600;margin-top:6px">
+                Cảm ơn bạn đã liên hệ với chúng tôi!
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:24px 28px;color:${BRAND};font-size:14px;line-height:1.65">
+              <p style="margin-top:0">Kính gửi <strong>${esc(doc.name)}</strong>,</p>
+              <p>Chúng tôi đã nhận được yêu cầu tư vấn của bạn trên hệ thống <strong>Da Nang Homes &amp; Living</strong>.</p>
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#faf9f5;border:1px solid ${LINE};padding:14px 16px;margin:16px 0;font-size:13px">
+                <tr><td style="padding:4px 0">Mã yêu cầu: <strong>${esc(doc.code)}</strong></td></tr>
+                ${property ? `<tr><td style="padding:4px 0">Bất động sản: <strong>${esc(property.title)}</strong></td></tr>` : ''}
+                ${doc.preferredViewingDate ? `<tr><td style="padding:4px 0">Ngày hẹn xem nhà: <strong>${new Intl.DateTimeFormat('vi-VN', { timeZone: VN_TIMEZONE }).format(doc.preferredViewingDate)}</strong></td></tr>` : ''}
+              </table>
+              <p>Chuyên viên tư vấn của chúng tôi sẽ xem xét thông tin và chủ động liên hệ lại với bạn qua số điện thoại <strong>${esc(phone || 'hoặc email')}</strong> trong thời gian sớm nhất (tối đa 2 giờ làm việc).</p>
+              <p style="margin-bottom:0">Trân trọng,<br/><strong>Đội ngũ Da Nang Homes &amp; Living</strong></p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+
+  const customerText = `Kính gửi ${doc.name},\n\nCảm ơn bạn đã đăng ký tư vấn tại Da Nang Homes & Living.\nMã yêu cầu của bạn là: ${doc.code}.\nChúng tôi sẽ liên hệ lại với bạn trong thời gian sớm nhất.\n\nTrân trọng,\nĐội ngũ Da Nang Homes & Living`;
+
+  const customerSent = await sendMail({
+    to: doc.email,
+    subject: `[Da Nang Homes & Living] Xác nhận nhận yêu cầu tư vấn #${doc.code}`,
+    html: customerHtml,
+    text: customerText,
+  });
+
+  return { sent: adminSent || customerSent };
 }

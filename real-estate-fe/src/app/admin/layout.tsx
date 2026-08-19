@@ -1,5 +1,6 @@
 import '../globals.css';
 
+import { ToastProvider } from '@/components/ui/toast-provider';
 import { getCurrentUser } from '@/lib/auth/session';
 import { countPendingInquiries } from '@/server/services/inquiry-service';
 
@@ -33,12 +34,14 @@ export default async function AdminLayout({ children }: { children: ReactNode })
   return (
     <html lang="vi" suppressHydrationWarning>
       <body className="bg-paper text-ink min-h-screen overflow-x-hidden antialiased">
-        <AdminShell
-          pendingInquiries={pendingInquiries}
-          currentUser={user ? { name: user.name, email: user.email, role: user.role } : null}
-        >
-          {children}
-        </AdminShell>
+        <ToastProvider>
+          <AdminShell
+            pendingInquiries={pendingInquiries}
+            currentUser={user ? { name: user.name, email: user.email, role: user.role } : null}
+          >
+            {children}
+          </AdminShell>
+        </ToastProvider>
       </body>
     </html>
   );
