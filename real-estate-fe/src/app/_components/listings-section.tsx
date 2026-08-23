@@ -51,6 +51,7 @@ export function ListingsSection({
             <div
               key={listing.slug}
               className={cn(
+                'h-full',
                 isFeatured &&
                   (index === 0 ? 'md:col-span-7' : index === 1 ? 'md:col-span-5' : 'md:col-span-4'),
               )}

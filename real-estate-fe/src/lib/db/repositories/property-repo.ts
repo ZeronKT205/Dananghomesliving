@@ -25,12 +25,12 @@ import type { PropertyDoc } from '../collections';
 import type { Filter, Sort } from 'mongodb';
 
 const SORT_MAP: Record<string, Sort> = {
-  newest: { publishedAt: -1, createdAt: -1 },
-  oldest: { publishedAt: 1, createdAt: 1 },
-  price_asc: { 'price.usd': 1 },
-  price_desc: { 'price.usd': -1 },
-  area_desc: { 'specs.internalArea': -1 },
-  popular: { viewCount: -1, createdAt: -1 },
+  newest: { deal: 1, publishedAt: -1, createdAt: -1 },
+  oldest: { deal: 1, publishedAt: 1, createdAt: 1 },
+  price_asc: { deal: 1, 'price.usd': 1 },
+  price_desc: { deal: 1, 'price.usd': -1 },
+  area_desc: { deal: 1, 'specs.internalArea': -1 },
+  popular: { deal: 1, viewCount: -1, createdAt: -1 },
 };
 
 /**

@@ -2,6 +2,8 @@
 
 import { useTranslations } from 'next-intl';
 
+import { useSiteSettings } from '@/components/site-settings-provider';
+
 interface ContactButtonsProps {
   id?: string;
   listedDate: string;
@@ -10,6 +12,9 @@ interface ContactButtonsProps {
 
 export function ContactButtons({ listedDate, updatedDate }: ContactButtonsProps) {
   const t = useTranslations('Property');
+  const settings = useSiteSettings();
+  const phoneHref = settings?.contact.phoneHref || 'tel:+842363888888';
+  const whatsapp = settings?.social.find(s => s.platform === 'whatsapp')?.href || 'https://wa.me/842363888888';
 
   return (
     <div className="bg-white border border-line p-6 rounded-none shadow-lift space-y-5">
@@ -31,15 +36,16 @@ export function ContactButtons({ listedDate, updatedDate }: ContactButtonsProps)
       <div className="space-y-2.5">
         <a 
           href="#enquiry-form"
-          className="w-full bg-gold hover:bg-gold-soft text-navy py-3.5 px-4 rounded-none text-[12px] font-bold uppercase tracking-[0.14em] flex items-center justify-center gap-2 transition-all shadow-md active:scale-98 cursor-pointer"
+          className="relative overflow-hidden w-full bg-gold hover:bg-gold-soft text-navy py-3.5 px-4 rounded-none text-[12px] font-bold uppercase tracking-[0.14em] flex items-center justify-center gap-2 transition-all shadow-[0_4px_14px_0_rgba(197,168,128,0.39)] hover:shadow-[0_6px_20px_rgba(197,168,128,0.23)] hover:-translate-y-0.5 active:scale-98 cursor-pointer group"
         >
-          {t('bookPrivateViewing')}
-          <span aria-hidden>→</span>
+          <div className="absolute inset-0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/40 to-transparent"></div>
+          <span className="relative z-10">{t('bookPrivateViewing')}</span>
+          <span className="relative z-10 transition-transform duration-300 group-hover:translate-x-1" aria-hidden>→</span>
         </a>
 
         <div className="grid grid-cols-2 gap-2">
           <a 
-            href="tel:+842363888888"
+            href={phoneHref}
             className="flex items-center justify-center gap-2 border border-navy bg-navy text-white hover:bg-navy-2 py-3 rounded-none text-[11px] font-bold uppercase tracking-wider transition-colors cursor-pointer"
           >
             <svg className="w-4 h-4 text-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -49,7 +55,7 @@ export function ContactButtons({ listedDate, updatedDate }: ContactButtonsProps)
           </a>
 
           <a 
-            href="https://wa.me/842363888888" 
+            href={whatsapp}
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center justify-center gap-2 border border-line text-navy hover:bg-ivory py-3 rounded-none text-[11px] font-bold uppercase tracking-wider transition-colors cursor-pointer"

@@ -3,7 +3,7 @@
 import { useTranslations } from 'next-intl';
 
 interface PropertyOverviewProps {
-  description: string[];
+  description: string | string[];
   /**
    * Tên tiện ích, lấy từ bảng `amenities` trong CMS.
    *
@@ -24,11 +24,18 @@ export function PropertyOverview({ description, features }: PropertyOverviewProp
         <h2 className="text-[22px] font-display font-normal text-navy tracking-tight mb-4">
           {t('overviewSectionTitle')}
         </h2>
-        {description.map((paragraph, i) => (
-          <p key={i} className="text-muted leading-relaxed">
-            {paragraph}
-          </p>
-        ))}
+        {Array.isArray(description) ? (
+          description.map((paragraph, i) => (
+            <p key={i} className="text-muted leading-relaxed">
+              {paragraph}
+            </p>
+          ))
+        ) : (
+          <div 
+            className="text-muted leading-[1.8] prose prose-sm max-w-none prose-p:mb-5 prose-ul:list-disc prose-ul:pl-5 prose-ul:mb-5 prose-li:mb-2 prose-strong:text-navy prose-strong:font-semibold first-letter:text-6xl first-letter:font-display first-letter:text-gold first-letter:mr-3 first-letter:float-left first-letter:leading-[0.8] first-letter:pt-1 [&>p.lead]:text-[16px] [&>p.lead]:text-navy/90 [&>p.lead]:font-medium" 
+            dangerouslySetInnerHTML={{ __html: description }} 
+          />
+        )}
       </div>
 
       {/* Features & Amenities Grid */}
@@ -39,13 +46,13 @@ export function PropertyOverview({ description, features }: PropertyOverviewProp
           </h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {features.map((label) => (
-              <div key={label} className="flex items-center gap-3 p-4 bg-paper border border-line rounded-none">
-                <div className="h-8 w-8 rounded-none bg-gold/15 text-gold border border-gold/30 flex items-center justify-center shrink-0">
+              <div key={label} className="group flex items-center gap-3 p-4 bg-paper border border-line rounded-none transition-all duration-300 hover:border-gold hover:shadow-md hover:-translate-y-1">
+                <div className="h-8 w-8 rounded-none bg-gold/15 text-gold border border-gold/30 flex items-center justify-center shrink-0 transition-transform duration-300 group-hover:scale-110">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M5 13l4 4L19 7" />
                   </svg>
                 </div>
-                <span className="text-[13px] font-semibold text-navy">{label}</span>
+                <span className="text-[13px] font-semibold text-navy transition-colors duration-300 group-hover:text-gold">{label}</span>
               </div>
             ))}
           </div>

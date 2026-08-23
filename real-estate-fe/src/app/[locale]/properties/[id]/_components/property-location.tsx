@@ -26,9 +26,9 @@ export function PropertyLocation({ address, nearby, keyInfo, latitude, longitude
           </h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-0 border border-line bg-white rounded-none divide-x divide-y divide-line">
             {keyInfo.map((item, i) => (
-              <div key={i} className="p-4 flex flex-col gap-1">
-                <span className="text-[10px] text-muted uppercase tracking-[0.15em] font-bold">{item.label}</span>
-                <span className="text-[14px] font-semibold text-navy">{item.value}</span>
+              <div key={i} className="group p-4 flex flex-col gap-1 transition-colors duration-300 hover:bg-ivory cursor-default">
+                <span className="text-[10px] text-muted uppercase tracking-[0.15em] font-bold group-hover:text-gold transition-colors duration-300">{item.label}</span>
+                <span className="text-[14px] font-semibold text-navy transition-colors duration-300 group-hover:text-navy/80">{item.value}</span>
               </div>
             ))}
           </div>
@@ -54,6 +54,8 @@ export function PropertyLocation({ address, nearby, keyInfo, latitude, longitude
             longitude={longitude || 108.2022} 
             readOnly={true}
             zoom={11.5}
+            label={address}
+            showDaNangBoundary={true}
             className="!h-full !border-0 !rounded-none"
           />
         </div>
@@ -66,13 +68,13 @@ export function PropertyLocation({ address, nearby, keyInfo, latitude, longitude
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
               {nearby.map((item, i) => (
-                <div key={i} className="flex items-center gap-3 p-3 bg-white border border-line rounded-none">
-                  <div className="w-8 h-8 rounded-none bg-gold/10 text-gold border border-gold/30 flex items-center justify-center shrink-0">
+                <div key={i} className="group flex items-center gap-3 p-3 bg-white border border-line rounded-none transition-all duration-300 hover:border-gold hover:shadow-md hover:-translate-y-0.5 cursor-default">
+                  <div className="w-8 h-8 rounded-none bg-gold/10 text-gold border border-gold/30 flex items-center justify-center shrink-0 transition-transform duration-300 group-hover:bg-gold group-hover:text-white">
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                   </div>
                   <div className="flex flex-col min-w-0">
-                    <span className="font-bold text-navy text-[12.5px]">{item.time}</span>
-                    <span className="text-muted text-[12.5px] truncate" title={item.place}>{item.place}</span>
+                    <span className="font-bold text-navy text-[12.5px] transition-colors duration-300 group-hover:text-gold">{item.time}</span>
+                    <span className="text-muted text-[12.5px] truncate transition-colors duration-300 group-hover:text-navy" title={item.place}>{item.place}</span>
                   </div>
                 </div>
               ))}

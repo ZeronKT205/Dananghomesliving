@@ -4,6 +4,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { useMemo, useState, useTransition } from 'react';
 
 import { useToast } from '@/components/ui/toast-provider';
+import { Link } from '@/i18n/routing';
 import { actionSubmitPropertyInquiry } from '@/server/actions/public-actions';
 
 /**
@@ -108,13 +109,21 @@ export function EnquiryForm({ propertySlug, propertyTitle }: { propertySlug: str
               code: () => <strong className="text-navy font-mono">{done.code}</strong>,
             })}
           </p>
-          <button
-            type="button"
-            onClick={() => setDone(null)}
-            className="mt-2 text-gold hover:underline text-[12px] font-bold tracking-wider uppercase block mx-auto cursor-pointer"
-          >
-            ← {t('successAgain')}
-          </button>
+          <div className="pt-2">
+            <Link 
+              href="/properties" 
+              className="mt-4 block w-full border-2 border-navy text-navy hover:bg-navy hover:text-white transition-colors py-2.5 text-[11px] font-bold uppercase tracking-widest cursor-pointer text-center"
+            >
+              Explore More Properties
+            </Link>
+            <button
+              type="button"
+              onClick={() => setDone(null)}
+              className="mt-4 text-muted hover:text-navy text-[11px] font-medium block mx-auto transition-colors cursor-pointer"
+            >
+              ← {t('successAgain')}
+            </button>
+          </div>
         </div>
       ) : (
         <form onSubmit={submit} className="space-y-4" noValidate>

@@ -119,7 +119,7 @@ export function ListingCard({
 
   // 🟦 Standard Grid View (Hiển thị dạng Card vuông vức)
   return (
-    <article className="border-line hover:shadow-lift group relative flex flex-col overflow-hidden border bg-white transition-all duration-300 hover:-translate-y-1.5 rounded-none">
+    <article className="border-line hover:shadow-lift group relative flex flex-col overflow-hidden border bg-white transition-all duration-300 hover:-translate-y-1.5 rounded-none h-full">
       <Link href={`/properties/${listing.slug}`} className={cn('bg-sand skeleton-shimmer relative overflow-hidden block cursor-pointer', featured ? 'h-[340px]' : 'h-[250px]')}>
         <Image
           src={listing.image}

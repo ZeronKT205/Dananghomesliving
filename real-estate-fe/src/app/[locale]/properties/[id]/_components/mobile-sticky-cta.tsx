@@ -2,6 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 
+import { useSiteSettings } from '@/components/site-settings-provider';
 import { PhoneIcon } from '@/components/ui/icons';
 
 interface MobileStickyCTAProps {
@@ -11,6 +12,8 @@ interface MobileStickyCTAProps {
 
 export function MobileStickyCTA({ price }: MobileStickyCTAProps) {
   const t = useTranslations('Property');
+  const settings = useSiteSettings();
+  const phoneHref = settings?.contact.phoneHref || 'tel:+842363888888';
 
   const displayPrice = typeof price === 'string' ? price : price?.usd || '';
   const formattedPrice = displayPrice.startsWith('$') ? displayPrice : `$${displayPrice}`;
@@ -36,8 +39,8 @@ export function MobileStickyCTA({ price }: MobileStickyCTAProps) {
 
         <div className="flex items-center gap-2">
           <a
-            href="tel:+842363888888"
-            aria-label="{t('callDirect')}"
+            href={phoneHref}
+            aria-label={t('callDirect')}
             className="grid h-11 w-11 cursor-pointer place-items-center rounded-none border border-gold/40 bg-navy-2 text-gold transition-colors hover:bg-gold hover:text-navy active:scale-95"
           >
             <PhoneIcon className="h-5 w-5" />

@@ -618,7 +618,7 @@ export async function actionSaveSettings(input: unknown): Promise<ActionResult> 
     const data = zSiteSettings.parse(input);
     await saveSettings(data, user.sub);
 
-    revalidatePath('/', 'layout');
+    revalidatePath('/[locale]', 'layout');
     revalidatePath('/admin/settings');
 
     return { ok: true, message: 'Đã lưu cài đặt' };

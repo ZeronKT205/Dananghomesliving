@@ -2,7 +2,7 @@
 
 import L from 'leaflet';
 import { useEffect, useState, useMemo, useRef } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents, GeoJSON } from 'react-leaflet';
 
 import 'leaflet/dist/leaflet.css';
 import { type MapPickerProps } from './map-picker';
@@ -89,10 +89,22 @@ function MapEventsHandler({
   return null;
 }
 
-export default function MapPickerClient({ latitude, longitude, onChangeLocation, className = '', readOnly = false, zoom = DEFAULT_MAP_ZOOM }: MapPickerProps) {
+export default function MapPickerClient({ latitude, longitude, onChangeLocation, className = '', readOnly = false, zoom = DEFAULT_MAP_ZOOM, label, showDaNangBoundary }: MapPickerProps) {
   const [mapLayerType, setMapLayerType] = useState<"osm" | "satellite">("osm");
   const [isLayersOpen, setIsLayersOpen] = useState(false);
+  const [geoData, setGeoData] = useState<any>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (showDaNangBoundary) {
+      fetch('/geo/danang-outline.json')
+        .then(res => res.json())
+        .then(data => {
+          setGeoData(data);
+        })
+        .catch(err => console.error("Could not load Da Nang GeoJSON", err));
+    }
+  }, [showDaNangBoundary]);
 
   // Vị trí trung tâm: ưu tiên vị trí hiện tại nếu có, nếu không thì dùng mặc định
   const centerPosition: [number, number] = (latitude !== null && longitude !== null) 
@@ -119,6 +131,16 @@ export default function MapPickerClient({ latitude, longitude, onChangeLocation,
           onChangeLocation(latLng.lat, latLng.lng);
         }
       },
+      click(e: LeafletEvent) {
+        const marker = e.target as LeafletMarker | null;
+        if (marker !== null) {
+          const latLng = marker.getLatLng();
+          const map = marker._map;
+          if (map) {
+            map.flyTo(latLng, Math.max(map.getZoom(), 15), { animate: true, duration: 0.8 });
+          }
+        }
+      }
     }),
     [onChangeLocation, readOnly],
   );
@@ -199,10 +221,22 @@ export default function MapPickerClient({ latitude, longitude, onChangeLocation,
             eventHandlers={markerEventHandlers}
           >
             <Popup>
-              <strong>Vị trí đã chọn</strong>
+              <strong>{label || "Vị trí đã chọn"}</strong>
               {!readOnly && <p className="text-sm mt-1">Kéo thả để di chuyển, hoặc nhấp vào bản đồ để chọn lại.</p>}
             </Popup>
           </Marker>
+        )}
+        
+        {showDaNangBoundary && geoData && (
+          <GeoJSON 
+            data={geoData} 
+            style={{
+              color: '#0b5ed7',
+              weight: 2,
+              fillColor: 'transparent',
+              dashArray: '5, 5'
+            }}
+          />
         )}
       </MapContainer>
     </div>

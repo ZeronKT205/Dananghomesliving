@@ -36,10 +36,13 @@ export function HeroSection() {
               {t('lead')}
             </p>
 
-            <div className="mt-7 flex flex-wrap gap-3">
-              <ButtonLink href="#rent" variant="gold">
-                {t('ctaRent')} <span aria-hidden>→</span>
-              </ButtonLink>
+            <div className="mt-7 flex flex-wrap gap-3 items-center">
+              <div className="relative group">
+                <div className="absolute -inset-1 bg-gradient-to-r from-gold to-gold-soft opacity-40 blur-md group-hover:opacity-60 transition duration-1000 group-hover:duration-200 animate-pulse rounded-none"></div>
+                <ButtonLink href="#rent" variant="gold" className="relative">
+                  {t('ctaRent')} <span aria-hidden>→</span>
+                </ButtonLink>
+              </div>
               <ButtonLink href="#buy" variant="outline" className="text-navy">
                 {t('ctaBuy')}
               </ButtonLink>

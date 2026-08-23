@@ -10,8 +10,8 @@ import type { ListingType } from '@/types';
 
 const TABS: { value: ListingType; labelKey: 'buy' | 'rent' }[] = [
   // Nhãn lấy từ file dịch lúc render; ở đây chỉ giữ khoá.
-  { value: 'sale', labelKey: 'buy' },
   { value: 'rent', labelKey: 'rent' },
+  { value: 'sale', labelKey: 'buy' },
 ];
 
 export function PropertySearch({
@@ -39,7 +39,7 @@ function PropertySearchInner({
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const currentType = (searchParams.get('type') as ListingType) || 'sale';
+  const currentType = (searchParams.get('type') as ListingType) || 'rent';
   const currentArea = searchParams.get('area') || SEARCH_AREAS[0];
   const currentPropType = searchParams.get('propertyType') || SEARCH_PROPERTY_TYPES[0];
 
@@ -102,7 +102,7 @@ function PropertySearchInner({
           <div
             className={cn(
               'absolute top-1 bottom-1 w-[calc(50%-4px)] bg-navy rounded-none transition-all duration-300 ease-out shadow-xs',
-              tab === 'sale' ? 'left-1' : 'left-[calc(50%+2px)]'
+              tab === 'rent' ? 'left-1' : 'left-[calc(50%+2px)]'
             )}
           />
 
@@ -237,7 +237,7 @@ function PropertySearchInner({
             <div
               className={cn(
                 'absolute top-1 bottom-1 w-[calc(50%-4px)] bg-navy rounded-none transition-all duration-300 ease-out shadow-xs',
-                tab === 'sale' ? 'left-1' : 'left-[calc(50%+2px)]'
+                tab === 'rent' ? 'left-1' : 'left-[calc(50%+2px)]'
               )}
             />
 

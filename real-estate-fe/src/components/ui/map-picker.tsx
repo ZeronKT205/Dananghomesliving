@@ -8,6 +8,8 @@ export interface MapPickerProps {
   className?: string;
   readOnly?: boolean;
   zoom?: number;
+  label?: string;
+  showDaNangBoundary?: boolean;
 }
 
 const MapPickerClient = dynamic(() => import('./map-picker-client'), {

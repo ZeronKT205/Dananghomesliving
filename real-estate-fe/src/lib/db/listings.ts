@@ -139,7 +139,7 @@ function toListing(
     imageAlt: title,
     propertyType: lookup.categoryName.get(doc.categoryId?.toHexString() ?? '') ?? undefined,
     areaName: doc.location.district || undefined,
-    description: pickLocale(doc.description, locale, [])?.join('\n\n') || pickLocale(doc.summary, locale, ''),
+    description: [].concat(pickLocale(doc.description, locale, []) || []).join('\n\n') || pickLocale(doc.summary, locale, ''),
     gallery: gallery.length ? gallery : [PLACEHOLDER_IMAGE],
   };
 }
@@ -173,6 +173,21 @@ export async function getListingsByType(
     page: 1,
     limit: LIST_LIMIT,
     deal: listingType,
+    sort: 'newest',
+    includeUnpublished: false,
+  });
+  return hydrate(page.items, locale);
+}
+
+export async function getListingsByCategorySlug(
+  categorySlug: string,
+  locale: Locale = DEFAULT_LOCALE,
+  limit: number = LIST_LIMIT
+): Promise<Listing[]> {
+  const page = await listProperties({
+    page: 1,
+    limit,
+    categorySlug,
     sort: 'newest',
     includeUnpublished: false,
   });
