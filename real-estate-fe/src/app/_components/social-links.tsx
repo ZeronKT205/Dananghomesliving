@@ -13,7 +13,7 @@ import { cn } from '@/lib/utils';
  */
 export function SocialLinks({ className }: { className?: string }) {
   const settings = useSiteSettings();
-  const links = (settings?.social ?? []).filter((s) => s.enabled && s.href.trim().length > 0);
+  const links = settings?.social ?? [];
 
   if (links.length === 0) return null;
 

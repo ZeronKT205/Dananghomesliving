@@ -15,6 +15,17 @@ import {
 
 import type { PropertyDoc } from './collections';
 
+function normalizeVi(str: string): string {
+  return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D');
+}
+
+function localizeLocationStr(str: string, locale: Locale): string {
+  if (!str) return str;
+  return locale === 'en' ? normalizeVi(str) : str;
+}
+
+/* ── MAPPING ───────────────────────────────────────────── */
+
 /**
  * Nguồn bất động sản cho các trang PUBLIC.
  *
@@ -126,7 +137,10 @@ function toListing(
   return {
     slug: doc.slug,
     title,
-    location: [doc.location.ward, doc.location.district].filter(Boolean).join(' · ') || doc.location.city,
+    location: localizeLocationStr(
+      [doc.location.ward, doc.location.district].filter(Boolean).join(' · ') || doc.location.city,
+      locale
+    ),
     listingType: doc.deal,
     price,
     ...(priceNote ? { priceNote } : {}),
@@ -139,7 +153,7 @@ function toListing(
     imageAlt: title,
     propertyType: lookup.categoryName.get(doc.categoryId?.toHexString() ?? '') ?? undefined,
     areaName: doc.location.district || undefined,
-    description: [].concat(pickLocale(doc.description, locale, []) || []).join('\n\n') || pickLocale(doc.summary, locale, ''),
+    description: (pickLocale(doc.description, locale, []) || []).join('\n\n') || pickLocale(doc.summary, locale, ''),
     gallery: gallery.length ? gallery : [PLACEHOLDER_IMAGE],
   };
 }
@@ -265,8 +279,14 @@ export async function getPropertyDetail(
     location: {
       address:
         pickLocale(doc.location.address, locale, '') ||
-        [doc.location.ward, doc.location.district, doc.location.city].filter(Boolean).join(', '),
-      shortAddress: [doc.location.ward, doc.location.district].filter(Boolean).join(', ') || doc.location.city,
+        localizeLocationStr(
+          [doc.location.ward, doc.location.district, doc.location.city].filter(Boolean).join(', '),
+          locale
+        ),
+      shortAddress: localizeLocationStr(
+        [doc.location.ward, doc.location.district].filter(Boolean).join(', ') || doc.location.city,
+        locale
+      ),
     },
     price: { usd: price, ...(priceNote ? { note: priceNote } : {}) },
     stats: {

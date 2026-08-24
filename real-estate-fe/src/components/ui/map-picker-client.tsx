@@ -92,6 +92,7 @@ function MapEventsHandler({
 export default function MapPickerClient({ latitude, longitude, onChangeLocation, className = '', readOnly = false, zoom = DEFAULT_MAP_ZOOM, label, showDaNangBoundary }: MapPickerProps) {
   const [mapLayerType, setMapLayerType] = useState<"osm" | "satellite">("osm");
   const [isLayersOpen, setIsLayersOpen] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [geoData, setGeoData] = useState<any>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -135,7 +136,8 @@ export default function MapPickerClient({ latitude, longitude, onChangeLocation,
         const marker = e.target as LeafletMarker | null;
         if (marker !== null) {
           const latLng = marker.getLatLng();
-          const map = marker._map;
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const map = (marker as any)._map;
           if (map) {
             map.flyTo(latLng, Math.max(map.getZoom(), 15), { animate: true, duration: 0.8 });
           }

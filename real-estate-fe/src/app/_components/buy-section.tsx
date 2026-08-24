@@ -23,7 +23,7 @@ export function BuySection({ listings }: BuySectionProps) {
             </h2>
           </div>
           <p className="text-muted text-[14px] leading-relaxed max-w-xs lg:max-w-sm text-left md:text-right">
-            Selected residences across Da&nbsp;Nang's most desirable coastal and urban neighbourhoods — for owner-occupiers and long-term investors.
+            Selected residences across Da&nbsp;Nang&apos;s most desirable coastal and urban neighbourhoods — for owner-occupiers and long-term investors.
           </p>
         </div>
 
@@ -46,7 +46,7 @@ export function BuySection({ listings }: BuySectionProps) {
                 Exclusive buy listings are being curated
               </h3>
               <p className="text-muted text-[13.5px] leading-relaxed max-w-md">
-                Our team is personally reviewing premium properties for sale across Da Nang's most sought-after addresses. They will be available soon.
+                Our team is personally reviewing premium properties for sale across Da Nang&apos;s most sought-after addresses. They will be available soon.
               </p>
             </div>
           </div>

@@ -32,7 +32,7 @@ export function PropertyOverview({ description, features }: PropertyOverviewProp
           ))
         ) : (
           <div 
-            className="text-muted leading-[1.8] prose prose-sm max-w-none prose-p:mb-5 prose-ul:list-disc prose-ul:pl-5 prose-ul:mb-5 prose-li:mb-2 prose-strong:text-navy prose-strong:font-semibold first-letter:text-6xl first-letter:font-display first-letter:text-gold first-letter:mr-3 first-letter:float-left first-letter:leading-[0.8] first-letter:pt-1 [&>p.lead]:text-[16px] [&>p.lead]:text-navy/90 [&>p.lead]:font-medium" 
+            className="text-muted leading-[1.8] prose prose-sm max-w-none prose-p:mb-5 prose-ul:list-disc prose-ul:pl-5 prose-ul:mb-5 prose-li:mb-2 prose-strong:text-navy prose-strong:font-semibold [&>p.lead]:text-[16px] [&>p.lead]:text-navy/90 [&>p.lead]:font-medium" 
             dangerouslySetInnerHTML={{ __html: description }} 
           />
         )}

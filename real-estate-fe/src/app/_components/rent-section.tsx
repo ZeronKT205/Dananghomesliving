@@ -16,9 +16,13 @@ export function RentSection({ apartments, villas, houses }: RentSectionProps) {
   const combined: Listing[] = [];
   const maxLen = Math.max(apartments.length, villas.length, houses.length);
   for (let i = 0; i < maxLen; i++) {
-    if (apartments[i]) combined.push(apartments[i]);
-    if (villas[i]) combined.push(villas[i]);
-    if (houses[i]) combined.push(houses[i]);
+    const apt = apartments[i];
+    const vil = villas[i];
+    const hou = houses[i];
+    
+    if (apt) combined.push(apt);
+    if (vil) combined.push(vil);
+    if (hou) combined.push(hou);
   }
   
   // Show max 6 items
@@ -41,7 +45,7 @@ export function RentSection({ apartments, villas, houses }: RentSectionProps) {
             </h2>
           </div>
           <p className="text-muted text-[14px] leading-relaxed max-w-xs lg:max-w-sm text-left md:text-right">
-            Handpicked apartments, private villas, and townhouses across Da Nang's most desirable addresses — curated for dependable long-term living.
+            Handpicked apartments, private villas, and townhouses across Da Nang&apos;s most desirable addresses — curated for dependable long-term living.
           </p>
         </div>
 

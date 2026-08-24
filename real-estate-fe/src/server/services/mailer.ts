@@ -81,6 +81,7 @@ export async function sendMail({ to, subject, html, text, replyTo }: MailInput):
       // Bấm "Trả lời" là soạn thẳng cho khách, không phải cho chính hộp thư mình.
       ...(replyTo ? { replyTo } : {}),
     });
+    // eslint-disable-next-line no-console
     console.log(`[mailer] ✓ Đã gửi email thành công tới [${recipient}]: "${subject}" (MessageID: ${info.messageId})`);
     return true;
   } catch (err) {
