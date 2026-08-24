@@ -209,7 +209,7 @@ function PropertySearchInner({
                 </>
               ) : (
                 <>
-                  TÌM KIẾM
+                  {t('submit')}
                   <span className="transition-transform duration-300 group-hover:translate-x-1">→</span>
                 </>
               )}
@@ -338,7 +338,7 @@ function PropertySearchInner({
               </>
             ) : (
               <>
-                TÌM KIẾM
+                {t('submit')}
                 <span className="transition-transform duration-300 group-hover:translate-x-1">→</span>
               </>
             )}
