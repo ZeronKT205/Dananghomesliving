@@ -125,15 +125,15 @@ export function DonutChart({
         </div>
       </div>
 
-      <ul className="grid min-w-[170px] flex-1 gap-2">
+      <ul className="flex min-w-[170px] flex-1 flex-col gap-2">
         {segments.map((segment) => (
-          <li key={segment.name} className="flex items-center gap-2.5 text-[12px]">
+          <li key={segment.name} className="flex items-center gap-2.5 text-[12px] min-w-0">
             <span
               aria-hidden
               className="h-2.5 w-2.5 shrink-0 rounded-sm"
               style={{ background: segment.color }}
             />
-            <span className="text-navy min-w-0 flex-1 truncate font-medium">{segment.name}</span>
+            <span className="text-navy min-w-0 flex-1 truncate font-medium" title={segment.name}>{segment.name}</span>
             <span className="text-muted shrink-0 tabular-nums">{segment.percent}%</span>
           </li>
         ))}
