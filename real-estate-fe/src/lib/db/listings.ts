@@ -153,10 +153,10 @@ function toListing(
     imageAlt: title,
     propertyType: lookup.categoryName.get(doc.categoryId?.toHexString() ?? '') ?? undefined,
     areaName: doc.location.district || undefined,
-    description: (Array.isArray(pickLocale(doc.description, locale, []))
-      ? (pickLocale(doc.description, locale, []) as string[])
-      : [pickLocale(doc.description, locale, '') as string]
-    ).join('\n\n') || pickLocale(doc.summary, locale, ''),
+    description: (() => {
+      const d = pickLocale(doc.description, locale, [] as string[]) as unknown;
+      return (Array.isArray(d) ? d : [d as string]).join('\n\n') || pickLocale(doc.summary, locale, '');
+    })(),
     gallery: gallery.length ? gallery : [PLACEHOLDER_IMAGE],
   };
 }
