@@ -30,7 +30,7 @@ export function JournalSection({ articles }: { articles: Article[] }) {
             <article
               key={article.slug}
               className={cn(
-                'border-line bg-paper hover:shadow-lift group flex flex-col overflow-hidden border transition-all duration-300 hover:-translate-y-1.5',
+                'border-line bg-paper hover:shadow-lift group flex flex-col h-full overflow-hidden border transition-all duration-300 hover:-translate-y-1.5',
                 index === 0 && 'md:col-span-2 lg:col-span-1',
               )}
             >

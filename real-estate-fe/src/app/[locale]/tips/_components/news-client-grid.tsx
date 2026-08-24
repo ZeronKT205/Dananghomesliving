@@ -180,7 +180,7 @@ export function NewsClientGrid({ articles }: { articles: Article[] }) {
               return (
                 <article
                   key={article.slug}
-                  className="bg-navy border-navy hover:shadow-lift group flex flex-col justify-between overflow-hidden border p-6 sm:p-7 text-white transition-all duration-300 hover:-translate-y-1.5 md:col-span-1 rounded-none"
+                  className="bg-navy border-navy hover:shadow-lift group flex flex-col h-full justify-between overflow-hidden border p-6 sm:p-7 text-white transition-all duration-300 hover:-translate-y-1.5 md:col-span-1 rounded-none"
                 >
                   <div>
                     <div className="text-gold flex justify-between gap-4 text-[11px] font-bold tracking-[0.14em] uppercase">
@@ -214,7 +214,7 @@ export function NewsClientGrid({ articles }: { articles: Article[] }) {
               <article
                 key={article.slug}
                 className={cn(
-                  'border-line bg-white hover:shadow-lift group flex flex-col overflow-hidden border transition-all duration-300 hover:-translate-y-1.5 rounded-none',
+                  'border-line bg-white hover:shadow-lift group flex flex-col h-full overflow-hidden border transition-all duration-300 hover:-translate-y-1.5 rounded-none',
                   isWide && 'md:col-span-2 lg:col-span-2',
                 )}
               >
