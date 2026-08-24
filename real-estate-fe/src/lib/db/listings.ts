@@ -153,7 +153,10 @@ function toListing(
     imageAlt: title,
     propertyType: lookup.categoryName.get(doc.categoryId?.toHexString() ?? '') ?? undefined,
     areaName: doc.location.district || undefined,
-    description: (pickLocale(doc.description, locale, []) || []).join('\n\n') || pickLocale(doc.summary, locale, ''),
+    description: (Array.isArray(pickLocale(doc.description, locale, []))
+      ? (pickLocale(doc.description, locale, []) as string[])
+      : [pickLocale(doc.description, locale, '') as string]
+    ).join('\n\n') || pickLocale(doc.summary, locale, ''),
     gallery: gallery.length ? gallery : [PLACEHOLDER_IMAGE],
   };
 }
