@@ -188,7 +188,7 @@ export interface InquiryDoc extends BaseDoc {
   source: InquirySource;
 
   name: string;
-  email: string;
+  email: string | null;
   phone: string | null;
   locale: Locale;
 

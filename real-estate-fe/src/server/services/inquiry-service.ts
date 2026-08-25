@@ -70,7 +70,7 @@ export async function submitQuoteForm(
   const doc = await createInquiry({
     source: 'quote_form',
     name: input.name,
-    email: input.email,
+    email: input.email ?? null,
     phone: input.phone ?? null,
     locale: input.locale,
     service: input.service ?? null,
@@ -105,7 +105,7 @@ export async function submitPropertyInquiry(
   const doc = await createInquiry({
     source: 'property_form',
     name: input.name,
-    email: input.email,
+    email: input.email ?? null,
     phone: input.phone,
     locale: input.locale,
     service: null,

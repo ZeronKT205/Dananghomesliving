@@ -22,7 +22,7 @@ const INPUT =
   'w-full px-3.5 py-2.5 border border-line bg-paper text-navy rounded-none text-[13px] focus:border-gold focus:ring-2 focus:ring-gold/20 focus:outline-none transition-all';
 const LABEL = 'block text-[10.5px] font-bold text-navy uppercase tracking-wider mb-1.5';
 
-const EMPTY = { name: '', phone: '', email: '', date: '', message: '' };
+const EMPTY = { name: '', phone: '', date: '', message: '' };
 
 export function EnquiryForm({ propertySlug, propertyTitle }: { propertySlug: string; propertyTitle: string }) {
   const locale = useLocale();
@@ -65,7 +65,6 @@ export function EnquiryForm({ propertySlug, propertyTitle }: { propertySlug: str
       const res = await actionSubmitPropertyInquiry({
         propertySlug,
         name: form.name,
-        email: form.email,
         phone: form.phone,
         message: form.message || `Yêu cầu xem trực tiếp: ${propertyTitle}`,
         preferredViewingDate: form.date || null,
@@ -158,43 +157,28 @@ export function EnquiryForm({ propertySlug, propertyTitle }: { propertySlug: str
               />
               {err('phone') ? <p className="mt-1 text-[11px] text-[#a33]">{err('phone')}</p> : null}
             </div>
+
             <div>
-              <label className={LABEL} htmlFor="enq-email">
-                {t('email')} *
+              <label className={LABEL} htmlFor="enq-date">
+                {t('date')}
               </label>
               <input
-                id="enq-email"
-                type="email"
-                value={form.email}
-                onChange={(e) => set('email', e.target.value)}
-                required
-                placeholder={t('emailPlaceholder')}
+                id="enq-date"
+                type="date"
+                min={todayISO}
+                value={form.date}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val && val < todayISO) {
+                    setFields((p) => ({ ...p, date: ['Ngày hẹn xem nhà không thể ở quá khứ.'] }));
+                    return;
+                  }
+                  set('date', val);
+                }}
                 className={INPUT}
               />
-              {err('email') ? <p className="mt-1 text-[11px] text-[#a33]">{err('email')}</p> : null}
+              {err('date') ? <p className="mt-1 text-[11px] text-[#a33]">{err('date')}</p> : null}
             </div>
-          </div>
-
-          <div>
-            <label className={LABEL} htmlFor="enq-date">
-              {t('date')}
-            </label>
-            <input
-              id="enq-date"
-              type="date"
-              min={todayISO}
-              value={form.date}
-              onChange={(e) => {
-                const val = e.target.value;
-                if (val && val < todayISO) {
-                  setFields((p) => ({ ...p, date: ['Ngày hẹn xem nhà không thể ở quá khứ.'] }));
-                  return;
-                }
-                set('date', val);
-              }}
-              className={INPUT}
-            />
-            {err('date') ? <p className="mt-1 text-[11px] text-[#a33]">{err('date')}</p> : null}
           </div>
 
           <div>

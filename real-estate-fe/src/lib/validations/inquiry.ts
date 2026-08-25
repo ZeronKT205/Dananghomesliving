@@ -28,7 +28,7 @@ const zMessage = z.string().trim().max(4000).default('');
 /** Form tư vấn chung (trang chủ / trang danh sách). */
 export const zQuoteFormInput = z.object({
   name: zName,
-  email: zEmail,
+  email: zEmail.optional().nullable().default(null),
   phone: zPhone.optional().nullable().default(null),
   service: zInquiryService.nullable().default(null),
   message: zMessage,
@@ -48,7 +48,7 @@ export const zQuoteFormInput = z.object({
 /** Form hỏi về một BĐS cụ thể (trang chi tiết). */
 export const zPropertyInquiryInput = z.object({
   name: zName,
-  email: zEmail,
+  email: zEmail.optional().nullable().default(null),
   phone: zPhone, // form này bắt buộc số điện thoại
   message: zMessage,
   preferredViewingDate: z.coerce.date().nullable().default(null),

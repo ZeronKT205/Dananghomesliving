@@ -80,7 +80,7 @@ function triggerConfetti(canvas: HTMLCanvasElement) {
   return () => cancelAnimationFrame(frame);
 }
 
-const EMPTY_QUOTE = { name: '', email: '', phone: '', service: '', message: '' };
+const EMPTY_QUOTE = { name: '', phone: '', service: '', message: '' };
 
 export function QuoteRequestSection() {
   const t = useTranslations('Quote');
@@ -113,7 +113,6 @@ export function QuoteRequestSection() {
       startSending(async () => {
         const res = await actionSubmitQuote({
           name: form.name,
-          email: form.email,
           phone: form.phone || null,
           service: form.service || null,
           message: form.message,
@@ -217,7 +216,7 @@ export function QuoteRequestSection() {
               <form onSubmit={handleSubmit} className="mt-6">
                 <div className="grid gap-5 sm:grid-cols-2">
                   {/* Name */}
-                  <div className="flex flex-col gap-1.5">
+                  <div className="flex flex-col gap-1.5 sm:col-span-2">
                     <label
                       htmlFor="q-name"
                       className="text-navy text-[11px] font-bold tracking-[0.08em] uppercase"
@@ -235,24 +234,6 @@ export function QuoteRequestSection() {
                     />
                   </div>
 
-                  {/* Email */}
-                  <div className="flex flex-col gap-1.5">
-                    <label
-                      htmlFor="q-email"
-                      className="text-navy text-[11px] font-bold tracking-[0.08em] uppercase"
-                    >
-                      {t('email')} *
-                    </label>
-                    <input
-                      id="q-email"
-                      type="email"
-                      required
-                      value={form.email}
-                      onChange={(e) => set('email', e.target.value)}
-                      placeholder={t('emailPlaceholder')}
-                      className={cn(inputClass)}
-                    />
-                  </div>
 
                   {/* Phone */}
                   <div className="flex flex-col gap-1.5">
