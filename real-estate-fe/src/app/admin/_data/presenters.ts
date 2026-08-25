@@ -49,33 +49,33 @@ export function toAdminProperty(
 ): AdminProperty {
   return {
     id: doc._id.toHexString(),
-    slug: doc.slug,
-    title: pickLocale(doc.title, 'vi', doc.slug),
+    slug: doc.slug ?? '',
+    title: pickLocale(doc.title, 'vi', doc.slug ?? ''),
     summary: pickLocale(doc.summary, 'vi', ''),
-    district: doc.location.district || '—',
+    district: doc.location?.district || '—',
     address:
-      pickLocale(doc.location.address, 'vi', '') ||
-      [doc.location.ward, doc.location.district, doc.location.city].filter(Boolean).join(', '),
+      pickLocale(doc.location?.address, 'vi', '') ||
+      [doc.location?.ward, doc.location?.district, doc.location?.city].filter(Boolean).join(', '),
     // GeoJSON lưu [lng, lat] — ngược với thói quen đọc, rất dễ đảo nhầm.
-    lat: doc.location.geo?.coordinates[1] ?? null,
-    lng: doc.location.geo?.coordinates[0] ?? null,
-    priceUsd: doc.price.usd,
-    perMonth: doc.price.period === 'month',
-    groupId: doc.categoryId.toHexString(),
-    deal: doc.deal,
-    state: doc.publishState,
+    lat: doc.location?.geo?.coordinates[1] ?? null,
+    lng: doc.location?.geo?.coordinates[0] ?? null,
+    priceUsd: doc.price?.usd ?? 0,
+    perMonth: doc.price?.period === 'month',
+    groupId: doc.categoryId?.toHexString() ?? '',
+    deal: doc.deal ?? 'sale',
+    state: doc.publishState ?? 'draft',
     cover: coverUrl ?? PLACEHOLDER_COVER,
-    imageCount: doc.mediaIds.length,
-    beds: doc.specs.bedrooms,
-    baths: doc.specs.bathrooms,
-    area: doc.specs.internalArea,
-    views: doc.viewCount,
-    updatedLabel: relativeLabel(doc.updatedAt),
+    imageCount: (doc.mediaIds ?? []).length,
+    beds: doc.specs?.bedrooms ?? 0,
+    baths: doc.specs?.bathrooms ?? 0,
+    area: doc.specs?.internalArea ?? 0,
+    views: doc.viewCount ?? 0,
+    updatedLabel: relativeLabel(doc.updatedAt ?? doc.createdAt),
   };
 }
 
 export async function toAdminProperties(docs: readonly PropertyDoc[]): Promise<AdminProperty[]> {
-  const covers = await loadCovers(docs.map((d) => d.coverId));
+  const covers = await loadCovers(docs.map((d) => d.coverId ?? null));
   return docs.map((d) => toAdminProperty(d, d.coverId ? covers.get(d.coverId.toHexString()) : undefined));
 }
 
@@ -121,20 +121,20 @@ export async function toAdminInquiries(
   properties: readonly PropertyDoc[],
   categories: readonly CategoryDoc[],
 ): Promise<AdminInquiry[]> {
-  const covers = await loadCovers(properties.map((p) => p.coverId));
+  const covers = await loadCovers(properties.map((p) => p.coverId ?? null));
   const catName = new Map(categories.map((c) => [c._id.toHexString(), pickLocale(c.name, 'vi', c.slug)]));
 
   const propById = new Map(
     properties.map((p) => [
       p._id.toHexString(),
       {
-        slug: p.slug,
-        title: pickLocale(p.title, 'vi', p.slug),
+        slug: p.slug ?? '',
+        title: pickLocale(p.title, 'vi', p.slug ?? ''),
         cover: (p.coverId ? covers.get(p.coverId.toHexString()) : undefined) ?? PLACEHOLDER_COVER,
-        district: p.location.district || '—',
-        groupName: catName.get(p.categoryId.toHexString()) ?? '—',
-        priceUsd: p.price.usd,
-        perMonth: p.price.period === 'month',
+        district: p.location?.district || '—',
+        groupName: catName.get(p.categoryId?.toHexString() ?? '') ?? '—',
+        priceUsd: p.price?.usd ?? 0,
+        perMonth: p.price?.period === 'month',
       },
     ]),
   );
@@ -149,15 +149,15 @@ export function toAdminNews(
 ): AdminNews {
   return {
     id: doc._id.toHexString(),
-    slug: doc.slug,
-    title: pickLocale(doc.title, 'vi', doc.slug),
+    slug: doc.slug ?? '',
+    title: pickLocale(doc.title, 'vi', doc.slug ?? ''),
     summary: pickLocale(doc.excerpt, 'vi', ''),
     category: categoryName,
-    author: doc.author.name,
-    state: doc.publishState,
+    author: doc.author?.name ?? 'Ban biên tập',
+    state: doc.publishState ?? 'draft',
     cover: coverUrl ?? PLACEHOLDER_COVER,
-    views: doc.viewCount,
-    updatedLabel: relativeLabel(doc.updatedAt),
+    views: doc.viewCount ?? 0,
+    updatedLabel: relativeLabel(doc.updatedAt ?? doc.createdAt),
   };
 }
 

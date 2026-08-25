@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import './globals.css';
 
 // Root layout BẮT BUỘC phải tồn tại. Thiếu nó, Next tự chèn DefaultLayout
 // (next/dist/client/components/builtin/layout.js) render <html><body> trần —

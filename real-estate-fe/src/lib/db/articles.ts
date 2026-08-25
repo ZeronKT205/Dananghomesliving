@@ -41,7 +41,7 @@ async function toArticle(
   const title = pickLocale(doc.title, locale, doc.slug);
 
   return {
-    slug: doc.slug,
+    slug: doc.slug ?? '',
     category: categoryName,
     readingTime,
     title,
@@ -51,8 +51,8 @@ async function toArticle(
     date: formatDate(doc.publishedAt),
     author,
     content: pickLocale(doc.content, locale, ''),
-    tags: doc.tags,
-    featured: doc.isFeatured,
+    tags: doc.tags ?? [],
+    featured: doc.isFeatured ?? false,
   };
 }
 
@@ -94,7 +94,7 @@ async function hydrate(docs: readonly ArticleDoc[], locale: Locale): Promise<Art
         locale,
         catName.get(d.categoryId?.toHexString() ?? '') ?? '',
         author,
-        tNews('readingMinutes', { minutes: d.readingMinutes }),
+        tNews('readingMinutes', { minutes: d.readingMinutes ?? 0 }),
         d.coverId ? coverUrl.get(d.coverId.toHexString()) : undefined,
       ),
     ),

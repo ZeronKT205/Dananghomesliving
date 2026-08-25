@@ -48,13 +48,13 @@ const LIST_LIMIT = 60;
  * ở một số locale, lệch hẳn với thiết kế đang dùng "$3,596,000".
  */
 function formatPrice(doc: PropertyDoc): { price: string; priceNote?: string } {
-  const usd = doc.price.usd;
+  const usd = doc.price?.usd ?? 0;
   const price = usd > 0 ? `$${usd.toLocaleString('en-US')}` : 'Liên hệ';
-  return doc.price.period === 'month' ? { price, priceNote: '/ month' } : { price };
+  return doc.price?.period === 'month' ? { price, priceNote: '/ month' } : { price };
 }
 
 function formatArea(doc: PropertyDoc): string {
-  const m2 = doc.specs.internalArea || doc.specs.landArea || doc.specs.buildingArea || 0;
+  const m2 = doc.specs?.internalArea || doc.specs?.landArea || doc.specs?.buildingArea || 0;
   return m2 > 0 ? `${m2.toLocaleString('en-US')} m²` : '—';
 }
 
@@ -69,7 +69,7 @@ function badgeOf(
   locale: Locale,
   t: Awaited<ReturnType<typeof getTranslations>>,
 ): { badge: string; badgeTone: 'gold' | 'navy' } {
-  const custom = doc.badges.map((b) => pickLocale(b, locale, '')).find(Boolean);
+  const custom = (doc.badges ?? []).map((b) => pickLocale(b, locale, '')).find(Boolean);
   if (custom) return { badge: custom, badgeTone: doc.isFeatured ? 'gold' : 'navy' };
 
   // Nhãn suy ra từ trạng thái phải qua file dịch — trước đây cứng tiếng Việt
@@ -99,7 +99,7 @@ async function buildLookup(docs: readonly PropertyDoc[]): Promise<Lookup> {
   const mediaIds = new Set<string>();
   for (const d of docs) {
     if (d.coverId) mediaIds.add(d.coverId.toHexString());
-    for (const m of d.mediaIds) mediaIds.add(m.toHexString());
+    for (const m of d.mediaIds ?? []) mediaIds.add(m.toHexString());
   }
 
   const [categories, media] = await Promise.all([
@@ -125,7 +125,7 @@ function toListing(
 
   const gallery: string[] = [];
   const seenUrls = new Set<string>();
-  for (const id of [doc.coverId, ...doc.mediaIds]) {
+  for (const id of [doc.coverId, ...(doc.mediaIds ?? [])]) {
     if (!id) continue;
     const url = lookup.mediaUrl.get(id.toHexString());
     if (url && !seenUrls.has(url)) {
@@ -135,24 +135,24 @@ function toListing(
   }
 
   return {
-    slug: doc.slug,
+    slug: doc.slug ?? '',
     title,
     location: localizeLocationStr(
-      [doc.location.ward, doc.location.district].filter(Boolean).join(' · ') || doc.location.city,
+      [doc.location?.ward, doc.location?.district].filter(Boolean).join(' · ') || doc.location?.city || '',
       locale
     ),
-    listingType: doc.deal,
+    listingType: doc.deal ?? 'sale',
     price,
     ...(priceNote ? { priceNote } : {}),
-    beds: doc.specs.bedrooms,
-    baths: doc.specs.bathrooms,
+    beds: doc.specs?.bedrooms ?? 0,
+    baths: doc.specs?.bathrooms ?? 0,
     area: formatArea(doc),
     badge,
     badgeTone,
     image: gallery[0] ?? PLACEHOLDER_IMAGE,
     imageAlt: title,
     propertyType: lookup.categoryName.get(doc.categoryId?.toHexString() ?? '') ?? undefined,
-    areaName: doc.location.district || undefined,
+    areaName: doc.location?.district || undefined,
     description: (() => {
       const d = pickLocale(doc.description, locale, [] as string[]) as unknown;
       return (Array.isArray(d) ? d : [d as string]).join('\n\n') || pickLocale(doc.summary, locale, '');
@@ -258,12 +258,12 @@ export async function getPropertyDetail(
 
   const [lookup, amenities] = await Promise.all([
     buildLookup([doc]),
-    doc.amenityIds.length ? getAmenitiesByIds(doc.amenityIds) : Promise.resolve([]),
+    (doc.amenityIds ?? []).length ? getAmenitiesByIds(doc.amenityIds) : Promise.resolve([]),
   ]);
 
   const images: string[] = [];
   const seenUrls = new Set<string>();
-  for (const id of [doc.coverId, ...doc.mediaIds]) {
+  for (const id of [doc.coverId, ...(doc.mediaIds ?? [])]) {
     if (!id) continue;
     const url = lookup.mediaUrl.get(id.toHexString());
     if (url && !seenUrls.has(url)) {
@@ -274,46 +274,46 @@ export async function getPropertyDetail(
 
   const { price, priceNote } = formatPrice(doc);
   const { badge } = badgeOf(doc, locale, await getTranslations({ locale, namespace: 'Listings' }));
-  const customBadges = doc.badges.map((b) => pickLocale(b, locale, '')).filter(Boolean);
+  const customBadges = (doc.badges ?? []).map((b) => pickLocale(b, locale, '')).filter(Boolean);
 
   return {
-    slug: doc.slug,
-    title: pickLocale(doc.title, locale, doc.slug),
+    slug: doc.slug ?? '',
+    title: pickLocale(doc.title, locale, doc.slug ?? ''),
     location: {
       address:
-        pickLocale(doc.location.address, locale, '') ||
+        pickLocale(doc.location?.address, locale, '') ||
         localizeLocationStr(
-          [doc.location.ward, doc.location.district, doc.location.city].filter(Boolean).join(', '),
+          [doc.location?.ward, doc.location?.district, doc.location?.city].filter(Boolean).join(', '),
           locale
         ),
       shortAddress: localizeLocationStr(
-        [doc.location.ward, doc.location.district].filter(Boolean).join(', ') || doc.location.city,
+        [doc.location?.ward, doc.location?.district].filter(Boolean).join(', ') || doc.location?.city || '',
         locale
       ),
     },
     price: { usd: price, ...(priceNote ? { note: priceNote } : {}) },
     stats: {
-      bedrooms: doc.specs.bedrooms,
-      bathrooms: doc.specs.bathrooms,
-      internalArea: doc.specs.internalArea,
-      landArea: doc.specs.landArea ?? 0,
+      bedrooms: doc.specs?.bedrooms ?? 0,
+      bathrooms: doc.specs?.bathrooms ?? 0,
+      internalArea: doc.specs?.internalArea ?? 0,
+      landArea: doc.specs?.landArea ?? 0,
     },
     badges: customBadges.length ? customBadges : [badge],
     images: images.length ? images : [PLACEHOLDER_IMAGE],
     description: pickLocale(doc.description, locale, []) ?? [],
     amenities: amenities.map((a) => pickLocale(a.name, locale, a.slug)),
-    keyInfo: doc.keyInfo.map((k) => ({
+    keyInfo: (doc.keyInfo ?? []).map((k) => ({
       label: pickLocale(k.label, locale, ''),
       value: pickLocale(k.value, locale, ''),
     })),
-    nearby: doc.nearby.map((n) => ({
+    nearby: (doc.nearby ?? []).map((n) => ({
       time: `${n.minutes} phút`,
       place: pickLocale(n.place, locale, ''),
     })),
     listedDate: formatDate(doc.publishedAt ?? doc.createdAt),
     updatedDate: formatDate(doc.updatedAt),
-    deal: doc.deal,
-    geo: doc.location.geo
+    deal: doc.deal ?? 'sale',
+    geo: doc.location?.geo
       ? { lng: doc.location.geo.coordinates[0], lat: doc.location.geo.coordinates[1] }
       : null,
   };

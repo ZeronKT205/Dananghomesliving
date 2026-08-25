@@ -124,17 +124,17 @@ export async function updatePropertyFromInput(id: string, input: PropertyUpdateI
   const merged = {
     ...existing,
     ...input,
-    categoryId: input.categoryId ?? existing.categoryId.toHexString(),
-    price: { ...existing.price, ...input.price },
-    specs: { ...existing.specs, ...input.specs },
-    location: { ...existing.location, ...input.location },
+    categoryId: input.categoryId ?? existing.categoryId?.toHexString() ?? '',
+    price: { ...(existing.price ?? {}), ...input.price },
+    specs: { ...(existing.specs ?? {}), ...input.specs },
+    location: { ...(existing.location ?? {}), ...input.location },
     seo: {
-      ...existing.seo,
+      ...(existing.seo ?? {}),
       ...input.seo,
-      ogImageId: input.seo?.ogImageId ?? existing.seo.ogImageId?.toHexString() ?? null,
+      ogImageId: input.seo?.ogImageId ?? existing.seo?.ogImageId?.toHexString() ?? null,
     },
-    amenityIds: input.amenityIds ?? existing.amenityIds.map((a) => a.toHexString()),
-    mediaIds: input.mediaIds ?? existing.mediaIds.map((m) => m.toHexString()),
+    amenityIds: input.amenityIds ?? (existing.amenityIds ?? []).map((a) => a.toHexString()),
+    mediaIds: input.mediaIds ?? (existing.mediaIds ?? []).map((m) => m.toHexString()),
     coverId: input.coverId ?? existing.coverId?.toHexString() ?? null,
   } as unknown as PropertyCreateInput;
 
@@ -205,9 +205,9 @@ export async function getPropertyBySlugAny(slug: string) {
  */
 export async function hydrateProperty(property: PropertyDoc, locale: Locale) {
   const [category, amenities, media, cover, similar] = await Promise.all([
-    getCategoryById(property.categoryId.toHexString()),
-    getAmenitiesByIds(property.amenityIds),
-    getMediaByIds(property.mediaIds),
+    property.categoryId ? getCategoryById(property.categoryId.toHexString()) : Promise.resolve(null),
+    (property.amenityIds ?? []).length ? getAmenitiesByIds(property.amenityIds) : Promise.resolve([]),
+    (property.mediaIds ?? []).length ? getMediaByIds(property.mediaIds) : Promise.resolve([]),
     property.coverId ? getMediaByIds([property.coverId]).then((r) => r[0] ?? null) : Promise.resolve(null),
     findSimilarProperties(property, 4),
   ]);

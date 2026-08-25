@@ -84,7 +84,7 @@ export default async function EditPropertyPage({ params }: { params: Promise<{ i
   const doc = await getPropertyById(id);
   if (!doc) notFound();
 
-  const media = await getMediaByIds(doc.mediaIds);
+  const media = await getMediaByIds(doc.mediaIds ?? []);
 
   // Mô tả lưu dạng mảng đoạn; form soạn bằng textarea nên nối lại bằng dòng trống.
   const description: Record<string, string> = {};
@@ -94,42 +94,42 @@ export default async function EditPropertyPage({ params }: { params: Promise<{ i
 
   const initial: PropertyFormValue = {
     id: doc._id.toHexString(),
-    slug: doc.slug,
+    slug: doc.slug ?? '',
     title: loc(doc.title),
     summary: loc(doc.summary),
     description,
-    deal: doc.deal,
-    categoryId: doc.categoryId.toHexString(),
-    status: doc.status,
-    priceUsd: doc.price.usd,
-    pricePeriod: doc.price.period,
-    negotiable: doc.price.negotiable,
+    deal: doc.deal ?? 'sale',
+    categoryId: doc.categoryId?.toHexString() ?? '',
+    status: doc.status ?? 'available',
+    priceUsd: doc.price?.usd ?? 0,
+    pricePeriod: doc.price?.period ?? 'total',
+    negotiable: doc.price?.negotiable ?? false,
     specs: {
-      bedrooms: doc.specs.bedrooms,
-      bathrooms: doc.specs.bathrooms,
-      internalArea: doc.specs.internalArea,
-      landArea: doc.specs.landArea,
-      floors: doc.specs.floors,
-      yearBuilt: doc.specs.yearBuilt,
-      parking: doc.specs.parking,
-      furnishing: doc.specs.furnishing,
-      ownership: doc.specs.ownership,
+      bedrooms: doc.specs?.bedrooms ?? 0,
+      bathrooms: doc.specs?.bathrooms ?? 0,
+      internalArea: doc.specs?.internalArea ?? 0,
+      landArea: doc.specs?.landArea ?? null,
+      floors: doc.specs?.floors ?? null,
+      yearBuilt: doc.specs?.yearBuilt ?? null,
+      parking: doc.specs?.parking ?? null,
+      furnishing: doc.specs?.furnishing ?? 'none',
+      ownership: doc.specs?.ownership ?? 'freehold',
     },
-    address: loc(doc.location.address),
-    ward: doc.location.ward,
-    district: doc.location.district,
+    address: loc(doc.location?.address),
+    ward: doc.location?.ward ?? '',
+    district: doc.location?.district ?? '',
     // GeoJSON lưu [lng, lat] — đảo lại cho form vì người nhập quen "lat, lng".
-    lat: doc.location.geo ? doc.location.geo.coordinates[1] : null,
-    lng: doc.location.geo ? doc.location.geo.coordinates[0] : null,
-    amenityIds: doc.amenityIds.map((a) => a.toHexString()),
+    lat: doc.location?.geo ? doc.location.geo.coordinates[1] : null,
+    lng: doc.location?.geo ? doc.location.geo.coordinates[0] : null,
+    amenityIds: (doc.amenityIds ?? []).map((a) => a.toHexString()),
     images: media.map((m) => ({ id: m._id.toHexString(), url: m.url })),
     coverId: doc.coverId?.toHexString() ?? null,
-    isFeatured: doc.isFeatured,
-    isVerified: doc.isVerified,
-    seoTitle: loc(doc.seo.title),
-    seoDescription: loc(doc.seo.description),
-    publishState: doc.publishState,
-    isPublic: doc.isPublic,
+    isFeatured: doc.isFeatured ?? false,
+    isVerified: doc.isVerified ?? false,
+    seoTitle: loc(doc.seo?.title),
+    seoDescription: loc(doc.seo?.description),
+    publishState: doc.publishState ?? 'draft',
+    isPublic: doc.isPublic ?? false,
   };
 
   return <PropertyForm initial={initial} options={options} />;
