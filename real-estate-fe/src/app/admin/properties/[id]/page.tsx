@@ -31,7 +31,7 @@ export default async function EditPropertyPage({ params }: { params: Promise<{ i
   const options = {
     aiEnabled,
     modelName,
-    categories: categories.map((c) => ({ id: c._id.toHexString(), name: c.name.vi ?? c.name.en ?? c.slug })),
+    categories: categories.map((c) => ({ id: c._id.toHexString(), name: c.name?.vi ?? c.name?.en ?? c.slug })),
     amenities: amenities.map((a) => ({
       id: a._id.toHexString(),
       name: a.name.vi ?? a.name.en ?? a.slug,

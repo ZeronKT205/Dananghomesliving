@@ -99,7 +99,7 @@ export function toAdminInquiry(
     id: doc._id.toHexString(),
     code: doc.code,
     name: doc.name,
-    email: doc.email,
+    email: doc.email ?? '',
     phone: doc.phone ?? '',
     service: doc.service ? (SERVICE_LABEL[doc.service] ?? doc.service) : '—',
     message: doc.message,

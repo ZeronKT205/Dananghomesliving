@@ -24,7 +24,7 @@ export default async function EditArticlePage({ params }: { params: Promise<{ id
 
   const categories = cats.map((c) => ({
     id: c._id.toHexString(),
-    name: c.name.vi ?? c.name.en ?? c.slug,
+    name: c.name?.vi ?? c.name?.en ?? c.slug,
   }));
 
   // Tác giả lấy từ tài khoản đang đăng nhập — biên tập viên không phải gõ tên
