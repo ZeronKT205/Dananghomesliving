@@ -3,8 +3,7 @@ import { notFound } from 'next/navigation';
 import { getCurrentUser } from '@/lib/auth/session';
 import { getArticleById, listArticleCategories } from '@/lib/db/repositories/article-repo';
 import { getMediaByIds } from '@/lib/db/repositories/media-repo';
-import { aiModelName } from '@/server/services/ai-client';
-import { isTranslationConfigured } from '@/server/services/translation-service';
+import { aiModelName, isAiConfigured } from '@/server/services/ai-client';
 
 import { ArticleForm, type ArticleFormValue } from './_components/article-form';
 
@@ -30,7 +29,7 @@ export default async function EditArticlePage({ params }: { params: Promise<{ id
   // Tác giả lấy từ tài khoản đang đăng nhập — biên tập viên không phải gõ tên
   // mình vào mỗi bài, và tên hiển thị ngoài web luôn khớp tài khoản thật.
   const authorName = user?.name ?? 'Ban biên tập';
-  const translationEnabled = isTranslationConfigured();
+  const translationEnabled = isAiConfigured();
   // Hiện tên model cho biên tập biết bài do đâu ra — dự án có hai nhà cung cấp.
   const modelName = aiModelName();
 
