@@ -38,6 +38,11 @@ export interface RichTextEditorProps {
 }
 
 export function RichTextEditor({ value, onChange, placeholder, contentKey }: RichTextEditorProps) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const [menu, setMenu] = useState<{ x: number; y: number } | null>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
@@ -156,7 +161,7 @@ export function RichTextEditor({ value, onChange, placeholder, contentKey }: Ric
     setMenu({ x: e.clientX - (rect?.left ?? 0), y: e.clientY - (rect?.top ?? 0) });
   }, []);
 
-  if (!editor) {
+  if (!mounted || !editor) {
     return <div className="border-line text-muted rounded-md border px-4 py-8 text-center text-[13px]">Đang tải trình soạn thảo…</div>;
   }
 

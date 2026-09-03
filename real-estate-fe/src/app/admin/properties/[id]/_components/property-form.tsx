@@ -5,7 +5,19 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState, useTransition } from 'react';
 
-import { RichTextEditor } from '@/components/editor/rich-text-editor';
+import dynamic from 'next/dynamic';
+
+const RichTextEditor = dynamic(
+  () => import('@/components/editor/rich-text-editor').then((m) => m.RichTextEditor),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="border-line text-muted rounded-md border px-4 py-8 text-center text-[13px]">
+        Đang tải trình soạn thảo…
+      </div>
+    ),
+  },
+);
 import { DraftRestoreBar } from '@/components/ui/draft-restore-bar';
 import { ImageDropZone } from '@/components/ui/image-drop-zone';
 import { MapPicker } from '@/components/ui/map-picker';
